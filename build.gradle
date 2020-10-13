@@ -1,0 +1,169 @@
+import java.util.regex.Pattern
+
+buildscript {
+    repositories {
+        maven {
+            name = "MinecraftForge"
+            url = 'https://files.minecraftforge.net/maven'
+        }
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'org.ajoberstar.grgit', name: 'grgit-gradle', 'version': '4.0.2'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.ajoberstar.grgit'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+
+def mod_version = getVersion()
+version = "${mc_version}-${mod_version}"
+group = 'sciwhiz12.concord'
+archivesBaseName = 'concord'
+
+println("Mod version: ${mod_version}")
+println('Java: ' + System.getProperty('java.version') + '; JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + '); Arch: ' + System.getProperty('os.arch'))
+
+sourceSets {
+    main.resources {
+        srcDirs += data.resources.srcDirs
+        exclude '.cache/' // Prevents the .cache file from being included in the jars
+    }
+}
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+    mappings channel: 'snapshot', version: "${mappings_version}"
+
+    runs {
+        client {
+            workingDirectory file('run/client')
+
+            property 'forge.logging.markers', "${logging_markers}"
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                concord {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory file('run/server')
+
+            property 'forge.logging.markers', "${logging_markers}"
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                concord {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory file('run/data')
+
+            property 'forge.logging.markers', "${logging_markers}"
+            property 'forge.logging.console.level', 'debug'
+
+            args '--mod', 'concord', '--all'
+            args '--output', sourceSets.data.resources.srcDirs[0].toString()
+            args '--existing', sourceSets.main.resources.srcDirs[0].toString()
+
+            ideaModule "${project.name}.data"
+            mods {
+                concord {
+                    sources sourceSets.main, sourceSets.data
+                }
+            }
+        }
+    }
+}
+
+configurations {
+    dataImplementation.extendsFrom implementation
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+
+    dataImplementation sourceSets.main.output
+    dataCompileClasspath sourceSets.main.compileClasspath
+}
+
+def commit_id = "unknown"
+def git_timestamp = "unknown"
+try {
+    commit_id = grgit.head().id
+    def datetime = grgit.head().dateTime
+    git_timestamp = datetime.toLocalDateTime().toString() + datetime.getOffset().toString().replace(':', '');
+} catch (Exception e) {
+    logger.error("Error while trying to get commit info: {}", e)
+}
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"   : "concord",
+                "Specification-Vendor"  : "sciwhiz12",
+                "Implementation-Title"  : project.name,
+                "Implementation-Version": "${mod_version}",
+                "Implementation-Vendor" : "sciwhiz12",
+                "Build-Timestamp"       : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "Git-Commit"            : commit_id,
+                "Git-Commit-Timestamp"  : git_timestamp
+        ])
+    }
+    includeEmptyDirs false
+}
+
+jar.finalizedBy('reobfJar')
+jar.finalizedBy('sourcesJar')
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    classifier "sources"
+}
+
+String getVersion() {
+    try {
+        final String branchName = grgit.branch.current().name
+        boolean non_main = !branchName.matches("\\d+.\\d+.x")
+        if (non_main) println("Currently on non-main branch: " + branchName)
+        String ver = grgit.describe(commit: grgit.head(), longDescr: non_main, tags: true);
+        if (ver != null) {
+            if (non_main) ver = ver + "@" + branchName
+            if (ver.startsWith("v")) return ver.substring(1)
+            return ver
+        }
+    } catch (Exception e) {
+        logger.error("Error while getting version information: {}", e)
+    }
+    return "unknown"
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        rebofJar(MavenPublication) {
+            artifactId = archivesBaseName
+            artifact jar
+        }
+        srcJar(MavenPublication) {
+            artifactId = archivesBaseName
+            artifact sourcesJar
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
