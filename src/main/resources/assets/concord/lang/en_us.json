@@ -1,0 +1,11 @@
+{
+  "chat.concord.status.online": "Online",
+  "chat.concord.status.idle": "Idle",
+  "chat.concord.status.do_not_disturb": "Do Not Disturb",
+  "chat.concord.status.streaming": "Streaming",
+  "chat.concord.status.offline": "Offline",
+  "chat.concord.status.unknown": "UNKNOWN!",
+  "chat.concord.header": "(%s) %s",
+  "chat.concord.hover.header": "%s#%s %s- %s %s",
+  "chat.concord.hover.roles": "Roles: "
+}

@@ -37,6 +37,11 @@ sourceSets {
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
 minecraft {
     mappings channel: 'snapshot', version: "${mappings_version}"
 
@@ -93,6 +98,9 @@ configurations {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+
+    implementation group: 'net.dv8tion', name: 'JDA', version: jda_version
+    implementation group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
     dataCompileClasspath sourceSets.main.compileClasspath

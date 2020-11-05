@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[34,)"
+license="MIT License"
+
+[[mods]]
+modId="concord"
+version="${file.jarVersion}"
+displayName="Concord"
+authors="sciwhiz12"
+description='''
+Discord chat integration/
+'''
+
+[[dependencies.concord]]
+    modId="forge"
+    mandatory=true
+    versionRange="[34.1.0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.concord]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.3]"
+    ordering="NONE"
+    side="BOTH"

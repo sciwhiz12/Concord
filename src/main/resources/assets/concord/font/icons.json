@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "concord:font/icons.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\u25cf\u263d\u2205\u25b6\u25cb\u003f\u2606"
+      ]
+    }
+  ]
+}
