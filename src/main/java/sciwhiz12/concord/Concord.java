@@ -31,7 +31,7 @@ public class Concord {
 
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST,
-                () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+            () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConcordConfig.SPEC);
 
@@ -40,17 +40,26 @@ public class Concord {
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
-        startChatBot();
+        enable();
     }
 
     public void onServerStopping(FMLServerStoppingEvent event) {
-        if (BOT != null) {
-            BOT.shutdown();
-            BOT = null;
+        if (isEnabled()) {
+            disable();
         }
     }
 
-    public static void startChatBot() {
+    public static boolean isEnabled() {
+        return BOT != null;
+    }
+
+    public static void disable() {
+        LOGGER.info("Shutting down Discord integration...");
+        BOT.shutdown();
+        BOT = null;
+    }
+
+    public static void enable() {
         final String token = ConcordConfig.TOKEN.get();
         if (Strings.isNullOrEmpty(token)) {
             LOGGER.warn("Client token is not set in config; Discord integration will not be enabled.");
@@ -64,16 +73,15 @@ public class Concord {
         }
         if (BOT != null) {
             LOGGER.debug("Discord integration is currently enabled; disabling for restart.");
-            BOT.shutdown();
-            BOT = null;
+            disable();
         }
         LOGGER.info("Initializing Discord integration.");
         JDABuilder jdaBuilder = JDABuilder.createDefault(ConcordConfig.TOKEN.get())
-                .enableIntents(GatewayIntent.GUILD_PRESENCES)
-                .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
-                .setAutoReconnect(true)
-                .setActivity(Activity.playing("the readying game..."))
-                .setStatus(OnlineStatus.DO_NOT_DISTURB);
+            .enableIntents(GatewayIntent.GUILD_PRESENCES)
+            .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
+            .setAutoReconnect(true)
+            .setActivity(Activity.playing("the readying game..."))
+            .setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
             final JDA jda = jdaBuilder.build();
             BOT = new ChatBot(jda);

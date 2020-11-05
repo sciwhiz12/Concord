@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.ServerPlayNetHandler;
 import net.minecraft.network.play.server.SChatPacket;
@@ -15,10 +14,7 @@ import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.fml.network.ConnectionType;
 import net.minecraftforge.fml.network.NetworkHooks;
@@ -31,6 +27,7 @@ import java.util.stream.Collectors;
 import static net.minecraft.util.text.TextFormatting.DARK_GRAY;
 import static net.minecraft.util.text.TextFormatting.WHITE;
 import static sciwhiz12.concord.Concord.MODID;
+import static sciwhiz12.concord.msg.MessageUtil.createTranslation;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
@@ -40,9 +37,9 @@ public class Messaging {
         final MemberStatus status = MemberStatus.from(member);
 
         final IFormattableTextComponent ownerText = new StringTextComponent(member.isOwner() ? "\u2606 " : "")
-                .modifyStyle(style -> style.setColor(Color.fromInt(CROWN_COLOR)));
+            .modifyStyle(style -> style.setColor(Color.fromInt(CROWN_COLOR)));
         final IFormattableTextComponent statusText = new StringTextComponent("" + status.getIcon())
-                .modifyStyle(style -> style.setColor(status.getColor()));
+            .modifyStyle(style -> style.setColor(status.getColor()));
 
         if (ConcordConfig.USE_CUSTOM_FONT.get()) {
             ownerText.modifyStyle(style -> style.setFontId(ICONS_FONT));
@@ -50,23 +47,23 @@ public class Messaging {
         }
 
         final IFormattableTextComponent hover = createTranslation(lazyTranslate, "chat.concord.hover.header",
-                new StringTextComponent(member.getUser().getName()).mergeStyle(WHITE),
-                new StringTextComponent(member.getUser().getDiscriminator()).mergeStyle(WHITE),
-                ownerText, statusText,
-                createTranslation(lazyTranslate, status.getTranslationKey())
-                        .modifyStyle(style -> style.setColor(status.getColor()))
+            new StringTextComponent(member.getUser().getName()).mergeStyle(WHITE),
+            new StringTextComponent(member.getUser().getDiscriminator()).mergeStyle(WHITE),
+            ownerText, statusText,
+            createTranslation(lazyTranslate, status.getTranslationKey())
+                .modifyStyle(style -> style.setColor(status.getColor()))
         ).mergeStyle(DARK_GRAY);
 
         final List<Role> roles = member.getRoles().stream()
-                .filter(((Predicate<Role>) Role::isPublicRole).negate())
-                .collect(Collectors.toList());
+            .filter(((Predicate<Role>) Role::isPublicRole).negate())
+            .collect(Collectors.toList());
         if (!roles.isEmpty()) {
             hover.appendString("\n").append(createTranslation(lazyTranslate, "chat.concord.hover.roles"));
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
                 if (i != 0) hover.appendString(", "); // add joiner for more than one role
                 Role role = roles.get(i);
                 hover.append(new StringTextComponent(role.getName())
-                        .modifyStyle(style -> style.setColor(Color.fromInt(role.getColorRaw())))
+                    .modifyStyle(style -> style.setColor(Color.fromInt(role.getColorRaw())))
                 );
             }
         }
@@ -74,30 +71,12 @@ public class Messaging {
         final String name = member.getNickname() != null ? member.getNickname() : member.getUser().getName();
 
         return createTranslation(lazyTranslate, "chat.concord.header",
-                new StringTextComponent(name)
-                        .modifyStyle(style -> style
-                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
-                                .setColor(Color.fromInt(member.getColorRaw()))),
-                new StringTextComponent(message).mergeStyle(WHITE)
+            new StringTextComponent(name)
+                .modifyStyle(style -> style
+                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                    .setColor(Color.fromInt(member.getColorRaw()))),
+            new StringTextComponent(message).mergeStyle(WHITE)
         ).mergeStyle(DARK_GRAY);
-    }
-
-    /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */
-
-    public static TextComponent createTranslation(boolean lazyTranslate, final String translation,
-            final Object... args) {
-        if (!lazyTranslate) {
-            return new StringTextComponent(String.format(LanguageMap.getInstance().func_230503_a_(translation), args));
-        }
-        return new TranslationTextComponent(translation, args);
-    }
-
-    private static boolean isVanillaClient(CommandSource sender) {
-        if (sender.getEntity() instanceof ServerPlayerEntity) {
-            ServerPlayNetHandler channel = ((ServerPlayerEntity) sender.getEntity()).connection;
-            return NetworkHooks.getConnectionType(() -> channel.netManager) == ConnectionType.VANILLA;
-        }
-        return false;
     }
 
     public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {

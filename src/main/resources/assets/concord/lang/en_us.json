@@ -7,5 +7,13 @@
   "chat.concord.status.unknown": "UNKNOWN!",
   "chat.concord.header": "(%s) %s",
   "chat.concord.hover.header": "%s#%s %s- %s %s",
-  "chat.concord.hover.roles": "Roles: "
+  "chat.concord.hover.roles": "Roles: ",
+  "command.concord.enable": "Enabling discord integration...",
+  "command.concord.enable.already_enabled": "Discord integration is already enabled!",
+  "command.concord.disable": "Disabling discord integration...",
+  "command.concord.disable.already_disabled": "Discord integration is already disabled!",
+  "command.concord.reload": "Reloading discord integration...",
+  "command.concord.status": "Discord integration status: %s",
+  "command.concord.status.enabled": "ENABLED",
+  "command.concord.status.disabled": "DISABLED"
 }
