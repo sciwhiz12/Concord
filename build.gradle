@@ -12,6 +12,7 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
         classpath group: 'org.ajoberstar.grgit', name: 'grgit-gradle', 'version': '4.0.2'
+        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '4.0.4'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
@@ -19,6 +20,7 @@ apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 def mod_version = getVersion()
 version = "${mc_version}-${mod_version}"
@@ -99,8 +101,10 @@ configurations {
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    implementation group: 'net.dv8tion', name: 'JDA', version: jda_version
-    implementation group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    shadow(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+        exclude module: 'opus-java'
+    }
+    shadow group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
     dataCompileClasspath sourceSets.main.compileClasspath
@@ -131,8 +135,44 @@ jar {
     includeEmptyDirs false
 }
 
+shadowJar {
+    configurations = [project.configurations.shadow]
+    relocate 'com.iwebpp.crypto', 'sciwhiz12.concord.shadow.com.iwebpp.crypto'
+    relocate 'org.json', 'sciwhiz12.concord.shadow.org.json'
+    relocate 'net.sf.trove4j', 'sciwhiz12.concord.shadow.net.sf.trove4j'
+    relocate 'gnu.trove', 'sciwhiz12.concord.shadow.gnu.trove'
+
+    relocate 'com.neovisionaries.ws.client', 'sciwhiz12.concord.shadow.com.neovisionaries.ws.client'
+    relocate 'okio', 'sciwhiz12.concord.shadow.okio'
+    relocate 'okhttp3', 'sciwhiz12.concord.shadow.okhttp3'
+
+    relocate 'org.intellij.lang.annotations', 'sciwhiz12.concord.shadow.org.intellij.lang.annotations'
+    relocate 'org.jetbrains.annotations', 'sciwhiz12.concord.shadow.org.jetbrains.annotations'
+
+    relocate 'org.apache.commons.collections4', 'sciwhiz12.concord.shadow.org.apache.commons.collections4'
+    relocate 'org.slf4j', 'sciwhiz12.concord.shadow.slf4j'
+    relocate 'javax.annotation', 'sciwhiz12.concord.shadow.javax.annotation'
+    relocate 'com.fasterxml.jackson', 'sciwhiz12.concord.shadow.com.fasterxml.jackson'
+
+    relocate 'net.dv8tion.jda', 'sciwhiz12.concord.shadow.net.dv8tion.jda'
+    relocate 'club.minnced.discord.webhook', 'sciwhiz12.concord.shadow.club.minnced.discord.webhook'
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/proguard/**'
+    exclude 'META-INF/services/**'
+    exclude 'META-INF/LICENSE*'
+    exclude 'META-INF/NOTICE*'
+    exclude 'module-info.class'
+}
+
+reobf {
+    shadowJar {}
+}
+
 jar.finalizedBy('reobfJar')
 jar.finalizedBy('sourcesJar')
+jar.finalizedBy('reobfShadowJar')
+
+build.dependsOn('reobfShadowJar')
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
