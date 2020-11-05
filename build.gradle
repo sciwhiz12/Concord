@@ -96,15 +96,22 @@ minecraft {
 
 configurations {
     dataImplementation.extendsFrom implementation
+    shade
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    shadow(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+    shade(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
     }
-    shadow group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    shade group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+
+    // This is doubled because it somehow fixes dev-runs erroring with NoClassDefFoundError
+    implementation(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+        exclude module: 'opus-java'
+    }
+    implementation group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
     dataCompileClasspath sourceSets.main.compileClasspath
@@ -136,7 +143,7 @@ jar {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadow]
+    configurations = [project.configurations.shade]
     relocate 'com.iwebpp.crypto', 'sciwhiz12.concord.shadow.com.iwebpp.crypto'
     relocate 'org.json', 'sciwhiz12.concord.shadow.org.json'
     relocate 'net.sf.trove4j', 'sciwhiz12.concord.shadow.net.sf.trove4j'
