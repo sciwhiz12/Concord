@@ -40,6 +40,10 @@ public class Concord {
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
+        if (!event.getServer().isDedicatedServer() && ConcordConfig.ENABLE_INTEGRATED.get()) {
+            LOGGER.info("Discord integration for integrated servers is disabled in server config.");
+            return;
+        }
         enable();
     }
 
