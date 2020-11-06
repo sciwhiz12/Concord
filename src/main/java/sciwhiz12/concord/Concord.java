@@ -34,14 +34,14 @@ public class Concord {
             () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
         ModPresenceTracker.registerChannel();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConcordConfig.SPEC);
+        ConcordConfig.register();
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
-        if (!event.getServer().isDedicatedServer() && ConcordConfig.ENABLE_INTEGRATED.get()) {
+        if (!event.getServer().isDedicatedServer() && ConcordConfig.ENABLE_INTEGRATED) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
             return;
         }
@@ -67,19 +67,19 @@ public class Concord {
 
     public static void enable() {
         if (isEnabled()) return;
-        final String token = ConcordConfig.TOKEN.get();
+        final String token = ConcordConfig.TOKEN;
         if (Strings.isNullOrEmpty(token)) {
-            LOGGER.warn("Client token is not set in config; Discord integration will not be enabled.");
+            LOGGER.warn("Bot token is not set in config; Discord integration will not be enabled.");
             return;
-        } else if (Strings.isNullOrEmpty(ConcordConfig.GUILD_ID.get())) {
+        } else if (Strings.isNullOrEmpty(ConcordConfig.GUILD_ID)) {
             LOGGER.warn("Guild ID is not set in config; Discord integration will not be enabled.");
             return;
-        } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID.get())) {
+        } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID)) {
             LOGGER.warn("Channel ID is not set in config; Discord integration will not be enabled.");
             return;
         }
         LOGGER.info("Initializing Discord integration.");
-        JDABuilder jdaBuilder = JDABuilder.createDefault(ConcordConfig.TOKEN.get())
+        JDABuilder jdaBuilder = JDABuilder.createDefault(ConcordConfig.TOKEN)
             .enableIntents(GatewayIntent.GUILD_PRESENCES)
             .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
             .setAutoReconnect(true)

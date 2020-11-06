@@ -39,7 +39,7 @@ public final class MessageUtil {
     }
 
     public static TextComponent createTranslation(@Nullable ServerPlayerEntity entity, String translationKey, Object... args) {
-        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
+        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS || ModPresenceTracker.isModPresent(entity),
             translationKey, args);
     }
 

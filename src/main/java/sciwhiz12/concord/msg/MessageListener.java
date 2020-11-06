@@ -21,8 +21,8 @@ public class MessageListener {
         if (event.getAuthor().getIdLong() == bot.getDiscord().getSelfUser().getIdLong()) return;
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return; // TODO: maybe make this a config option
 
-        if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID.get()) &&
-            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID.get())) {
+        if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID) &&
+            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID)) {
 
             Messaging.sendToAllPlayers(ServerLifecycleHooks.getCurrentServer(), event.getMember(),
                 event.getMessage().getContentDisplay());
