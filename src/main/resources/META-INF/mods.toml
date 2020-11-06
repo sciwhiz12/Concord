@@ -7,8 +7,10 @@ modId="concord"
 version="${file.jarVersion}"
 displayName="Concord"
 authors="sciwhiz12"
+logoFile="logo.png"
+logoBlur=false
 description='''
-Discord chat integration/
+A Discord chat integration mod.
 '''
 
 [[dependencies.concord]]
