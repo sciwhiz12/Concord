@@ -32,6 +32,6 @@ public class MessageListener {
 
     @net.minecraftforge.eventbus.api.SubscribeEvent(priority = EventPriority.LOWEST)
     void onServerChat(ServerChatEvent event) {
-        Messaging.sendToChannel(bot.getDiscord(), event.getUsername(), event.getComponent());
+        Messaging.sendToChannel(bot.getDiscord(), event.getComponent().getString());
     }
 }

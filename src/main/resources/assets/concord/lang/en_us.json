@@ -15,5 +15,14 @@
   "command.concord.reload": "Reloading discord integration...",
   "command.concord.status": "Discord integration status: %s",
   "command.concord.status.enabled": "ENABLED",
-  "command.concord.status.disabled": "DISABLED"
+  "command.concord.status.disabled": "DISABLED",
+  "message.concord.bot.start": "_Discord integration is now active!_",
+  "message.concord.bot.stop": "_Discord integration is being disabled!_",
+  "message.concord.server.start": "_Server is now started!_",
+  "message.concord.server.stop": "_Server is stopping!_",
+  "message.concord.player.join": "**%s** _joined the game._",
+  "message.concord.player.leave": "**%s** _left the game._",
+  "message.concord.player.advancement.task": "**%s** has made the advancement **%s**\n_%s_",
+  "message.concord.player.advancement.challenge": "**%s** has completed the challenge **%s**\n_%s_",
+  "message.concord.player.advancement.goal": "**%s** has reached the goal **%s**\n_%s_"
 }

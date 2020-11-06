@@ -111,10 +111,10 @@ public class Messaging {
         }
     }
 
-    public static void sendToChannel(JDA discord, String username, ITextComponent message) {
+    public static void sendToChannel(JDA discord, CharSequence text) {
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID);
         if (channel != null) {
-            channel.sendMessage(message.getString()).queue();
+            channel.sendMessage(text).queue();
         }
     }
 }

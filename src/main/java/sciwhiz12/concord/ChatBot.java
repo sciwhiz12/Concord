@@ -11,10 +11,14 @@ import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import sciwhiz12.concord.msg.MessageListener;
+import sciwhiz12.concord.msg.Messaging;
+import sciwhiz12.concord.msg.PlayerListener;
+import sciwhiz12.concord.msg.StatusListener;
 
 import java.util.EnumSet;
 
@@ -26,15 +30,20 @@ public class ChatBot {
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
 
     private final JDA discord;
-    private final MessageListener message;
+    private final MessageListener msgListener;
+    private final PlayerListener playerListener;
+    private final StatusListener statusListener;
 
     ChatBot(JDA discord) {
         this.discord = discord;
         discord.setEventManager(new AnnotatedEventManager());
         discord.addEventListener(this);
-        message = new MessageListener(this);
-        discord.addEventListener(message);
-        MinecraftForge.EVENT_BUS.register(message);
+        discord.addEventListener(msgListener = new MessageListener(this));
+        discord.addEventListener(playerListener = new PlayerListener(this));
+        discord.addEventListener(statusListener = new StatusListener(this));
+        MinecraftForge.EVENT_BUS.register(msgListener);
+        MinecraftForge.EVENT_BUS.register(playerListener);
+        MinecraftForge.EVENT_BUS.register(statusListener);
     }
 
     public JDA getDiscord() {
@@ -89,11 +98,15 @@ public class ChatBot {
 
         LOGGER.info(BOT, "Discord bot is ready!");
         LOGGER.info(BOT, "Invite URL for bot: {}", discord.getInviteUrl(REQUIRED_PERMISSIONS));
+
+        Messaging.sendToChannel(discord, new TranslationTextComponent("message.concord.bot.start").getString());
     }
 
     void shutdown() {
         LOGGER.info(BOT, "Shutting down Discord bot...");
-        MinecraftForge.EVENT_BUS.unregister(message);
+        MinecraftForge.EVENT_BUS.unregister(msgListener);
+        MinecraftForge.EVENT_BUS.unregister(playerListener);
+        MinecraftForge.EVENT_BUS.unregister(statusListener);
         discord.shutdown();
     }
 }

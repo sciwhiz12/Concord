@@ -7,17 +7,19 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sciwhiz12.concord.msg.Messaging;
 
 import java.util.EnumSet;
 import javax.security.auth.login.LoginException;
@@ -36,8 +38,8 @@ public class Concord {
 
         ConcordConfig.register();
 
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
@@ -50,7 +52,7 @@ public class Concord {
 
     public void onServerStopping(FMLServerStoppingEvent event) {
         if (isEnabled()) {
-            disable();
+            disable(true);
         }
     }
 
@@ -59,8 +61,15 @@ public class Concord {
     }
 
     public static void disable() {
+        disable(false);
+    }
+
+    public static void disable(boolean suppressMessage) {
         if (!isEnabled()) return;
         LOGGER.info("Shutting down Discord integration...");
+        if (!suppressMessage) {
+            Messaging.sendToChannel(BOT.getDiscord(), new TranslationTextComponent("message.concord.bot.stop").getString());
+        }
         BOT.shutdown();
         BOT = null;
     }
