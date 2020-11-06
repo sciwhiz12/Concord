@@ -39,18 +39,16 @@ public class ConcordConfig {
         {
             builder.comment("Message settings").push("messages");
 
-            USE_CUSTOM_FONT = builder.comment("Use the custom font `concord:icons` for the icons (status, owner crown).",
-                "This requires the clients have a resource pack with the custom font, else the icons will render weirdly.",
-                "(this mod, if installed on the client, will provide the custom icons; another option is a server pack)",
-                "Set to false if you cannot ensure that clients will have the mod nor a custom resource pack.")
+            USE_CUSTOM_FONT = builder.comment("Use the custom `concord:icons` icons font (e.g owner crown) when possible.",
+                "If true, clients with the mod will use the custom icons font.",
+                "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("use_custom_font", true);
 
-            LAZY_TRANSLATIONS = builder.comment("Lazily translate the messages (rely on the client to translate the messages).",
+            LAZY_TRANSLATIONS = builder.comment("Lazily translate the messages wheb possible.",
                 "This requires the clients have a resource pack with the messages, else they will render weirdly.",
-                "(this mod, if installed on the client, will provide the custom icons; another option is a server pack)",
-                "If set to false, all translation keys will be translated on the server.",
-                "If set to true, translation keys will only be translated on the server if the client is a vanilla client.",
-                "Useful for servers that serve vanilla clients.")
+                "If false, all translation keys will be translated on the server.",
+                "If true, translation keys will translated on the server only if the client does not have the mod installed.",
+                "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("lazy_translate", true);
 
             builder.pop();

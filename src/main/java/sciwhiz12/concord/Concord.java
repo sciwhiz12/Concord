@@ -32,6 +32,7 @@ public class Concord {
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST,
             () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+        ModPresenceTracker.registerChannel();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConcordConfig.SPEC);
 

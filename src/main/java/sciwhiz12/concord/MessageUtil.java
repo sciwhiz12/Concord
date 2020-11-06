@@ -1,14 +1,12 @@
 package sciwhiz12.concord;
 
-import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.ServerPlayNetHandler;
 import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.fml.network.ConnectionType;
-import net.minecraftforge.fml.network.NetworkHooks;
+
+import javax.annotation.Nullable;
 
 public final class MessageUtil {
     private MessageUtil() {} // Prevent instantiation
@@ -40,7 +38,12 @@ public final class MessageUtil {
         return text;
     }
 
-    private static TextComponent eagerTranslate(final TranslationTextComponent component) {
+    public static TextComponent createTranslation(@Nullable ServerPlayerEntity entity, String translationKey, Object... args) {
+        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
+            translationKey, args);
+    }
+
+    public static TextComponent eagerTranslate(final TranslationTextComponent component) {
         Object[] oldArgs = component.getFormatArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
@@ -57,21 +60,5 @@ public final class MessageUtil {
             new TranslationTextComponent(LanguageMap.getInstance().func_230503_a_(component.getKey()), newArgs);
         result.mergeStyle(component.getStyle());
         return result;
-    }
-
-    /**
-     * Returns whether the given {@link CommandSource} refers to a player using a vanilla client (or using a {@linkplain
-     * ConnectionType#VANILLA vanilla connection}).
-     *
-     * @param sender the command sender to check
-     *
-     * @return if the command sender is connected with a vanilla client
-     */
-    public static boolean isVanillaClient(CommandSource sender) {
-        if (sender.getEntity() instanceof ServerPlayerEntity) {
-            ServerPlayNetHandler channel = ((ServerPlayerEntity) sender.getEntity()).connection;
-            return NetworkHooks.getConnectionType(() -> channel.netManager) == ConnectionType.VANILLA;
-        }
-        return false;
     }
 }

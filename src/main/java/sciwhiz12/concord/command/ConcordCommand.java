@@ -1,18 +1,20 @@
-package sciwhiz12.concord;
+package sciwhiz12.concord.command;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import sciwhiz12.concord.Concord;
+import sciwhiz12.concord.MessageUtil;
 
 import static net.minecraft.command.Commands.literal;
 import static net.minecraft.util.text.TextFormatting.GREEN;
 import static net.minecraft.util.text.TextFormatting.RED;
 import static sciwhiz12.concord.Concord.MODID;
-import static sciwhiz12.concord.MessageUtil.createTranslation;
-import static sciwhiz12.concord.MessageUtil.isVanillaClient;
 
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ConcordCommand {
@@ -38,9 +40,13 @@ public class ConcordCommand {
         );
     }
 
+    private static TextComponent createMessage(CommandSource source, String translation, Object... args) {
+        return MessageUtil.createTranslation((ServerPlayerEntity) source.getEntity(), translation, args);
+    }
+
     public static int reload(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
-        ctx.getSource().sendFeedback(createTranslation(!isVanillaClient(source), "command.concord.reload"), true);
+        ctx.getSource().sendFeedback(createMessage(source, "command.concord.reload"), true);
         if (Concord.isEnabled()) {
             Concord.disable();
         }
@@ -51,11 +57,10 @@ public class ConcordCommand {
     public static int enable(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
         if (Concord.isEnabled()) {
-            ctx.getSource().sendErrorMessage(
-                createTranslation(!isVanillaClient(source), "command.concord.enable.already_enabled"));
+            ctx.getSource().sendErrorMessage(createMessage(source, "command.concord.enable.already_enabled"));
             return 1;
         }
-        ctx.getSource().sendFeedback(createTranslation(!isVanillaClient(source), "command.concord.enable"), true);
+        ctx.getSource().sendFeedback(createMessage(source, "command.concord.enable"), true);
         Concord.enable();
         return 1;
     }
@@ -63,11 +68,10 @@ public class ConcordCommand {
     public static int disable(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
         if (!Concord.isEnabled()) {
-            ctx.getSource().sendErrorMessage(
-                createTranslation(!isVanillaClient(source), "command.concord.disable.already_disabled"));
+            ctx.getSource().sendErrorMessage(createMessage(source, "command.concord.disable.already_disabled"));
             return 1;
         }
-        ctx.getSource().sendFeedback(createTranslation(!isVanillaClient(source), "command.concord.disable"), true);
+        ctx.getSource().sendFeedback(createMessage(source, "command.concord.disable"), true);
         Concord.disable();
         return 1;
     }
@@ -76,11 +80,11 @@ public class ConcordCommand {
         CommandSource source = ctx.getSource();
         ITextComponent result;
         if (Concord.isEnabled()) {
-            result = createTranslation(!isVanillaClient(source), "command.concord.status.enabled").mergeStyle(GREEN);
+            result = createMessage(source, "command.concord.status.enabled").mergeStyle(GREEN);
         } else {
-            result = createTranslation(!isVanillaClient(source), "command.concord.status.disabled").mergeStyle(RED);
+            result = createMessage(source, "command.concord.status.disabled").mergeStyle(RED);
         }
-        ctx.getSource().sendFeedback(createTranslation(!isVanillaClient(source), "command.concord.status", result), true);
+        ctx.getSource().sendFeedback(createMessage(source, "command.concord.status", result), true);
         return 1;
     }
 }

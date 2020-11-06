@@ -13,6 +13,8 @@ public enum MemberStatus {
     OFFLINE(OnlineStatus.OFFLINE, "chat.concord.status.offline", 0x747f8d, '\u25cb'),
     UNKNOWN(OnlineStatus.UNKNOWN, "chat.concord.status.unknown", 0x7c0000, '\u003f');
 
+    public static final char CROWN_ICON = '\u2606';
+
     private final OnlineStatus discordStatus;
     private final String translationKey;
     private final Color color;
