@@ -1,4 +1,4 @@
-package sciwhiz12.concord.msg;
+package sciwhiz12.concord;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -35,8 +35,6 @@ public final class MessageUtil {
     public static TextComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
         TranslationTextComponent text = new TranslationTextComponent(translation, args);
         if (!lazyTranslate) {
-            //            return new StringTextComponent(String.format(LanguageMap.getInstance().func_230503_a_(translation),
-            //            args));
             return eagerTranslate(text);
         }
         return text;

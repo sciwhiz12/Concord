@@ -11,8 +11,8 @@ import static net.minecraft.command.Commands.literal;
 import static net.minecraft.util.text.TextFormatting.GREEN;
 import static net.minecraft.util.text.TextFormatting.RED;
 import static sciwhiz12.concord.Concord.MODID;
-import static sciwhiz12.concord.msg.MessageUtil.createTranslation;
-import static sciwhiz12.concord.msg.MessageUtil.isVanillaClient;
+import static sciwhiz12.concord.MessageUtil.createTranslation;
+import static sciwhiz12.concord.MessageUtil.isVanillaClient;
 
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ConcordCommand {

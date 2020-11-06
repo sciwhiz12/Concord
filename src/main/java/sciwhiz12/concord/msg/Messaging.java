@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import static net.minecraft.util.text.TextFormatting.DARK_GRAY;
 import static net.minecraft.util.text.TextFormatting.WHITE;
 import static sciwhiz12.concord.Concord.MODID;
-import static sciwhiz12.concord.msg.MessageUtil.createTranslation;
+import static sciwhiz12.concord.MessageUtil.createTranslation;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
