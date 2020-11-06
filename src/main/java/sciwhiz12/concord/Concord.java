@@ -54,12 +54,14 @@ public class Concord {
     }
 
     public static void disable() {
+        if (!isEnabled()) return;
         LOGGER.info("Shutting down Discord integration...");
         BOT.shutdown();
         BOT = null;
     }
 
     public static void enable() {
+        if (isEnabled()) return;
         final String token = ConcordConfig.TOKEN.get();
         if (Strings.isNullOrEmpty(token)) {
             LOGGER.warn("Client token is not set in config; Discord integration will not be enabled.");
@@ -70,10 +72,6 @@ public class Concord {
         } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID.get())) {
             LOGGER.warn("Channel ID is not set in config; Discord integration will not be enabled.");
             return;
-        }
-        if (BOT != null) {
-            LOGGER.debug("Discord integration is currently enabled; disabling for restart.");
-            disable();
         }
         LOGGER.info("Initializing Discord integration.");
         JDABuilder jdaBuilder = JDABuilder.createDefault(ConcordConfig.TOKEN.get())
