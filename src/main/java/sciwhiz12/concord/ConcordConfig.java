@@ -28,7 +28,7 @@ public class ConcordConfig {
     public static boolean PLAYER_ADV_GOAL = true;
 
     public static void register() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Spec.CONFIG_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Spec.CONFIG_SPEC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ConcordConfig::onConfigEvent);
     }
 
