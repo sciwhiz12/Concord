@@ -1,4 +1,4 @@
-package sciwhiz12.concord.command;
+package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
@@ -8,15 +8,14 @@ import net.minecraft.util.text.TextComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import sciwhiz12.concord.Concord;
-import sciwhiz12.concord.MessageUtil;
+import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.MessageUtil;
 
 import static net.minecraft.command.Commands.literal;
 import static net.minecraft.util.text.TextFormatting.GREEN;
 import static net.minecraft.util.text.TextFormatting.RED;
-import static sciwhiz12.concord.Concord.MODID;
 
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = Concord.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ConcordCommand {
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {

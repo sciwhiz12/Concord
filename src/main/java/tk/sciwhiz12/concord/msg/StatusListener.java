@@ -1,12 +1,12 @@
-package sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.msg;
 
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import sciwhiz12.concord.ChatBot;
-import sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.ChatBot;
+import tk.sciwhiz12.concord.ConcordConfig;
 
 public class StatusListener {
     private final ChatBot bot;

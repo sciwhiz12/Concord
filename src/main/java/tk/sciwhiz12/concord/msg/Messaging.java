@@ -1,4 +1,4 @@
-package sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
@@ -12,14 +12,13 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
-import sciwhiz12.concord.ConcordConfig;
-import sciwhiz12.concord.MessageUtil;
-import sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.MessageUtil;
+import tk.sciwhiz12.concord.ModPresenceTracker;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static net.minecraft.util.text.TextFormatting.DARK_GRAY;
 import static net.minecraft.util.text.TextFormatting.WHITE;
-import static sciwhiz12.concord.Concord.MODID;
+import static tk.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");

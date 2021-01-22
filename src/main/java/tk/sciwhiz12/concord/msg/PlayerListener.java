@@ -1,4 +1,4 @@
-package sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.msg;
 
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -8,8 +8,8 @@ import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import sciwhiz12.concord.ChatBot;
-import sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.ChatBot;
+import tk.sciwhiz12.concord.ConcordConfig;
 
 public class PlayerListener {
     private final ChatBot bot;

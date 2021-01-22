@@ -1,4 +1,4 @@
-package sciwhiz12.concord;
+package tk.sciwhiz12.concord;
 
 import io.netty.util.AttributeKey;
 import net.minecraft.entity.player.ServerPlayerEntity;

@@ -1,4 +1,4 @@
-package sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;

@@ -1,4 +1,4 @@
-package sciwhiz12.concord;
+package tk.sciwhiz12.concord;
 
 import com.google.common.collect.Sets;
 import net.dv8tion.jda.api.JDA;
@@ -15,14 +15,12 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
-import sciwhiz12.concord.msg.MessageListener;
-import sciwhiz12.concord.msg.Messaging;
-import sciwhiz12.concord.msg.PlayerListener;
-import sciwhiz12.concord.msg.StatusListener;
+import tk.sciwhiz12.concord.msg.MessageListener;
+import tk.sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.msg.PlayerListener;
+import tk.sciwhiz12.concord.msg.StatusListener;
 
 import java.util.EnumSet;
-
-import static sciwhiz12.concord.Concord.LOGGER;
 
 public class ChatBot {
     private static final Marker BOT = MarkerManager.getMarker("BOT");
@@ -55,24 +53,24 @@ public class ChatBot {
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));
 
         boolean satisfied = true;
-        LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
+        Concord.LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
         // Checking if specified guild and channel IDs are correct
         final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID);
         if (guild == null) {
-            LOGGER.warn(BOT, "This bot is not connected to a guild with ID {}, as specified in the config.",
+            Concord.LOGGER.warn(BOT, "This bot is not connected to a guild with ID {}, as specified in the config.",
                 ConcordConfig.GUILD_ID);
-            LOGGER.warn(BOT, "This indicates either the bot was not invited to the guild, or a wrongly-typed guild ID.");
+            Concord.LOGGER.warn(BOT, "This indicates either the bot was not invited to the guild, or a wrongly-typed guild ID.");
             satisfied = false;
 
         } else {
             final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID);
             if (channel == null) {
-                LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
+                Concord.LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
                     ConcordConfig.CHANNEL_ID);
                 satisfied = false;
 
             } else if (channel.getType() != ChannelType.TEXT) {
-                LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
+                Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
                     ConcordConfig.CHANNEL_ID, channel.getType());
                 satisfied = false;
 
@@ -81,29 +79,29 @@ public class ChatBot {
                     .difference(REQUIRED_PERMISSIONS, guild.getSelfMember().getPermissions(channel));
 
                 if (!missingPermissions.isEmpty()) {
-                    LOGGER.error(BOT, "This bot is missing the following required permissions in the channel: {}.",
+                    Concord.LOGGER.error(BOT, "This bot is missing the following required permissions in the channel: {}.",
                         missingPermissions);
-                    LOGGER.error(BOT, "As reference, the bot requires the following permissions in the channel: {}.",
+                    Concord.LOGGER.error(BOT, "As reference, the bot requires the following permissions in the channel: {}.",
                         REQUIRED_PERMISSIONS);
                     satisfied = false;
                 }
             }
         } // Required permissions are there. All checks satisfied.
         if (!satisfied) {
-            LOGGER.warn(BOT, "Some checks were not satisfied; disabling Discord integration.");
+            Concord.LOGGER.warn(BOT, "Some checks were not satisfied; disabling Discord integration.");
             Concord.disable();
             return;
         }
-        LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
+        Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
 
-        LOGGER.info(BOT, "Discord bot is ready!");
-        LOGGER.info(BOT, "Invite URL for bot: {}", discord.getInviteUrl(REQUIRED_PERMISSIONS));
+        Concord.LOGGER.info(BOT, "Discord bot is ready!");
+        Concord.LOGGER.info(BOT, "Invite URL for bot: {}", discord.getInviteUrl(REQUIRED_PERMISSIONS));
 
         Messaging.sendToChannel(discord, new TranslationTextComponent("message.concord.bot.start").getString());
     }
 
     void shutdown() {
-        LOGGER.info(BOT, "Shutting down Discord bot...");
+        Concord.LOGGER.info(BOT, "Shutting down Discord bot...");
         MinecraftForge.EVENT_BUS.unregister(msgListener);
         MinecraftForge.EVENT_BUS.unregister(playerListener);
         MinecraftForge.EVENT_BUS.unregister(statusListener);

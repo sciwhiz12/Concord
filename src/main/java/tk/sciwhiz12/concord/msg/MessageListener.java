@@ -1,4 +1,4 @@
-package sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
@@ -6,8 +6,8 @@ import net.dv8tion.jda.api.utils.MiscUtil;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import sciwhiz12.concord.ChatBot;
-import sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.ChatBot;
+import tk.sciwhiz12.concord.ConcordConfig;
 
 public class MessageListener {
     private final ChatBot bot;

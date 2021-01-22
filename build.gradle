@@ -22,7 +22,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 def mod_version = getVersion()
 version = "${mc_version}-${mod_version}"
-group = 'sciwhiz12.concord'
+group = 'tk.sciwhiz12'
 archivesBaseName = 'concord'
 
 println("Mod version: ${mod_version}")
@@ -135,33 +135,37 @@ jar {
                 "Build-Timestamp"       : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 "Git-Commit"            : commit_id,
                 "Git-Commit-Timestamp"  : git_timestamp
-        ])
+        ] as LinkedHashMap)
     }
     includeEmptyDirs false
+}
+
+def relocate(origin) {
+    shadowJar.relocate(origin, "tk.sciwhiz12.concord.shadow.$origin")
 }
 
 shadowJar {
     classifier = ''
     configurations = [project.configurations.shade]
-    relocate 'com.iwebpp.crypto', 'sciwhiz12.concord.shadow.com.iwebpp.crypto'
-    relocate 'org.json', 'sciwhiz12.concord.shadow.org.json'
-    relocate 'net.sf.trove4j', 'sciwhiz12.concord.shadow.net.sf.trove4j'
-    relocate 'gnu.trove', 'sciwhiz12.concord.shadow.gnu.trove'
+    relocate 'com.iwebpp.crypto'
+    relocate 'org.json'
+    relocate 'net.sf.trove4j'
+    relocate 'gnu.trove'
 
-    relocate 'com.neovisionaries.ws.client', 'sciwhiz12.concord.shadow.com.neovisionaries.ws.client'
-    relocate 'okio', 'sciwhiz12.concord.shadow.okio'
-    relocate 'okhttp3', 'sciwhiz12.concord.shadow.okhttp3'
+    relocate 'com.neovisionaries.ws.client'
+    relocate 'okio'
+    relocate 'okhttp3'
 
-    relocate 'org.intellij.lang.annotations', 'sciwhiz12.concord.shadow.org.intellij.lang.annotations'
-    relocate 'org.jetbrains.annotations', 'sciwhiz12.concord.shadow.org.jetbrains.annotations'
+    relocate 'org.intellij.lang.annotations'
+    relocate 'org.jetbrains.annotations'
 
-    relocate 'org.apache.commons.collections4', 'sciwhiz12.concord.shadow.org.apache.commons.collections4'
-    relocate 'org.slf4j', 'sciwhiz12.concord.shadow.slf4j'
-    relocate 'javax.annotation', 'sciwhiz12.concord.shadow.javax.annotation'
-    relocate 'com.fasterxml.jackson', 'sciwhiz12.concord.shadow.com.fasterxml.jackson'
+    relocate 'org.apache.commons.collections4'
+    relocate 'org.slf4j'
+    relocate 'javax.annotation'
+    relocate 'com.fasterxml.jackson'
 
-    relocate 'net.dv8tion.jda', 'sciwhiz12.concord.shadow.net.dv8tion.jda'
-    relocate 'club.minnced.discord.webhook', 'sciwhiz12.concord.shadow.club.minnced.discord.webhook'
+    relocate 'net.dv8tion.jda'
+    relocate 'club.minnced.discord.webhook'
     exclude 'META-INF/maven/**'
     exclude 'META-INF/proguard/**'
     exclude 'META-INF/services/**'
@@ -170,7 +174,7 @@ shadowJar {
     exclude 'module-info.class'
 }
 
-reobf {
+ reobf {
     shadowJar {}
 }
 

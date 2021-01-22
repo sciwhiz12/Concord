@@ -1,4 +1,4 @@
-package sciwhiz12.concord;
+package tk.sciwhiz12.concord;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;

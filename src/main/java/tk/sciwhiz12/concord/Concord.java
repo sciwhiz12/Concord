@@ -1,4 +1,4 @@
-package sciwhiz12.concord;
+package tk.sciwhiz12.concord;
 
 import com.google.common.base.Strings;
 import net.dv8tion.jda.api.JDA;
@@ -19,7 +19,7 @@ import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.msg.Messaging;
 
 import java.util.EnumSet;
 import javax.security.auth.login.LoginException;
