@@ -1,10 +1,14 @@
 package tk.sciwhiz12.concord.util;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.event.HoverEvent;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 
@@ -50,6 +54,8 @@ public final class MessageUtil {
             Object obj = oldArgs[i];
             if (obj instanceof TranslationTextComponent) {
                 newArgs[i] = eagerTranslate((TranslationTextComponent) obj);
+            } else if (obj instanceof IFormattableTextComponent) {
+                newArgs[i] = eagerCheckStyle((IFormattableTextComponent) obj);
             } else {
                 newArgs[i] = oldArgs[i];
             }
@@ -57,7 +63,33 @@ public final class MessageUtil {
 
         TranslationTextComponent result =
             new TranslationTextComponent(LanguageMap.getInstance().func_230503_a_(component.getKey()), newArgs);
-        result.mergeStyle(component.getStyle());
-        return result;
+        result.setStyle(component.getStyle());
+
+        for (ITextComponent sibling : component.getSiblings()) {
+            if (sibling instanceof TranslationTextComponent) {
+                result.append(eagerTranslate((TranslationTextComponent) sibling));
+            } else if (sibling instanceof IFormattableTextComponent) {
+                result.append(eagerCheckStyle((IFormattableTextComponent) sibling));
+            } else {
+                result.append(sibling);
+            }
+        }
+
+        return eagerCheckStyle(result);
+    }
+
+    public static <Text extends IFormattableTextComponent> Text eagerCheckStyle(Text component) {
+        Style style = component.getStyle();
+        HoverEvent hover = style.getHoverEvent();
+        if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
+            ITextComponent hoverText = hover.getParameter(HoverEvent.Action.SHOW_TEXT);
+            if (hoverText instanceof TranslationTextComponent) {
+                style = style.setHoverEvent(
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, eagerTranslate((TranslationTextComponent) hoverText))
+                );
+            }
+        }
+        component.setStyle(style);
+        return component;
     }
 }
