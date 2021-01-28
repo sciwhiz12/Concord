@@ -54,12 +54,8 @@ public class ModPresenceTracker {
     }
 
     public static boolean isModPresent(@Nullable ServerPlayerEntity client) {
-        return client != null && !isVanillaClient(client)
+        return client != null
+            && NetworkHooks.getConnectionType(() -> client.connection.netManager) == ConnectionType.MODDED
             && CONCORD_CLIENTS_LIST.getOrDefault(client.getGameProfile().getId(), false);
-    }
-
-    // Copied from net.minecraftforge.server.command.TextComponentHelper#isVanillaClient
-    private static boolean isVanillaClient(ServerPlayerEntity client) {
-        return NetworkHooks.getConnectionType(() -> client.connection.netManager) == ConnectionType.VANILLA;
     }
 }

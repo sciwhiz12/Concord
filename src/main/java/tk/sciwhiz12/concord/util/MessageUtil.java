@@ -1,10 +1,12 @@
-package tk.sciwhiz12.concord;
+package tk.sciwhiz12.concord.util;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.ModPresenceTracker;
 
 import javax.annotation.Nullable;
 
@@ -32,10 +34,7 @@ public final class MessageUtil {
      */
     public static TextComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
         TranslationTextComponent text = new TranslationTextComponent(translation, args);
-        if (!lazyTranslate) {
-            return eagerTranslate(text);
-        }
-        return text;
+        return lazyTranslate ? text : eagerTranslate(text);
     }
 
     public static TextComponent createTranslation(@Nullable ServerPlayerEntity entity, String translationKey, Object... args) {

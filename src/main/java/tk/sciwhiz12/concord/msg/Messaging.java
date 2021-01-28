@@ -17,7 +17,7 @@ import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.MessageUtil;
+import tk.sciwhiz12.concord.util.MessageUtil;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 
 import java.util.List;

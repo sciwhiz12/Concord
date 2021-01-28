@@ -9,7 +9,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import tk.sciwhiz12.concord.Concord;
-import tk.sciwhiz12.concord.MessageUtil;
+import tk.sciwhiz12.concord.util.MessageUtil;
 
 import static net.minecraft.command.Commands.literal;
 import static net.minecraft.util.text.TextFormatting.GREEN;
