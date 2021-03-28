@@ -16,6 +16,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.common.util.Lazy;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.MessageUtil;
 import tk.sciwhiz12.concord.ModPresenceTracker;
@@ -84,7 +85,7 @@ public class Messaging {
     }
 
     public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {
-        TranslationTextComponent withIcons = null;
+        Lazy<TranslationTextComponent> withIcons = Lazy.of(() -> createMessage(true, member, message));
         TranslationTextComponent withoutIcons = createMessage(false, member, message);
 
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS;
@@ -95,13 +96,7 @@ public class Messaging {
         for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
             TextComponent sendingText;
             if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
-                TranslationTextComponent translate;
-                if (useIcons) {
-                    if (withIcons == null) withIcons = createMessage(true, member, message);
-                    translate = withIcons;
-                } else {
-                    translate = withoutIcons;
-                }
+                TranslationTextComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : MessageUtil.eagerTranslate(translate);
             } else {
                 sendingText = MessageUtil.eagerTranslate(withoutIcons);
