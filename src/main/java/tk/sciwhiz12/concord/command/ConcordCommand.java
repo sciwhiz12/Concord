@@ -49,7 +49,7 @@ public class ConcordCommand {
         if (Concord.isEnabled()) {
             Concord.disable();
         }
-        Concord.enable();
+        Concord.enable(source.getServer());
         return 1;
     }
 
@@ -60,7 +60,7 @@ public class ConcordCommand {
             return 1;
         }
         ctx.getSource().sendFeedback(createMessage(source, "command.concord.enable"), true);
-        Concord.enable();
+        Concord.enable(source.getServer());
         return 1;
     }
 

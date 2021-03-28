@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -49,7 +50,7 @@ public class Concord {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
             return;
         }
-        enable();
+        enable(event.getServer());
     }
 
     public void onServerStopping(FMLServerStoppingEvent event) {
@@ -76,7 +77,7 @@ public class Concord {
         BOT = null;
     }
 
-    public static void enable() {
+    public static void enable(MinecraftServer server) {
         if (isEnabled()) return;
         final String token = ConcordConfig.TOKEN;
         if (Strings.isNullOrEmpty(token)) {
@@ -100,7 +101,7 @@ public class Concord {
             .setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
             final JDA jda = jdaBuilder.build();
-            BOT = new ChatBot(jda);
+            BOT = new ChatBot(jda, server);
         } catch (LoginException e) {
             LOGGER.error("Error while trying to login to Discord; integration will not be enabled.", e);
         }

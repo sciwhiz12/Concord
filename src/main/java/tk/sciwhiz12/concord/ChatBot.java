@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Marker;
@@ -29,12 +30,14 @@ public class ChatBot extends ListenerAdapter {
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
 
     private final JDA discord;
+    private final MinecraftServer server;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
 
-    ChatBot(JDA discord) {
+    ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
+        this.server = server;
         discord.addEventListener(this);
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
@@ -43,6 +46,10 @@ public class ChatBot extends ListenerAdapter {
 
     public JDA getDiscord() {
         return discord;
+    }
+
+    public MinecraftServer getServer() {
+        return server;
     }
 
     @Override

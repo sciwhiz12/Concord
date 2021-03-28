@@ -28,9 +28,8 @@ public class MessageListener extends ListenerAdapter {
         if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID) &&
             event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID)) {
 
-            Messaging.sendToAllPlayers(ServerLifecycleHooks.getCurrentServer(), event.getMember(),
+            Messaging.sendToAllPlayers(bot.getServer(), event.getMember(),
                 event.getMessage().getContentDisplay());
-            // TODO: remove dependency on ServerLifecycleHooks
         }
     }
 
