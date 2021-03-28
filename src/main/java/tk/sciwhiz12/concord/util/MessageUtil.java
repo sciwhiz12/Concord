@@ -67,11 +67,11 @@ public final class MessageUtil {
 
         for (ITextComponent sibling : component.getSiblings()) {
             if (sibling instanceof TranslationTextComponent) {
-                result.append(eagerTranslate((TranslationTextComponent) sibling));
+                result.appendSibling(eagerTranslate((TranslationTextComponent) sibling));
             } else if (sibling instanceof IFormattableTextComponent) {
-                result.append(eagerCheckStyle((IFormattableTextComponent) sibling));
+                result.appendSibling(eagerCheckStyle((IFormattableTextComponent) sibling));
             } else {
-                result.append(sibling);
+                result.appendSibling(sibling);
             }
         }
 

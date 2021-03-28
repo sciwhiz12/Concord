@@ -60,11 +60,11 @@ public class Messaging {
             .filter(((Predicate<Role>) Role::isPublicRole).negate())
             .collect(Collectors.toList());
         if (!roles.isEmpty()) {
-            hover.appendString("\n").append(new TranslationTextComponent("chat.concord.hover.roles"));
+            hover.appendString("\n").appendSibling(new TranslationTextComponent("chat.concord.hover.roles"));
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
                 if (i != 0) hover.appendString(", "); // add joiner for more than one role
                 Role role = roles.get(i);
-                hover.append(new StringTextComponent(role.getName())
+                hover.appendSibling(new StringTextComponent(role.getName())
                     .modifyStyle(style -> style.setColor(Color.fromInt(role.getColorRaw())))
                 );
             }
