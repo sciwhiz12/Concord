@@ -19,7 +19,7 @@ public class StatusListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onServerStarted(FMLServerStartedEvent event) {
-        if (!ConcordConfig.SERVER_START) return;
+        if (!ConcordConfig.SERVER_START.get()) return;
 
         Messaging.sendToChannel(bot.getDiscord(),
             new TranslationTextComponent("message.concord.server.start").getString());
@@ -27,7 +27,7 @@ public class StatusListener {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     void onServerStopping(FMLServerStoppingEvent event) {
-        if (!ConcordConfig.SERVER_STOP) return;
+        if (!ConcordConfig.SERVER_STOP.get()) return;
 
         Messaging.sendToChannel(bot.getDiscord(),
             new TranslationTextComponent("message.concord.server.stop").getString());

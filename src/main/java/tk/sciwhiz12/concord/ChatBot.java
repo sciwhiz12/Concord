@@ -59,23 +59,23 @@ public class ChatBot extends ListenerAdapter {
         boolean satisfied = true;
         Concord.LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
         // Checking if specified guild and channel IDs are correct
-        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID);
+        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID.get());
         if (guild == null) {
             Concord.LOGGER.warn(BOT, "This bot is not connected to a guild with ID {}, as specified in the config.",
-                ConcordConfig.GUILD_ID);
+                ConcordConfig.GUILD_ID.get());
             Concord.LOGGER.warn(BOT, "This indicates either the bot was not invited to the guild, or a wrongly-typed guild ID.");
             satisfied = false;
 
         } else {
-            final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID);
+            final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID.get());
             if (channel == null) {
                 Concord.LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
-                    ConcordConfig.CHANNEL_ID);
+                    ConcordConfig.CHANNEL_ID.get());
                 satisfied = false;
 
             } else if (channel.getType() != ChannelType.TEXT) {
                 Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
-                    ConcordConfig.CHANNEL_ID, channel.getType());
+                    ConcordConfig.CHANNEL_ID.get(), channel.getType());
                 satisfied = false;
 
             } else { // Guild and channel IDs are correct, now to check permissions

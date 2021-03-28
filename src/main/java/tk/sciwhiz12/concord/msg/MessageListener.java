@@ -32,8 +32,8 @@ public class MessageListener extends ListenerAdapter {
         if (event.getAuthor().getIdLong() == bot.getDiscord().getSelfUser().getIdLong()) return;
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return; // TODO: maybe make this a config option
 
-        if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID) &&
-            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID)) {
+        if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID.get()) &&
+            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID.get())) {
 
             queuedMessages.add(new MessageEntry(event));
         }

@@ -43,7 +43,7 @@ public class Messaging {
         final IFormattableTextComponent statusText = new StringTextComponent("" + status.getIcon())
             .modifyStyle(style -> style.setColor(status.getColor()));
 
-        if (ConcordConfig.USE_CUSTOM_FONT && useIcons) {
+        if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
             ownerText.modifyStyle(style -> style.setFontId(ICONS_FONT));
             statusText.modifyStyle(style -> style.setFontId(ICONS_FONT));
         }
@@ -88,8 +88,8 @@ public class Messaging {
         Lazy<TranslationTextComponent> withIcons = Lazy.of(() -> createMessage(true, member, message));
         TranslationTextComponent withoutIcons = createMessage(false, member, message);
 
-        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS;
-        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT;
+        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
+        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
 
         server.sendMessage(withoutIcons, Util.DUMMY_UUID);
 
@@ -106,7 +106,7 @@ public class Messaging {
     }
 
     public static void sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID);
+        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
         if (channel != null) {
             channel.sendMessage(text).queue();
         }

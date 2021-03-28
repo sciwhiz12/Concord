@@ -46,7 +46,7 @@ public class Concord {
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
-        if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED) {
+        if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
             return;
         }
@@ -79,19 +79,19 @@ public class Concord {
 
     public static void enable(MinecraftServer server) {
         if (isEnabled()) return;
-        final String token = ConcordConfig.TOKEN;
+        final String token = ConcordConfig.TOKEN.get();
         if (Strings.isNullOrEmpty(token)) {
             LOGGER.warn("Bot token is not set in config; Discord integration will not be enabled.");
             return;
-        } else if (Strings.isNullOrEmpty(ConcordConfig.GUILD_ID)) {
+        } else if (Strings.isNullOrEmpty(ConcordConfig.GUILD_ID.get())) {
             LOGGER.warn("Guild ID is not set in config; Discord integration will not be enabled.");
             return;
-        } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID)) {
+        } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID.get())) {
             LOGGER.warn("Channel ID is not set in config; Discord integration will not be enabled.");
             return;
         }
         LOGGER.info("Initializing Discord integration.");
-        JDABuilder jdaBuilder = JDABuilder.createDefault(ConcordConfig.TOKEN)
+        JDABuilder jdaBuilder = JDABuilder.createDefault(token)
             .setChunkingFilter(ChunkingFilter.ALL)
             .setMemberCachePolicy(MemberCachePolicy.ONLINE)
             .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
