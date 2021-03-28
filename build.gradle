@@ -8,8 +8,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '4.0.4'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '6.1.0'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
