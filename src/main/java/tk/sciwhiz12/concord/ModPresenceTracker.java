@@ -22,10 +22,6 @@ import javax.annotation.Nullable;
  * @author SciWhiz12
  */
 public class ModPresenceTracker {
-    private static final Logger LOGGER = LogManager.getLogger();
-
-    static final WeakHashMap<UUID, Boolean> CONCORD_CLIENTS_LIST = new WeakHashMap<>();
-
     public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
     public static EventNetworkChannel CHANNEL;
 
@@ -36,26 +32,9 @@ public class ModPresenceTracker {
             .clientAcceptedVersions(version -> true)
             .serverAcceptedVersions(version -> true)
             .eventNetworkChannel();
-        CHANNEL.addListener(ModPresenceTracker::onChannelEvent);
-        MinecraftForge.EVENT_BUS.addListener(ModPresenceTracker::onPlayerLoggedOut);
-    }
-
-    static void onChannelEvent(NetworkEvent.ChannelRegistrationChangeEvent event) {
-        if (event.getRegistrationChangeType() != NetworkEvent.RegistrationChangeType.REGISTER) return;
-        ServerPlayerEntity client = event.getSource().get().getSender();
-        if (client != null && event.getSource().get().getDirection().getReceptionSide().isServer()) {
-            LOGGER.debug("Received channel registration change event for our channel; mod is present on client");
-            CONCORD_CLIENTS_LIST.put(client.getGameProfile().getId(), true);
-        }
-    }
-
-    static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        CONCORD_CLIENTS_LIST.remove(event.getPlayer().getGameProfile().getId());
     }
 
     public static boolean isModPresent(@Nullable ServerPlayerEntity client) {
-        return client != null
-            && NetworkHooks.getConnectionType(() -> client.connection.netManager) == ConnectionType.MODDED
-            && CONCORD_CLIENTS_LIST.getOrDefault(client.getGameProfile().getId(), false);
+        return client != null && CHANNEL.isRemotePresent(client.connection.getNetworkManager());
     }
 }

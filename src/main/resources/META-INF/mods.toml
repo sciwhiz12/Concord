@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[34,)"
+loaderVersion="[36,)"
 license="MIT License"
 
 [[mods]]
@@ -16,13 +16,13 @@ A Discord chat integration mod.
 [[dependencies.concord]]
     modId="forge"
     mandatory=true
-    versionRange="[34.1.0,)"
+    versionRange="[36.0.52,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.concord]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.3]"
+    versionRange="[1.16.5]"
     ordering="NONE"
     side="BOTH"
