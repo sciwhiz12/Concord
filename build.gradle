@@ -19,11 +19,12 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply from: 'version.gradle'
 
-def mod_version = getVersion()
-version = "${mc_version}-${mod_version}"
 group = 'tk.sciwhiz12'
-archivesBaseName = 'concord'
+archivesBaseName = "concord"
+def mod_version = versionInfo["version"] ?: "unknown"
+version = "${mod_version}"
 
 println("Mod version: ${mod_version}")
 println('Java: ' + System.getProperty('java.version') + '; JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + '); Arch: ' + System.getProperty('os.arch'))
@@ -138,6 +139,8 @@ jar {
         ] as LinkedHashMap)
     }
     includeEmptyDirs false
+    archivesBaseName = "concord-${mc_version}"
+    version = mod_version
 }
 
 def relocate(origin) {
@@ -192,23 +195,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
 }
 
-String getVersion() {
-    try {
-        final String branchName = grgit.branch.current().name
-        boolean non_main = !branchName.matches("\\d+.\\d+.x")
-        if (non_main) println("Currently on non-main branch: " + branchName)
-        String ver = grgit.describe(commit: grgit.head(), longDescr: non_main, tags: true);
-        if (ver != null) {
-            if (non_main) ver = ver + "@" + branchName
-            if (ver.startsWith("v")) return ver.substring(1)
-            return ver
-        }
-    } catch (Exception e) {
-        logger.error("Error while getting version information: {}", e)
-    }
-    return "unknown"
-}
-
 artifacts {
     archives sourcesJar
 }
@@ -216,11 +202,13 @@ artifacts {
 publishing {
     publications {
         rebofJar(MavenPublication) {
-            artifactId = archivesBaseName
+            artifactId = "concord"
+            version = "${mod_version}-${mc_version}"
             artifact jar
         }
         srcJar(MavenPublication) {
-            artifactId = archivesBaseName
+            artifactId = "concord"
+            version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["classifiers"]}"
             artifact sourcesJar
         }
     }
