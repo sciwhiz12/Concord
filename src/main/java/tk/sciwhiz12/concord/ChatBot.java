@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
@@ -22,7 +23,7 @@ import tk.sciwhiz12.concord.msg.StatusListener;
 
 import java.util.EnumSet;
 
-public class ChatBot {
+public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerManager.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
@@ -34,22 +35,18 @@ public class ChatBot {
 
     ChatBot(JDA discord) {
         this.discord = discord;
-        discord.setEventManager(new AnnotatedEventManager());
         discord.addEventListener(this);
-        discord.addEventListener(msgListener = new MessageListener(this));
-        discord.addEventListener(playerListener = new PlayerListener(this));
-        discord.addEventListener(statusListener = new StatusListener(this));
-        MinecraftForge.EVENT_BUS.register(msgListener);
-        MinecraftForge.EVENT_BUS.register(playerListener);
-        MinecraftForge.EVENT_BUS.register(statusListener);
+        msgListener = new MessageListener(this);
+        playerListener = new PlayerListener(this);
+        statusListener = new StatusListener(this);
     }
 
     public JDA getDiscord() {
         return discord;
     }
 
-    @SubscribeEvent
-    void onReady(ReadyEvent event) {
+    @Override
+    public void onReady(ReadyEvent event) {
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));
 
         boolean satisfied = true;

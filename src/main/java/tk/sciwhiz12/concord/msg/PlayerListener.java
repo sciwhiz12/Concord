@@ -3,6 +3,7 @@ package tk.sciwhiz12.concord.msg;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -16,6 +17,7 @@ public class PlayerListener {
 
     public PlayerListener(ChatBot bot) {
         this.bot = bot;
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

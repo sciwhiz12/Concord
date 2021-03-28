@@ -1,6 +1,7 @@
 package tk.sciwhiz12.concord.msg;
 
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
@@ -13,6 +14,7 @@ public class StatusListener {
 
     public StatusListener(ChatBot bot) {
         this.bot = bot;
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
