@@ -195,24 +195,23 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
 }
 
-artifacts {
-    archives sourcesJar
-}
-
 publishing {
     publications {
-        rebofJar(MavenPublication) {
+        maven(MavenPublication) {
             artifactId = "concord"
-            version = "${mod_version}-${mc_version}"
-            artifact jar
-        }
-        srcJar(MavenPublication) {
-            artifactId = "concord"
-            version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["classifiers"]}"
+            version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["snapshot"] ? "-SNAPSHOT" : ""}"
+            artifact(jar) {
+                classifier = ""
+            }
+            artifact(shadowJar) {
+                classifier = "shadow"
+            }
             artifact sourcesJar
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            url = "file://" + file("repo").getAbsolutePath() + "/"
+        }
     }
 }
