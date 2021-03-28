@@ -24,5 +24,6 @@
   "message.concord.player.leave": "**%s** _left the game._",
   "message.concord.player.advancement.task": "**%s** has made the advancement **%s**\n_%s_",
   "message.concord.player.advancement.challenge": "**%s** has completed the challenge **%s**\n_%s_",
-  "message.concord.player.advancement.goal": "**%s** has reached the goal **%s**\n_%s_"
+  "message.concord.player.advancement.goal": "**%s** has reached the goal **%s**\n_%s_",
+  "message.concord.command.say": "[**%s**] %s"
 }
