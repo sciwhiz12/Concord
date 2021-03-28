@@ -4,19 +4,18 @@ buildscript {
             name = "MinecraftForge"
             url = 'https://files.minecraftforge.net/maven'
         }
-        jcenter()
-        mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
-        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '6.1.0'
     }
 }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
 apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.johnrengelman.shadow'
 apply from: 'version.gradle'
 
 group = 'tk.sciwhiz12'
