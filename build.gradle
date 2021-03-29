@@ -95,6 +95,7 @@ minecraft {
 
 configurations {
     dataImplementation.extendsFrom implementation
+    dataCompileClasspath.extendsFrom compileClasspath
     shade
 }
 
@@ -113,7 +114,6 @@ dependencies {
     implementation group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
-    dataCompileClasspath sourceSets.main.compileClasspath
 }
 
 jar {
@@ -132,7 +132,7 @@ jar {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
     archivesBaseName = "concord-${mc_version}"
-    version = mod_version
+    archiveVersion = mod_version
 
     archiveClassifier = 'lite'
     finalizedBy 'reobfJar'
