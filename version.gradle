@@ -1,0 +1,65 @@
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.PersonIdent
+import org.eclipse.jgit.revwalk.RevCommit
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r"
+    }
+}
+
+ext {
+    versionInfo = [] as HashMap
+}
+
+Git git = null
+try {
+    git = Git.wrap(new FileRepositoryBuilder().readEnvironment().findGitDir(project.projectDir).setMustExist(true).build())
+    Iterator<RevCommit> it = git.log().call().iterator()
+    if (it.hasNext()) {
+        RevCommit commit = it.next() // HEAD commit
+        PersonIdent ident = commit.committerIdent
+        OffsetDateTime date = OffsetDateTime.ofInstant(ident.when.toInstant(), ident.timeZone.toZoneId())
+        versionInfo.put("timestamp", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(date))
+        versionInfo.put("hash", commit.name)
+    }
+
+    def describe = git.describe().setTags(true).setLong(true).call()
+
+    def rawVersion = "0.0.0"
+    def classifiers = versionInfo.containsKey("hash") ? "+" + versionInfo.get("hash") : ""
+    def snapshot = true
+    if (describe != null) {
+        def split = describe.split("-")
+        rawVersion = split[0].startsWith("v") ? split[0].substring(1) : split[0]
+        int commitCount = Integer.parseInt(split[1])
+        boolean dirty = !git.status().call().clean
+        if (commitCount == 0) {
+            snapshot = dirty
+            classifiers = null
+        } else {
+            classifiers = "+" + split[2] + (dirty ? ".dirty" : "")
+        }
+    }
+
+    if (rawVersion != null) {
+        versionInfo.put("raw_version", rawVersion)
+        versionInfo.put("snapshot", snapshot)
+        if (snapshot) classifiers = "-SNAPSHOT" + (classifiers ?: "")
+        if (classifiers != null) versionInfo.put("classifiers", classifiers)
+        versionInfo.put("version", rawVersion + (classifiers ?: ""))
+    }
+} catch (Exception e) {
+    println(e)
+    logger.info("Exception while getting version info from Git", e)
+} finally {
+    git?.close()
+}

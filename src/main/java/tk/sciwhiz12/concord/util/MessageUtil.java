@@ -15,17 +15,18 @@ import tk.sciwhiz12.concord.ModPresenceTracker;
 import javax.annotation.Nullable;
 
 public final class MessageUtil {
-    private MessageUtil() {} // Prevent instantiation
+    private MessageUtil() {
+    } // Prevent instantiation
 
     /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */
 
     /**
      * Creates a {@link TextComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
-     *
+     * <p>
      * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link StringTextComponent} with the message
      * specified by the translation key being eagerly evaluated now. This text component is safe to send to clients, as it does
      * not use a translation key.
-     *
+     * <p>
      * If {@code lazyTranslate} is {@code true}, then the returned value is a {@link TranslationTextComponent} with the
      * translation key and given arguments passed into it, and the contents of the text component is lazily evaluated (on first
      * use of the text component).
@@ -33,7 +34,6 @@ public final class MessageUtil {
      * @param lazyTranslate Whether to lazily translate the message
      * @param translation   The translation key
      * @param args          Extra arguments to the message
-     *
      * @return a {@link TextComponent} with the specified message
      */
     public static TextComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
@@ -42,7 +42,7 @@ public final class MessageUtil {
     }
 
     public static TextComponent createTranslation(@Nullable ServerPlayerEntity entity, String translationKey, Object... args) {
-        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS || ModPresenceTracker.isModPresent(entity),
+        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
             translationKey, args);
     }
 
@@ -67,11 +67,11 @@ public final class MessageUtil {
 
         for (ITextComponent sibling : component.getSiblings()) {
             if (sibling instanceof TranslationTextComponent) {
-                result.append(eagerTranslate((TranslationTextComponent) sibling));
+                result.appendSibling(eagerTranslate((TranslationTextComponent) sibling));
             } else if (sibling instanceof IFormattableTextComponent) {
-                result.append(eagerCheckStyle((IFormattableTextComponent) sibling));
+                result.appendSibling(eagerCheckStyle((IFormattableTextComponent) sibling));
             } else {
-                result.append(sibling);
+                result.appendSibling(sibling);
             }
         }
 

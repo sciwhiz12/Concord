@@ -9,8 +9,9 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
-import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Marker;
@@ -20,58 +21,64 @@ import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
 
+import java.util.Collections;
 import java.util.EnumSet;
 
-public class ChatBot {
+public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerManager.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
 
     private final JDA discord;
+    private final MinecraftServer server;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
 
-    ChatBot(JDA discord) {
+    ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
-        discord.setEventManager(new AnnotatedEventManager());
+        this.server = server;
         discord.addEventListener(this);
-        discord.addEventListener(msgListener = new MessageListener(this));
-        discord.addEventListener(playerListener = new PlayerListener(this));
-        discord.addEventListener(statusListener = new StatusListener(this));
-        MinecraftForge.EVENT_BUS.register(msgListener);
-        MinecraftForge.EVENT_BUS.register(playerListener);
-        MinecraftForge.EVENT_BUS.register(statusListener);
+        msgListener = new MessageListener(this);
+        playerListener = new PlayerListener(this);
+        statusListener = new StatusListener(this);
+
+        // Prevent any mentions not explicitly specified
+        MessageAction.setDefaultMentions(Collections.emptySet());
     }
 
     public JDA getDiscord() {
         return discord;
     }
 
-    @SubscribeEvent
-    void onReady(ReadyEvent event) {
+    public MinecraftServer getServer() {
+        return server;
+    }
+
+    @Override
+    public void onReady(ReadyEvent event) {
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));
 
         boolean satisfied = true;
         Concord.LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
         // Checking if specified guild and channel IDs are correct
-        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID);
+        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID.get());
         if (guild == null) {
             Concord.LOGGER.warn(BOT, "This bot is not connected to a guild with ID {}, as specified in the config.",
-                ConcordConfig.GUILD_ID);
+                ConcordConfig.GUILD_ID.get());
             Concord.LOGGER.warn(BOT, "This indicates either the bot was not invited to the guild, or a wrongly-typed guild ID.");
             satisfied = false;
 
         } else {
-            final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID);
+            final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID.get());
             if (channel == null) {
                 Concord.LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
-                    ConcordConfig.CHANNEL_ID);
+                    ConcordConfig.CHANNEL_ID.get());
                 satisfied = false;
 
             } else if (channel.getType() != ChannelType.TEXT) {
                 Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
-                    ConcordConfig.CHANNEL_ID, channel.getType());
+                    ConcordConfig.CHANNEL_ID.get(), channel.getType());
                 satisfied = false;
 
             } else { // Guild and channel IDs are correct, now to check permissions
@@ -95,7 +102,6 @@ public class ChatBot {
         Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
-        Concord.LOGGER.info(BOT, "Invite URL for bot: {}", discord.getInviteUrl(REQUIRED_PERMISSIONS));
 
         Messaging.sendToChannel(discord, new TranslationTextComponent("message.concord.bot.start").getString());
     }

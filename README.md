@@ -1,8 +1,6 @@
-# Concord
+# Concord [![](http://cf.way2muchnoise.eu/418010.svg?badge_style=flat)](https://www.curseforge.com/minecraft/mc-mods/concord)
 
 > _A Discord chat integration mod, for servers._
-
-[![CurseForge](https://cf.way2muchnoise.eu/concord.svg?badge_style=flat)](https://www.curseforge.com/minecraft/mc-mods/concord)
 
 Discord chat bridging between a Minecraft server and a Discord text channel.
  - Compatibility with vanilla clients 

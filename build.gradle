@@ -4,26 +4,24 @@ buildscript {
             name = "MinecraftForge"
             url = 'https://files.minecraftforge.net/maven'
         }
-        jcenter()
-        mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath group: 'org.ajoberstar.grgit', name: 'grgit-gradle', 'version': '4.0.2'
-        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '4.0.4'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
     }
 }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
 apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.ajoberstar.grgit'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply from: 'version.gradle'
 
-def mod_version = getVersion()
-version = "${mc_version}-${mod_version}"
 group = 'tk.sciwhiz12'
-archivesBaseName = 'concord'
+archivesBaseName = "concord"
+def mod_version = versionInfo["version"] ?: "unknown"
+version = "${mod_version}"
 
 println("Mod version: ${mod_version}")
 println('Java: ' + System.getProperty('java.version') + '; JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + '); Arch: ' + System.getProperty('os.arch'))
@@ -38,7 +36,10 @@ sourceSets {
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 repositories {
-    jcenter()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
     mavenCentral()
 }
 
@@ -115,15 +116,6 @@ dependencies {
     dataCompileClasspath sourceSets.main.compileClasspath
 }
 
-def commit_id = "unknown"
-def git_timestamp = "unknown"
-try {
-    commit_id = grgit.head().id
-    def datetime = grgit.head().dateTime
-    git_timestamp = datetime.toLocalDateTime().toString() + datetime.getOffset().toString().replace(':', '');
-} catch (Exception e) {
-    logger.error("Error while trying to get commit info: {}", e)
-}
 jar {
     manifest {
         attributes([
@@ -132,12 +124,19 @@ jar {
                 "Implementation-Title"  : project.name,
                 "Implementation-Version": "${mod_version}",
                 "Implementation-Vendor" : "sciwhiz12",
-                "Build-Timestamp"       : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "Git-Commit"            : commit_id,
-                "Git-Commit-Timestamp"  : git_timestamp
+                "Git-Commit"            : versionInfo["hash"] ?: "0000000000000000000000000000000000000000",
+                "Git-Commit-Timestamp"  : versionInfo["timestamp"] ?: "1980-01-01T00:00:00+00:00"
         ] as LinkedHashMap)
     }
     includeEmptyDirs false
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    archivesBaseName = "concord-${mc_version}"
+    version = mod_version
+
+    archiveClassifier = 'lite'
+    finalizedBy 'reobfJar'
+    finalizedBy 'sourcesJar'
 }
 
 def relocate(origin) {
@@ -145,7 +144,9 @@ def relocate(origin) {
 }
 
 shadowJar {
-    classifier = ''
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    archiveClassifier = ''
     configurations = [project.configurations.shade]
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
@@ -172,59 +173,46 @@ shadowJar {
     exclude 'META-INF/LICENSE*'
     exclude 'META-INF/NOTICE*'
     exclude 'module-info.class'
-}
 
- reobf {
-    shadowJar {}
-}
-
-jar {
-    classifier = 'lite'
-    finalizedBy 'reobfJar'
-    finalizedBy 'sourcesJar'
     finalizedBy 'reobfShadowJar'
-}
 
-build.dependsOn('reobfShadowJar')
+    assemble.dependsOn shadowJar
+}
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    archiveClassifier = 'sources'
 }
 
-String getVersion() {
-    try {
-        final String branchName = grgit.branch.current().name
-        boolean non_main = !branchName.matches("\\d+.\\d+.x")
-        if (non_main) println("Currently on non-main branch: " + branchName)
-        String ver = grgit.describe(commit: grgit.head(), longDescr: non_main, tags: true);
-        if (ver != null) {
-            if (non_main) ver = ver + "@" + branchName
-            if (ver.startsWith("v")) return ver.substring(1)
-            return ver
-        }
-    } catch (Exception e) {
-        logger.error("Error while getting version information: {}", e)
-    }
-    return "unknown"
+reobf {
+    shadowJar {}
 }
 
-artifacts {
-    archives sourcesJar
+tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
+    String[] args = getArgs()
+    args += "--stable"
+    setArgs(args)
 }
 
 publishing {
     publications {
-        rebofJar(MavenPublication) {
-            artifactId = archivesBaseName
-            artifact jar
-        }
-        srcJar(MavenPublication) {
-            artifactId = archivesBaseName
+        maven(MavenPublication) {
+            artifactId = "concord"
+            version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["snapshot"] ? "-SNAPSHOT" : ""}"
+            artifact(jar) {
+                classifier = ""
+            }
+            artifact(shadowJar) {
+                classifier = "shadow"
+            }
             artifact sourcesJar
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            url = "file://" + file("repo").getAbsolutePath() + "/"
+        }
     }
 }

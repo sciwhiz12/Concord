@@ -2,6 +2,7 @@ package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -16,10 +17,14 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.common.util.Lazy;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.util.MessageUtil;
 import tk.sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.util.MessageUtil;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -42,7 +47,7 @@ public class Messaging {
         final IFormattableTextComponent statusText = new StringTextComponent("" + status.getIcon())
             .modifyStyle(style -> style.setColor(status.getColor()));
 
-        if (ConcordConfig.USE_CUSTOM_FONT && useIcons) {
+        if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
             ownerText.modifyStyle(style -> style.setFontId(ICONS_FONT));
             statusText.modifyStyle(style -> style.setFontId(ICONS_FONT));
         }
@@ -60,11 +65,11 @@ public class Messaging {
             .filter(((Predicate<Role>) Role::isPublicRole).negate())
             .collect(Collectors.toList());
         if (!roles.isEmpty()) {
-            hover.appendString("\n").append(new TranslationTextComponent("chat.concord.hover.roles"));
+            hover.appendString("\n").appendSibling(new TranslationTextComponent("chat.concord.hover.roles"));
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
                 if (i != 0) hover.appendString(", "); // add joiner for more than one role
                 Role role = roles.get(i);
-                hover.append(new StringTextComponent(role.getName())
+                hover.appendSibling(new StringTextComponent(role.getName())
                     .modifyStyle(style -> style.setColor(Color.fromInt(role.getColorRaw())))
                 );
             }
@@ -84,24 +89,18 @@ public class Messaging {
     }
 
     public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {
-        TranslationTextComponent withIcons = null;
+        Lazy<TranslationTextComponent> withIcons = Lazy.of(() -> createMessage(true, member, message));
         TranslationTextComponent withoutIcons = createMessage(false, member, message);
 
-        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS;
-        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT;
+        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
+        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
 
         server.sendMessage(withoutIcons, Util.DUMMY_UUID);
 
         for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
             TextComponent sendingText;
             if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
-                TranslationTextComponent translate;
-                if (useIcons) {
-                    if (withIcons == null) withIcons = createMessage(true, member, message);
-                    translate = withIcons;
-                } else {
-                    translate = withoutIcons;
-                }
+                TranslationTextComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : MessageUtil.eagerTranslate(translate);
             } else {
                 sendingText = MessageUtil.eagerTranslate(withoutIcons);
@@ -111,9 +110,23 @@ public class Messaging {
     }
 
     public static void sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID);
+        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
         if (channel != null) {
-            channel.sendMessage(text).queue();
+            Collection<Message.MentionType> allowedMentions = Collections.emptySet();
+            if (ConcordConfig.ALLOW_MENTIONS.get()) {
+                allowedMentions = EnumSet.noneOf(Message.MentionType.class);
+                if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.EVERYONE);
+                    allowedMentions.add(Message.MentionType.HERE);
+                }
+                if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.USER);
+                }
+                if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.ROLE);
+                }
+            }
+            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
         }
     }
 }
