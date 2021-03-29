@@ -8,8 +8,6 @@ import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tk.sciwhiz12.concord.Concord;
@@ -20,12 +18,10 @@ import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
 import static tk.sciwhiz12.concord.Concord.BOT;
 
-@Mod.EventBusSubscriber(modid = Concord.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SayCommandHook {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    @SubscribeEvent
-    public static void registerCommands(RegisterCommandsEvent event) {
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
         if (!ConcordConfig.SAY_COMMAND_HOOK.get()) return;
 
         LOGGER.debug("Hooking into /say command");

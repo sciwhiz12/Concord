@@ -22,6 +22,8 @@ import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tk.sciwhiz12.concord.command.ConcordCommand;
+import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
 
 import javax.security.auth.login.LoginException;
@@ -43,6 +45,8 @@ public class Concord {
 
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
+        MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
     }
 
     public void onServerStarting(FMLServerStartingEvent event) {
