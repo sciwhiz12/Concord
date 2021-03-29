@@ -37,13 +37,21 @@ public class SayCommandHook {
                     TranslationTextComponent text = new TranslationTextComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
                     Entity entity = ctx.getSource().getEntity();
                     if (entity != null) {
-                        if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                            Messaging.sendToChannel(BOT.getDiscord(), text.getString());
+                        try {
+                            if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
+                                Messaging.sendToChannel(BOT.getDiscord(), text.getString());
+                            }
+                        } catch (Exception e) {
+                            LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
                         }
                         ctx.getSource().getServer().getPlayerList().func_232641_a_(text, ChatType.CHAT, entity.getUniqueID());
                     } else {
-                        if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                            Messaging.sendToChannel(BOT.getDiscord(), new TranslationTextComponent("message.concord.command.say", ctx.getSource().getDisplayName(), message).getString());
+                        try {
+                            if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
+                                Messaging.sendToChannel(BOT.getDiscord(), new TranslationTextComponent("message.concord.command.say", ctx.getSource().getDisplayName(), message).getString());
+                            }
+                        } catch (Exception e) {
+                            LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
                         }
                         ctx.getSource().getServer().getPlayerList().func_232641_a_(text, ChatType.SYSTEM, Util.DUMMY_UUID);
                     }
