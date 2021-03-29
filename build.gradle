@@ -124,12 +124,13 @@ jar {
                 "Implementation-Title"  : project.name,
                 "Implementation-Version": "${mod_version}",
                 "Implementation-Vendor" : "sciwhiz12",
-                "Build-Timestamp"       : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 "Git-Commit"            : versionInfo["hash"] ?: "0000000000000000000000000000000000000000",
                 "Git-Commit-Timestamp"  : versionInfo["timestamp"] ?: "1980-01-01T00:00:00+00:00"
         ] as LinkedHashMap)
     }
     includeEmptyDirs false
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     archivesBaseName = "concord-${mc_version}"
     version = mod_version
 
@@ -143,6 +144,8 @@ def relocate(origin) {
 }
 
 shadowJar {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     archiveClassifier = ''
     configurations = [project.configurations.shade]
     relocate 'com.iwebpp.crypto'
@@ -178,11 +181,19 @@ shadowJar {
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     archiveClassifier = 'sources'
 }
 
 reobf {
     shadowJar {}
+}
+
+tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
+    String[] args = getArgs()
+    args += "--stable"
+    setArgs(args)
 }
 
 publishing {
