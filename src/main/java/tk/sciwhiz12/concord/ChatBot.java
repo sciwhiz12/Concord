@@ -9,9 +9,8 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.hooks.AnnotatedEventManager;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
@@ -22,6 +21,7 @@ import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
 
+import java.util.Collections;
 import java.util.EnumSet;
 
 public class ChatBot extends ListenerAdapter {
@@ -42,6 +42,9 @@ public class ChatBot extends ListenerAdapter {
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+
+        // Prevent any mentions not explicitly specified
+        MessageAction.setDefaultMentions(Collections.emptySet());
     }
 
     public JDA getDiscord() {

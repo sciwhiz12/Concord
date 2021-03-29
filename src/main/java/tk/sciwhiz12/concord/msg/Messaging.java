@@ -2,6 +2,7 @@ package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -21,6 +22,9 @@ import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.MessageUtil;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -108,7 +112,21 @@ public class Messaging {
     public static void sendToChannel(JDA discord, CharSequence text) {
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
         if (channel != null) {
-            channel.sendMessage(text).queue();
+            Collection<Message.MentionType> allowedMentions = Collections.emptySet();
+            if (ConcordConfig.ALLOW_MENTIONS.get()) {
+                allowedMentions = EnumSet.noneOf(Message.MentionType.class);
+                if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.EVERYONE);
+                    allowedMentions.add(Message.MentionType.HERE);
+                }
+                if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.USER);
+                }
+                if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+                    allowedMentions.add(Message.MentionType.ROLE);
+                }
+            }
+            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
         }
     }
 }

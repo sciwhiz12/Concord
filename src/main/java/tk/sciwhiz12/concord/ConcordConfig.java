@@ -17,6 +17,11 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
 
+    public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_USER_MENTIONS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_ROLE_MENTIONS;
+
     public static final ForgeConfigSpec.BooleanValue SERVER_START;
     public static final ForgeConfigSpec.BooleanValue SERVER_STOP;
     public static final ForgeConfigSpec.BooleanValue BOT_START;
@@ -79,6 +84,28 @@ public class ConcordConfig {
                     "installed.",
                 "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("lazy_translate", true);
+
+            builder.pop();
+        }
+
+        {
+            builder.comment("Mention settings",
+                "Settings for when messages from Concord that contain mentions should cause pings.",
+                "These are only bot-side settings; permissions on the bot user may prevent certain mentions from pinging.")
+                .push("mentions");
+
+            ALLOW_MENTIONS = builder.comment("Allow mentions to cause pings.",
+                "Disabling this setting effectively disables all other settings in this category.")
+                .define("allow_mentions", true);
+
+            ALLOW_PUBLIC_MENTIONS = builder.comment("Allow @everyone and @here mentions to cause pings.")
+                .define("allow_public_mentions", false);
+
+            ALLOW_USER_MENTIONS = builder.comment("Allow user mentions to cause pings.")
+                .define("allow_user_mentions", true);
+
+            ALLOW_ROLE_MENTIONS = builder.comment("Allow role mentions to cause pings.")
+                .define("allow_role_mentions", true);
 
             builder.pop();
         }
