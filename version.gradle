@@ -44,6 +44,7 @@ try {
         boolean dirty = !git.status().call().clean
         if (commitCount == 0) {
             snapshot = dirty
+            classifiers = null
         } else {
             classifiers = "+" + split[2] + (dirty ? ".dirty" : "")
         }
