@@ -24,8 +24,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tk.sciwhiz12.concord.msg.Messaging;
 
-import java.util.EnumSet;
 import javax.security.auth.login.LoginException;
+import java.util.EnumSet;
 
 @Mod(Concord.MODID)
 public class Concord {

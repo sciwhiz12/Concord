@@ -19,8 +19,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.common.util.Lazy;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.util.MessageUtil;
 import tk.sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.util.MessageUtil;
 
 import java.util.Collection;
 import java.util.Collections;
