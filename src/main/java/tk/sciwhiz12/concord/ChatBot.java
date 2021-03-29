@@ -102,7 +102,6 @@ public class ChatBot extends ListenerAdapter {
         Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
-        Concord.LOGGER.info(BOT, "Invite URL for bot: {}", discord.getInviteUrl(REQUIRED_PERMISSIONS));
 
         Messaging.sendToChannel(discord, new TranslationTextComponent("message.concord.bot.start").getString());
     }
