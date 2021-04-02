@@ -14,8 +14,8 @@ import tk.sciwhiz12.concord.ModPresenceTracker;
 
 import javax.annotation.Nullable;
 
-public final class MessageUtil {
-    private MessageUtil() {
+public final class TranslationUtil {
+    private TranslationUtil() {
     } // Prevent instantiation
 
     /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */

@@ -7,7 +7,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
-import tk.sciwhiz12.concord.util.MessageUtil;
+import tk.sciwhiz12.concord.util.TranslationUtil;
 
 import static net.minecraft.command.Commands.literal;
 import static net.minecraft.util.text.TextFormatting.GREEN;
@@ -36,7 +36,7 @@ public class ConcordCommand {
     }
 
     private static TextComponent createMessage(CommandSource source, String translation, Object... args) {
-        return MessageUtil.createTranslation((ServerPlayerEntity) source.getEntity(), translation, args);
+        return TranslationUtil.createTranslation((ServerPlayerEntity) source.getEntity(), translation, args);
     }
 
     private static int reload(CommandContext<CommandSource> ctx) {

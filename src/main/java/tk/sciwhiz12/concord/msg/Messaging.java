@@ -20,7 +20,7 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.common.util.Lazy;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
-import tk.sciwhiz12.concord.util.MessageUtil;
+import tk.sciwhiz12.concord.util.TranslationUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -101,9 +101,9 @@ public class Messaging {
             TextComponent sendingText;
             if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
                 TranslationTextComponent translate = useIcons ? withIcons.get() : withoutIcons;
-                sendingText = lazyTranslate ? translate : MessageUtil.eagerTranslate(translate);
+                sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
             } else {
-                sendingText = MessageUtil.eagerTranslate(withoutIcons);
+                sendingText = TranslationUtil.eagerTranslate(withoutIcons);
             }
             player.connection.sendPacket(new SChatPacket(sendingText, ChatType.SYSTEM, Util.DUMMY_UUID));
         }
