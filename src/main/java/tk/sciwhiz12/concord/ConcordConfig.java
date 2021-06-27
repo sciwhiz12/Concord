@@ -30,6 +30,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue PLAYER_JOIN;
     public static final ForgeConfigSpec.BooleanValue PLAYER_LEAVE;
     public static final ForgeConfigSpec.BooleanValue PLAYER_DEATH;
+    public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GAMERULE;
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_TASK;
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_CHALLENGE;
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GOAL;
@@ -139,6 +140,10 @@ public class ConcordConfig {
                 "Translation key: message.concord.player.death")
                 .define("player.death", true);
 
+            PLAYER_ADV_GAMERULE = builder.comment("Whether to respect the `announceAdvancements` gamerule",
+                "If true, then the other advancement notifications settings only apply if the gamerule is true.",
+                "If false, the advancement notifications settings always apply.")
+                .define("player.adv.respect_gamerule", true);
             PLAYER_ADV_TASK = builder.comment("Player completed an normal advancement",
                 "Translation key: message.concord.player.advancement.task")
                 .define("player.adv.task", true);

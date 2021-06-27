@@ -3,6 +3,8 @@ package tk.sciwhiz12.concord.msg;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
@@ -56,7 +58,11 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onAdvancement(AdvancementEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
+        World world = event.getEntity().getCommandSenderWorld();
+        if (world.isClientSide()) return;
+
+        if (ConcordConfig.PLAYER_ADV_GAMERULE.get() && !world.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS))
+            return;
 
         final DisplayInfo info = event.getAdvancement().getDisplay();
         if (info != null && info.shouldAnnounceChat()) {
