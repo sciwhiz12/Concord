@@ -23,7 +23,7 @@ public enum MemberStatus {
     MemberStatus(OnlineStatus discordStatus, String translationKey, int colorHex, char icon) {
         this.discordStatus = discordStatus;
         this.translationKey = translationKey;
-        this.color = Color.fromInt(colorHex);
+        this.color = Color.fromRgb(colorHex);
         this.icon = icon;
     }
 

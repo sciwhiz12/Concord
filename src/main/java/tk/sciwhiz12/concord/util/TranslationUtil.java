@@ -47,7 +47,7 @@ public final class TranslationUtil {
     }
 
     public static TextComponent eagerTranslate(final TranslationTextComponent component) {
-        Object[] oldArgs = component.getFormatArgs();
+        Object[] oldArgs = component.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
         for (int i = 0; i < oldArgs.length; i++) {
@@ -62,16 +62,16 @@ public final class TranslationUtil {
         }
 
         TranslationTextComponent result =
-            new TranslationTextComponent(LanguageMap.getInstance().func_230503_a_(component.getKey()), newArgs);
+            new TranslationTextComponent(LanguageMap.getInstance().getOrDefault(component.getKey()), newArgs);
         result.setStyle(component.getStyle());
 
         for (ITextComponent sibling : component.getSiblings()) {
             if (sibling instanceof TranslationTextComponent) {
-                result.appendSibling(eagerTranslate((TranslationTextComponent) sibling));
+                result.append(eagerTranslate((TranslationTextComponent) sibling));
             } else if (sibling instanceof IFormattableTextComponent) {
-                result.appendSibling(eagerCheckStyle((IFormattableTextComponent) sibling));
+                result.append(eagerCheckStyle((IFormattableTextComponent) sibling));
             } else {
-                result.appendSibling(sibling);
+                result.append(sibling);
             }
         }
 
@@ -82,9 +82,9 @@ public final class TranslationUtil {
         Style style = component.getStyle();
         HoverEvent hover = style.getHoverEvent();
         if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
-            ITextComponent hoverText = hover.getParameter(HoverEvent.Action.SHOW_TEXT);
+            ITextComponent hoverText = hover.getValue(HoverEvent.Action.SHOW_TEXT);
             if (hoverText instanceof TranslationTextComponent) {
-                style = style.setHoverEvent(
+                style = style.withHoverEvent(
                     new HoverEvent(HoverEvent.Action.SHOW_TEXT, eagerTranslate((TranslationTextComponent) hoverText))
                 );
             }

@@ -35,42 +35,42 @@ import static tk.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
-    public static final Color CROWN_COLOR = Color.fromInt(0xfaa61a);
+    public static final Color CROWN_COLOR = Color.fromRgb(0xfaa61a);
 
     public static TranslationTextComponent createMessage(boolean useIcons, Member member, String message) {
         final MemberStatus status = MemberStatus.from(member);
 
         final IFormattableTextComponent ownerText = new StringTextComponent(
             member.isOwner() ? MemberStatus.CROWN_ICON + " " : "")
-            .modifyStyle(style -> style.setColor(CROWN_COLOR));
+            .withStyle(style -> style.withColor(CROWN_COLOR));
 
         final IFormattableTextComponent statusText = new StringTextComponent("" + status.getIcon())
-            .modifyStyle(style -> style.setColor(status.getColor()));
+            .withStyle(style -> style.withColor(status.getColor()));
 
         if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
-            ownerText.modifyStyle(style -> style.setFontId(ICONS_FONT));
-            statusText.modifyStyle(style -> style.setFontId(ICONS_FONT));
+            ownerText.withStyle(style -> style.withFont(ICONS_FONT));
+            statusText.withStyle(style -> style.withFont(ICONS_FONT));
         }
 
         final IFormattableTextComponent hover = new TranslationTextComponent("chat.concord.hover.header",
-            new StringTextComponent(member.getUser().getName()).mergeStyle(WHITE),
-            new StringTextComponent(member.getUser().getDiscriminator()).mergeStyle(WHITE),
+            new StringTextComponent(member.getUser().getName()).withStyle(WHITE),
+            new StringTextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
             ownerText,
             statusText,
             new TranslationTextComponent(status.getTranslationKey())
-                .modifyStyle(style -> style.setColor(status.getColor()))
-        ).mergeStyle(DARK_GRAY);
+                .withStyle(style -> style.withColor(status.getColor()))
+        ).withStyle(DARK_GRAY);
 
         final List<Role> roles = member.getRoles().stream()
             .filter(((Predicate<Role>) Role::isPublicRole).negate())
             .collect(Collectors.toList());
         if (!roles.isEmpty()) {
-            hover.appendString("\n").appendSibling(new TranslationTextComponent("chat.concord.hover.roles"));
+            hover.append("\n").append(new TranslationTextComponent("chat.concord.hover.roles"));
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
-                if (i != 0) hover.appendString(", "); // add joiner for more than one role
+                if (i != 0) hover.append(", "); // add joiner for more than one role
                 Role role = roles.get(i);
-                hover.appendSibling(new StringTextComponent(role.getName())
-                    .modifyStyle(style -> style.setColor(Color.fromInt(role.getColorRaw())))
+                hover.append(new StringTextComponent(role.getName())
+                    .withStyle(style -> style.withColor(Color.fromRgb(role.getColorRaw())))
                 );
             }
         }
@@ -79,12 +79,12 @@ public class Messaging {
 
         TranslationTextComponent result = new TranslationTextComponent("chat.concord.header",
             new StringTextComponent(name)
-                .modifyStyle(style -> style
-                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
-                    .setColor(Color.fromInt(member.getColorRaw()))),
-            new StringTextComponent(message).mergeStyle(WHITE)
+                .withStyle(style -> style
+                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                    .withColor(Color.fromRgb(member.getColorRaw()))),
+            new StringTextComponent(message).withStyle(WHITE)
         );
-        result.mergeStyle(DARK_GRAY);
+        result.withStyle(DARK_GRAY);
         return result;
     }
 
@@ -95,7 +95,7 @@ public class Messaging {
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
 
-        server.sendMessage(withoutIcons, Util.DUMMY_UUID);
+        server.sendMessage(withoutIcons, Util.NIL_UUID);
 
         for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
             TextComponent sendingText;
@@ -105,7 +105,7 @@ public class Messaging {
             } else {
                 sendingText = TranslationUtil.eagerTranslate(withoutIcons);
             }
-            player.connection.sendPacket(new SChatPacket(sendingText, ChatType.SYSTEM, Util.DUMMY_UUID));
+            player.connection.send(new SChatPacket(sendingText, ChatType.SYSTEM, Util.NIL_UUID));
         }
     }
 

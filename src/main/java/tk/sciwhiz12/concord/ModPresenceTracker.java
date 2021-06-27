@@ -26,6 +26,6 @@ public class ModPresenceTracker {
     }
 
     public static boolean isModPresent(@Nullable ServerPlayerEntity client) {
-        return client != null && CHANNEL.isRemotePresent(client.connection.getNetworkManager());
+        return client != null && CHANNEL.isRemotePresent(client.connection.getConnection());
     }
 }

@@ -26,7 +26,7 @@ public class SayCommandHook {
 
         LOGGER.debug("Hooking into /say command");
         event.getDispatcher().register(literal("say")
-            .requires((ctx) -> ctx.hasPermissionLevel(2))
+            .requires((ctx) -> ctx.hasPermission(2))
             .then(argument("message", MessageArgument.message())
                 .executes((ctx) -> {
                     ITextComponent message = MessageArgument.getMessage(ctx, "message");
@@ -40,7 +40,7 @@ public class SayCommandHook {
                         } catch (Exception e) {
                             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
                         }
-                        ctx.getSource().getServer().getPlayerList().func_232641_a_(text, ChatType.CHAT, entity.getUniqueID());
+                        ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.CHAT, entity.getUUID());
                     } else {
                         try {
                             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
@@ -49,7 +49,7 @@ public class SayCommandHook {
                         } catch (Exception e) {
                             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
                         }
-                        ctx.getSource().getServer().getPlayerList().func_232641_a_(text, ChatType.SYSTEM, Util.DUMMY_UUID);
+                        ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.SYSTEM, Util.NIL_UUID);
                     }
 
                     return Command.SINGLE_SUCCESS;

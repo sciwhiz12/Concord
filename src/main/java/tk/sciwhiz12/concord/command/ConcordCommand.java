@@ -18,15 +18,15 @@ public class ConcordCommand {
         event.getDispatcher().register(
             literal("concord")
                 .then(literal("reload")
-                    .requires(source -> source.hasPermissionLevel(3))
+                    .requires(source -> source.hasPermission(3))
                     .executes(ConcordCommand::reload)
                 )
                 .then(literal("enable")
-                    .requires(source -> source.hasPermissionLevel(3))
+                    .requires(source -> source.hasPermission(3))
                     .executes(ConcordCommand::enable)
                 )
                 .then(literal("disable")
-                    .requires(source -> source.hasPermissionLevel(3))
+                    .requires(source -> source.hasPermission(3))
                     .executes(ConcordCommand::disable)
                 )
                 .then(literal("status")
@@ -41,7 +41,7 @@ public class ConcordCommand {
 
     private static int reload(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
-        ctx.getSource().sendFeedback(createMessage(source, "command.concord.reload"), true);
+        ctx.getSource().sendSuccess(createMessage(source, "command.concord.reload"), true);
         if (Concord.isEnabled()) {
             Concord.disable();
         }
@@ -52,10 +52,10 @@ public class ConcordCommand {
     private static int enable(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
         if (Concord.isEnabled()) {
-            ctx.getSource().sendErrorMessage(createMessage(source, "command.concord.enable.already_enabled"));
+            ctx.getSource().sendFailure(createMessage(source, "command.concord.enable.already_enabled"));
             return 1;
         }
-        ctx.getSource().sendFeedback(createMessage(source, "command.concord.enable"), true);
+        ctx.getSource().sendSuccess(createMessage(source, "command.concord.enable"), true);
         Concord.enable(source.getServer());
         return 1;
     }
@@ -63,10 +63,10 @@ public class ConcordCommand {
     private static int disable(CommandContext<CommandSource> ctx) {
         CommandSource source = ctx.getSource();
         if (!Concord.isEnabled()) {
-            ctx.getSource().sendErrorMessage(createMessage(source, "command.concord.disable.already_disabled"));
+            ctx.getSource().sendFailure(createMessage(source, "command.concord.disable.already_disabled"));
             return 1;
         }
-        ctx.getSource().sendFeedback(createMessage(source, "command.concord.disable"), true);
+        ctx.getSource().sendSuccess(createMessage(source, "command.concord.disable"), true);
         Concord.disable();
         return 1;
     }
@@ -75,11 +75,11 @@ public class ConcordCommand {
         CommandSource source = ctx.getSource();
         ITextComponent result;
         if (Concord.isEnabled()) {
-            result = createMessage(source, "command.concord.status.enabled").mergeStyle(GREEN);
+            result = createMessage(source, "command.concord.status.enabled").withStyle(GREEN);
         } else {
-            result = createMessage(source, "command.concord.status.disabled").mergeStyle(RED);
+            result = createMessage(source, "command.concord.status.disabled").withStyle(RED);
         }
-        ctx.getSource().sendFeedback(createMessage(source, "command.concord.status", result), true);
+        ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), true);
         return 1;
     }
 }

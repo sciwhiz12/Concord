@@ -22,7 +22,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity().getEntityWorld().isRemote()) return;
+        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
         TranslationTextComponent text = new TranslationTextComponent("message.concord.player.join",
@@ -33,7 +33,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity().getEntityWorld().isRemote()) return;
+        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
 
         TranslationTextComponent text = new TranslationTextComponent("message.concord.player.leave",
@@ -44,7 +44,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onLivingDeath(LivingDeathEvent event) {
-        if (event.getEntity().getEntityWorld().isRemote()) return;
+        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
         if (event.getEntity() instanceof ServerPlayerEntity) {
@@ -56,10 +56,10 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onAdvancement(AdvancementEvent event) {
-        if (event.getEntity().getEntityWorld().isRemote()) return;
+        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
 
         final DisplayInfo info = event.getAdvancement().getDisplay();
-        if (info != null && info.shouldAnnounceToChat()) {
+        if (info != null && info.shouldAnnounceChat()) {
             switch (info.getFrame()) {
                 case TASK: {
                     if (!ConcordConfig.PLAYER_ADV_TASK.get()) return;
