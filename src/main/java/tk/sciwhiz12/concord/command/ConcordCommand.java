@@ -79,7 +79,7 @@ public class ConcordCommand {
         } else {
             result = createMessage(source, "command.concord.status.disabled").withStyle(RED);
         }
-        ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), true);
+        ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), false);
         return 1;
     }
 }
