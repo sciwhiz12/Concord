@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.0.36'
     }
 }
 plugins {
@@ -191,9 +191,7 @@ reobf {
 }
 
 tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
-    String[] args = getArgs()
-    args += "--stable"
-    setArgs(args)
+    args.add('--stable')
 }
 
 publishing {
