@@ -1,12 +1,12 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
-import net.minecraft.command.arguments.MessageArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.Util;
+import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,8 +14,8 @@ import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.msg.Messaging;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static tk.sciwhiz12.concord.Concord.BOT;
 
 public class SayCommandHook {
@@ -29,8 +29,8 @@ public class SayCommandHook {
             .requires((ctx) -> ctx.hasPermission(2))
             .then(argument("message", MessageArgument.message())
                 .executes((ctx) -> {
-                    ITextComponent message = MessageArgument.getMessage(ctx, "message");
-                    TranslationTextComponent text = new TranslationTextComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
+                    Component message = MessageArgument.getMessage(ctx, "message");
+                    TranslatableComponent text = new TranslatableComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
                     Entity entity = ctx.getSource().getEntity();
                     if (entity != null) {
                         try {
@@ -44,7 +44,7 @@ public class SayCommandHook {
                     } else {
                         try {
                             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                                Messaging.sendToChannel(BOT.getDiscord(), new TranslationTextComponent("message.concord.command.say", ctx.getSource().getDisplayName(), message).getString());
+                                Messaging.sendToChannel(BOT.getDiscord(), new TranslatableComponent("message.concord.command.say", ctx.getSource().getDisplayName(), message).getString());
                             }
                         } catch (Exception e) {
                             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

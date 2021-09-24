@@ -1,14 +1,8 @@
 package tk.sciwhiz12.concord.util;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.*;
+import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 
@@ -21,55 +15,55 @@ public final class TranslationUtil {
     /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */
 
     /**
-     * Creates a {@link TextComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
+     * Creates a {@link BaseComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
      * <p>
-     * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link StringTextComponent} with the message
+     * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link TextComponent} with the message
      * specified by the translation key being eagerly evaluated now. This text component is safe to send to clients, as it does
      * not use a translation key.
      * <p>
-     * If {@code lazyTranslate} is {@code true}, then the returned value is a {@link TranslationTextComponent} with the
+     * If {@code lazyTranslate} is {@code true}, then the returned value is a {@link TranslatableComponent} with the
      * translation key and given arguments passed into it, and the contents of the text component is lazily evaluated (on first
      * use of the text component).
      *
      * @param lazyTranslate Whether to lazily translate the message
      * @param translation   The translation key
      * @param args          Extra arguments to the message
-     * @return a {@link TextComponent} with the specified message
+     * @return a {@link BaseComponent} with the specified message
      */
-    public static TextComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
-        TranslationTextComponent text = new TranslationTextComponent(translation, args);
+    public static BaseComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
+        TranslatableComponent text = new TranslatableComponent(translation, args);
         return lazyTranslate ? text : eagerTranslate(text);
     }
 
-    public static TextComponent createTranslation(@Nullable ServerPlayerEntity entity, String translationKey, Object... args) {
+    public static BaseComponent createTranslation(@Nullable ServerPlayer entity, String translationKey, Object... args) {
         return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
             translationKey, args);
     }
 
-    public static TextComponent eagerTranslate(final TranslationTextComponent component) {
+    public static BaseComponent eagerTranslate(final TranslatableComponent component) {
         Object[] oldArgs = component.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
         for (int i = 0; i < oldArgs.length; i++) {
             Object obj = oldArgs[i];
-            if (obj instanceof TranslationTextComponent) {
-                newArgs[i] = eagerTranslate((TranslationTextComponent) obj);
-            } else if (obj instanceof IFormattableTextComponent) {
-                newArgs[i] = eagerCheckStyle((IFormattableTextComponent) obj);
+            if (obj instanceof TranslatableComponent) {
+                newArgs[i] = eagerTranslate((TranslatableComponent) obj);
+            } else if (obj instanceof MutableComponent) {
+                newArgs[i] = eagerCheckStyle((MutableComponent) obj);
             } else {
                 newArgs[i] = oldArgs[i];
             }
         }
 
-        TranslationTextComponent result =
-            new TranslationTextComponent(LanguageMap.getInstance().getOrDefault(component.getKey()), newArgs);
+        TranslatableComponent result =
+            new TranslatableComponent(Language.getInstance().getOrDefault(component.getKey()), newArgs);
         result.setStyle(component.getStyle());
 
-        for (ITextComponent sibling : component.getSiblings()) {
-            if (sibling instanceof TranslationTextComponent) {
-                result.append(eagerTranslate((TranslationTextComponent) sibling));
-            } else if (sibling instanceof IFormattableTextComponent) {
-                result.append(eagerCheckStyle((IFormattableTextComponent) sibling));
+        for (Component sibling : component.getSiblings()) {
+            if (sibling instanceof TranslatableComponent) {
+                result.append(eagerTranslate((TranslatableComponent) sibling));
+            } else if (sibling instanceof MutableComponent) {
+                result.append(eagerCheckStyle((MutableComponent) sibling));
             } else {
                 result.append(sibling);
             }
@@ -78,14 +72,14 @@ public final class TranslationUtil {
         return eagerCheckStyle(result);
     }
 
-    public static <Text extends IFormattableTextComponent> Text eagerCheckStyle(Text component) {
+    public static <Text extends MutableComponent> Text eagerCheckStyle(Text component) {
         Style style = component.getStyle();
         HoverEvent hover = style.getHoverEvent();
         if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
-            ITextComponent hoverText = hover.getValue(HoverEvent.Action.SHOW_TEXT);
-            if (hoverText instanceof TranslationTextComponent) {
+            Component hoverText = hover.getValue(HoverEvent.Action.SHOW_TEXT);
+            if (hoverText instanceof TranslatableComponent) {
                 style = style.withHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, eagerTranslate((TranslationTextComponent) hoverText))
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, eagerTranslate((TranslatableComponent) hoverText))
                 );
             }
         }

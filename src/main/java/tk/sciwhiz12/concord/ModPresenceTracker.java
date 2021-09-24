@@ -1,9 +1,9 @@
 package tk.sciwhiz12.concord;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.event.EventNetworkChannel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.event.EventNetworkChannel;
 
 import javax.annotation.Nullable;
 
@@ -25,7 +25,7 @@ public class ModPresenceTracker {
             .eventNetworkChannel();
     }
 
-    public static boolean isModPresent(@Nullable ServerPlayerEntity client) {
+    public static boolean isModPresent(@Nullable ServerPlayer client) {
         return client != null && CHANNEL.isRemotePresent(client.connection.getConnection());
     }
 }

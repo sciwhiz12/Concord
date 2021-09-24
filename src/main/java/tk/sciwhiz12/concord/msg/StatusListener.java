@@ -1,11 +1,11 @@
 package tk.sciwhiz12.concord.msg;
 
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStoppingEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 
@@ -22,7 +22,7 @@ public class StatusListener {
         if (!ConcordConfig.SERVER_START.get()) return;
 
         Messaging.sendToChannel(bot.getDiscord(),
-            new TranslationTextComponent("message.concord.server.start").getString());
+            new TranslatableComponent("message.concord.server.start").getString());
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -30,6 +30,6 @@ public class StatusListener {
         if (!ConcordConfig.SERVER_STOP.get()) return;
 
         Messaging.sendToChannel(bot.getDiscord(),
-            new TranslationTextComponent("message.concord.server.stop").getString());
+            new TranslatableComponent("message.concord.server.stop").getString());
     }
 }

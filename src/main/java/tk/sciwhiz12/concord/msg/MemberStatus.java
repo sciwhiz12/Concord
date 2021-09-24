@@ -3,7 +3,7 @@ package tk.sciwhiz12.concord.msg;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
-import net.minecraft.util.text.Color;
+import net.minecraft.network.chat.TextColor;
 
 public enum MemberStatus {
     ONLINE(OnlineStatus.ONLINE, "chat.concord.status.online", 0x43b581, '\u25cf'),
@@ -17,13 +17,13 @@ public enum MemberStatus {
 
     private final OnlineStatus discordStatus;
     private final String translationKey;
-    private final Color color;
+    private final TextColor color;
     private final char icon;
 
     MemberStatus(OnlineStatus discordStatus, String translationKey, int colorHex, char icon) {
         this.discordStatus = discordStatus;
         this.translationKey = translationKey;
-        this.color = Color.fromRgb(colorHex);
+        this.color = TextColor.fromRgb(colorHex);
         this.icon = icon;
     }
 
@@ -35,7 +35,7 @@ public enum MemberStatus {
         return translationKey;
     }
 
-    public Color getColor() {
+    public TextColor getColor() {
         return color;
     }
 

@@ -1,10 +1,10 @@
 package tk.sciwhiz12.concord.msg;
 
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
@@ -27,7 +27,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
-        TranslationTextComponent text = new TranslationTextComponent("message.concord.player.join",
+        TranslatableComponent text = new TranslatableComponent("message.concord.player.join",
             event.getPlayer().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
@@ -38,7 +38,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
 
-        TranslationTextComponent text = new TranslationTextComponent("message.concord.player.leave",
+        TranslatableComponent text = new TranslatableComponent("message.concord.player.leave",
             event.getPlayer().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
@@ -49,8 +49,8 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
-        if (event.getEntity() instanceof ServerPlayerEntity) {
-            ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
+        if (event.getEntity() instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
 
             Messaging.sendToChannel(bot.getDiscord(), player.getCombatTracker().getDeathMessage().getString());
         }
@@ -58,7 +58,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onAdvancement(AdvancementEvent event) {
-        World world = event.getEntity().getCommandSenderWorld();
+        Level world = event.getEntity().getCommandSenderWorld();
         if (world.isClientSide()) return;
 
         if (ConcordConfig.PLAYER_ADV_GAMERULE.get() && !world.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS))
@@ -80,7 +80,7 @@ public class PlayerListener {
                     break;
                 }
             }
-            TranslationTextComponent text = new TranslationTextComponent(
+            TranslatableComponent text = new TranslatableComponent(
                 "message.concord.player.advancement." + info.getFrame().getName(),
                 event.getPlayer().getDisplayName(),
                 info.getTitle(),
