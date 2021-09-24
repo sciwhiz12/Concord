@@ -25,6 +25,7 @@ import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
 
@@ -33,6 +34,7 @@ public class Concord {
     public static final String MODID = "concord";
     public static final Logger LOGGER = LogManager.getLogger();
 
+    @Nullable
     public static ChatBot BOT;
 
     public Concord() {
@@ -62,6 +64,18 @@ public class Concord {
         }
     }
 
+    @Nullable
+    public static ChatBot getBotOrNull() {
+        return BOT;
+    }
+
+    public static ChatBot getBot() {
+        if (BOT == null) {
+            throw new IllegalStateException("Tried to retrieve chat bot while disabled");
+        }
+        return BOT;
+    }
+
     public static boolean isEnabled() {
         return BOT != null;
     }
@@ -71,7 +85,7 @@ public class Concord {
     }
 
     public static void disable(boolean suppressMessage) {
-        if (!isEnabled()) return;
+        if (BOT == null || !isEnabled()) return;
         LOGGER.info("Shutting down Discord integration...");
         if (!suppressMessage) {
             Messaging.sendToChannel(BOT.getDiscord(), new TranslatableComponent("message.concord.bot.stop").getString());

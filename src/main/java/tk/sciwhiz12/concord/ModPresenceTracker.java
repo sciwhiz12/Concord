@@ -14,15 +14,15 @@ import javax.annotation.Nullable;
  */
 public class ModPresenceTracker {
     public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
-    public static EventNetworkChannel CHANNEL;
+    public static EventNetworkChannel CHANNEL = NetworkRegistry.ChannelBuilder
+        .named(CHANNEL_NAME)
+        .networkProtocolVersion(() -> "yes")
+        .clientAcceptedVersions(version -> true)
+        .serverAcceptedVersions(version -> true)
+        .eventNetworkChannel();
 
     public static void register() {
-        CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(CHANNEL_NAME)
-            .networkProtocolVersion(() -> "yes")
-            .clientAcceptedVersions(version -> true)
-            .serverAcceptedVersions(version -> true)
-            .eventNetworkChannel();
+        // Channel is created as part of class initialization
     }
 
     public static boolean isModPresent(@Nullable ServerPlayer client) {

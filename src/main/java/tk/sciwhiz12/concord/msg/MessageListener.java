@@ -59,6 +59,7 @@ public class MessageListener extends ListenerAdapter {
         private final Message message;
 
         MessageEntry(GuildMessageReceivedEvent event) {
+            assert event.getMember() != null; // Shut IDEA inspection up
             this.member = event.getMember();
             this.message = event.getMessage();
         }
