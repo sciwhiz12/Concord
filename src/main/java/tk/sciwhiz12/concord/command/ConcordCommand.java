@@ -3,6 +3,7 @@ package tk.sciwhiz12.concord.command;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,15 +20,15 @@ public class ConcordCommand {
         event.getDispatcher().register(
             literal("concord")
                 .then(literal("reload")
-                    .requires(source -> source.hasPermission(3))
+                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
                     .executes(ConcordCommand::reload)
                 )
                 .then(literal("enable")
-                    .requires(source -> source.hasPermission(3))
+                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
                     .executes(ConcordCommand::enable)
                 )
                 .then(literal("disable")
-                    .requires(source -> source.hasPermission(3))
+                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
                     .executes(ConcordCommand::disable)
                 )
                 .then(literal("status")
