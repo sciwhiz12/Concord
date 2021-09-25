@@ -44,40 +44,23 @@ public enum MemberStatus {
     }
 
     public static MemberStatus from(OnlineStatus status) {
-        switch (status) {
-            case ONLINE:
-                return ONLINE;
-            case IDLE:
-                return IDLE;
-            case INVISIBLE:
-            case OFFLINE:
-                return OFFLINE;
-            case DO_NOT_DISTURB:
-                return DO_NOT_DISTURB;
-            case UNKNOWN:
-            default:
-                return UNKNOWN;
-        }
+        return switch (status) {
+            case ONLINE -> ONLINE;
+            case IDLE -> IDLE;
+            case INVISIBLE, OFFLINE -> OFFLINE;
+            case DO_NOT_DISTURB -> DO_NOT_DISTURB;
+            default -> UNKNOWN;
+        };
     }
 
     public static MemberStatus from(Member member) {
-        switch (member.getOnlineStatus()) {
-            case ONLINE:
-                return ONLINE;
-            case IDLE:
-                return IDLE;
-            case INVISIBLE:
-            case OFFLINE:
-                return OFFLINE;
-            case DO_NOT_DISTURB: {
-                if (member.getActivities().stream().anyMatch(act -> act.getType() == Activity.ActivityType.STREAMING))
-                    return STREAMING;
-                else
-                    return DO_NOT_DISTURB;
-            }
-            case UNKNOWN:
-            default:
-                return UNKNOWN;
-        }
+        return switch (member.getOnlineStatus()) {
+            case ONLINE -> ONLINE;
+            case IDLE -> IDLE;
+            case INVISIBLE, OFFLINE -> OFFLINE;
+            case DO_NOT_DISTURB -> member.getActivities().stream().anyMatch(act -> act.getType() == Activity.ActivityType.STREAMING)
+                ? STREAMING : DO_NOT_DISTURB;
+            default -> UNKNOWN;
+        };
     }
 }

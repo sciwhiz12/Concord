@@ -49,9 +49,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
-        if (event.getEntity() instanceof ServerPlayer) {
-            ServerPlayer player = (ServerPlayer) event.getEntity();
-
+        if (event.getEntity() instanceof ServerPlayer player) {
             Messaging.sendToChannel(bot.getDiscord(), player.getCombatTracker().getDeathMessage().getString());
         }
     }
@@ -66,20 +64,12 @@ public class PlayerListener {
 
         final DisplayInfo info = event.getAdvancement().getDisplay();
         if (info != null && info.shouldAnnounceChat()) {
-            switch (info.getFrame()) {
-                case TASK: {
-                    if (!ConcordConfig.PLAYER_ADV_TASK.get()) return;
-                    break;
-                }
-                case CHALLENGE: {
-                    if (!ConcordConfig.PLAYER_ADV_CHALLENGE.get()) return;
-                    break;
-                }
-                case GOAL: {
-                    if (!ConcordConfig.PLAYER_ADV_GOAL.get()) return;
-                    break;
-                }
-            }
+            boolean enabled = switch (info.getFrame()) {
+                case TASK -> ConcordConfig.PLAYER_ADV_TASK.get();
+                case CHALLENGE -> ConcordConfig.PLAYER_ADV_CHALLENGE.get();
+                case GOAL -> ConcordConfig.PLAYER_ADV_GOAL.get();
+            };
+            if (!enabled) return;
             TranslatableComponent text = new TranslatableComponent(
                 "message.concord.player.advancement." + info.getFrame().getName(),
                 event.getPlayer().getDisplayName(),

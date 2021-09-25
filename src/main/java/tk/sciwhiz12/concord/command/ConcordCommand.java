@@ -1,5 +1,6 @@
 package tk.sciwhiz12.concord.command;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.BaseComponent;
@@ -46,29 +47,29 @@ public class ConcordCommand {
             Concord.disable();
         }
         Concord.enable(source.getServer());
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int enable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (Concord.isEnabled()) {
             ctx.getSource().sendFailure(createMessage(source, "command.concord.enable.already_enabled"));
-            return 1;
+            return Command.SINGLE_SUCCESS;
         }
         ctx.getSource().sendSuccess(createMessage(source, "command.concord.enable"), true);
         Concord.enable(source.getServer());
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int disable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (!Concord.isEnabled()) {
             ctx.getSource().sendFailure(createMessage(source, "command.concord.disable.already_disabled"));
-            return 1;
+            return Command.SINGLE_SUCCESS;
         }
         ctx.getSource().sendSuccess(createMessage(source, "command.concord.disable"), true);
         Concord.disable();
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx) {
@@ -80,6 +81,6 @@ public class ConcordCommand {
             result = createMessage(source, "command.concord.status.disabled").withStyle(RED);
         }
         ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), false);
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 }

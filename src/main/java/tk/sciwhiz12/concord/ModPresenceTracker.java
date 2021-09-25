@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
  */
 public class ModPresenceTracker {
     public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
-    public static EventNetworkChannel CHANNEL = NetworkRegistry.ChannelBuilder
+    public static final EventNetworkChannel CHANNEL = NetworkRegistry.ChannelBuilder
         .named(CHANNEL_NAME)
         .networkProtocolVersion(() -> "yes")
         .clientAcceptedVersions(version -> true)
