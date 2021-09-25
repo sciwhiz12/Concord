@@ -1,3 +1,5 @@
+import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
+
 buildscript {
     repositories {
         maven {
@@ -90,55 +92,56 @@ minecraft {
                 }
             }
         }
+
+        all {
+            lazyToken('minecraft_classpath') {
+                configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+            }
+        }
     }
 }
 
 configurations {
+    library
+    implementation.extendsFrom library
+
     dataImplementation.extendsFrom implementation
     dataCompileClasspath.extendsFrom compileClasspath
-    shade
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    shade(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+    library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
     }
-    shade group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
-
-    // This is doubled because it somehow fixes dev-runs erroring with NoClassDefFoundError
-    implementation(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
-        exclude module: 'opus-java'
-    }
-    implementation group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
 }
 
 jar {
-    manifest {
-        attributes([
-                "Specification-Title"   : "concord",
-                "Specification-Vendor"  : "sciwhiz12",
-                "Implementation-Title"  : project.name,
-                "Implementation-Version": "${mod_version}",
-                "Implementation-Vendor" : "sciwhiz12",
-                "Git-Commit"            : versionInfo["hash"] ?: "0000000000000000000000000000000000000000",
-                "Git-Commit-Timestamp"  : versionInfo["timestamp"] ?: "1980-01-01T00:00:00+00:00"
-        ] as LinkedHashMap)
-    }
+    manifest.attributes([
+            "Specification-Title"   : "concord",
+            "Specification-Vendor"  : "sciwhiz12",
+            "Implementation-Title"  : project.name,
+            "Implementation-Version": "${mod_version}",
+            "Implementation-Vendor" : "sciwhiz12",
+            "Git-Commit"            : versionInfo["hash"] ?: "0000000000000000000000000000000000000000",
+            "Git-Commit-Timestamp"  : versionInfo["timestamp"] ?: "1980-01-01T00:00:00+00:00"
+    ] as LinkedHashMap)
     includeEmptyDirs false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
     archivesBaseName = "concord-${mc_version}"
-    archiveVersion = mod_version
+    archiveVersion.set(mod_version)
 
-    archiveClassifier = 'lite'
+    archiveClassifier.set('lite')
     finalizedBy 'reobfJar'
     finalizedBy 'sourcesJar'
 }
 
+@SuppressWarnings('GrMethodMayBeStatic')
 def relocate(origin) {
     shadowJar.relocate(origin, "tk.sciwhiz12.concord.shadow.$origin")
 }
@@ -146,8 +149,8 @@ def relocate(origin) {
 shadowJar {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-    archiveClassifier = ''
-    configurations = [project.configurations.shade]
+    archiveClassifier.set('')
+    configurations = [project.configurations.library]
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
     relocate 'net.sf.trove4j'
@@ -183,30 +186,28 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-    archiveClassifier = 'sources'
+    archiveClassifier.set('sources')
 }
 
 reobf {
     shadowJar {}
 }
 
-tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
+tasks.withType(RenameJarInPlace) {
     args.add('--stable')
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId = "concord"
-            version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["snapshot"] ? "-SNAPSHOT" : ""}"
-            artifact(jar) {
-                classifier = ""
-            }
-            artifact(shadowJar) {
-                classifier = "shadow"
-            }
-            artifact sourcesJar
+    publications.register("mavenJava", MavenPublication) {
+        it.artifactId = "concord"
+        it.version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["snapshot"] ? "-SNAPSHOT" : ""}"
+        it.artifact(jar) {
+            classifier = ""
         }
+        it.artifact(shadowJar) {
+            classifier = "shadow"
+        }
+        it.artifact sourcesJar
     }
     repositories {
         maven {
