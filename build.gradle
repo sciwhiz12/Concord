@@ -1,101 +1,59 @@
-import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
-
-buildscript {
-    repositories {
-        maven {
-            name = "MinecraftForge"
-            url = 'https://maven.minecraftforge.net'
-        }
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+'
-    }
-}
 plugins {
-    id 'eclipse'
-    id 'idea'
     id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply from: 'version.gradle'
+apply from: 'gradle/version.gradle'
 
-group = 'tk.sciwhiz12'
-archivesBaseName = "concord"
-def mod_version = versionInfo["version"] ?: "unknown"
-version = "${mod_version}"
-
-println("Mod version: ${mod_version}")
-println('Java: ' + System.getProperty('java.version') + '; JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + '); Arch: ' + System.getProperty('os.arch'))
+version = versions.getVersion()
+println "Mod version: $version"
 
 sourceSets {
+    data
     main.resources {
         srcDirs += data.resources.srcDirs
-        exclude '.cache/' // Prevents the .cache file from being included in the jars
+        exclude '.cache/'
     }
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
-
-repositories {
-    maven {
-        name 'm2-dv8tion'
-        url 'https://m2.dv8tion.net/releases'
-    }
-    mavenCentral()
-}
+print "Java: ${System.getProperty('java.version')}"
+print ", JVM: ${System.getProperty('java.vm.version')} (${System.getProperty('java.vendor')})"
+println ", Arch: ${System.getProperty('os.arch')}"
 
 minecraft {
-    mappings channel: 'official', version: "${mc_version}"
+    mappings channel: mappings_channel, version: mappings_version
 
     runs {
-        client {
-            workingDirectory file('run/client')
+        configureEach {
+            workingDirectory project.file('run/' + it.name) as File
 
-            property 'forge.logging.markers', "${logging_markers}"
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.markers', logging_markers
+            property 'forge.logging.console.level', logging_console
 
-            mods {
-                concord {
-                    source sourceSets.main
-                }
+            ideaModule "${project.name}.main"
+            mods.register(modid as String) {
+                source sourceSets.main as SourceSet
             }
+
+            lazyToken('minecraft_classpath') {
+                configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+            }
+        }
+
+        client {
         }
 
         server {
-            workingDirectory file('run/server')
-
-            property 'forge.logging.markers', "${logging_markers}"
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                concord {
-                    source sourceSets.main
-                }
-            }
         }
 
         data {
-            workingDirectory file('run/data')
-
-            property 'forge.logging.markers', "${logging_markers}"
-            property 'forge.logging.console.level', 'debug'
-
-            args '--mod', 'concord', '--all'
+            args '--mod', modid, '--all'
             args '--output', sourceSets.data.resources.srcDirs[0].toString()
             args '--existing', sourceSets.main.resources.srcDirs[0].toString()
 
             ideaModule "${project.name}.data"
-            mods {
-                concord {
-                    sources sourceSets.main, sourceSets.data
-                }
-            }
-        }
-
-        all {
-            lazyToken('minecraft_classpath') {
-                configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+            mods.named(modid as String) {
+                sources sourceSets.main as SourceSet, sourceSets.data as SourceSet
             }
         }
     }
@@ -104,9 +62,16 @@ minecraft {
 configurations {
     library
     implementation.extendsFrom library
+    shadow.extendsFrom library
 
     dataImplementation.extendsFrom implementation
-    dataCompileClasspath.extendsFrom compileClasspath
+}
+
+repositories {
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
@@ -115,42 +80,49 @@ dependencies {
     library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
     }
-    library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
     dataImplementation sourceSets.main.output
 }
 
-jar {
-    manifest.attributes([
-            "Specification-Title"   : "concord",
-            "Specification-Vendor"  : "sciwhiz12",
-            "Implementation-Title"  : project.name,
-            "Implementation-Version": "${mod_version}",
-            "Implementation-Vendor" : "sciwhiz12",
-            "Git-Commit"            : versionInfo["hash"] ?: "0000000000000000000000000000000000000000",
-            "Git-Commit-Timestamp"  : versionInfo["timestamp"] ?: "1980-01-01T00:00:00+00:00"
-    ] as LinkedHashMap)
+java {
+    archivesBaseName = "${project.name}-${mc_version}"
+    toolchain.languageVersion = JavaLanguageVersion.of(16)
+    withSourcesJar()
+}
+
+var manifestAttributes = [
+        'Specification-Title'   : modid,
+        'Specification-Vendor'  : author,
+        'Specification-Version' : versions.getRawVersion(),
+        'Implementation-Title'  : project.name,
+        'Implementation-Version': versions.getVersion(),
+        'Implementation-Vendor' : author,
+        "Git-Commit"            : versions.getCommitId(),
+        "Git-Commit-Timestamp"  : versions.getCommitTimestamp()
+] as LinkedHashMap
+
+tasks.withType(Jar).configureEach {
+    manifest.attributes(manifestAttributes)
     includeEmptyDirs false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-    archivesBaseName = "concord-${mc_version}"
-    archiveVersion.set(mod_version)
-
-    archiveClassifier.set('lite')
-    finalizedBy 'reobfJar'
-    finalizedBy 'sourcesJar'
 }
 
+tasks.named('jar', Jar).configure {
+    finalizedBy 'reobfJar'
+    archiveClassifier.set('lite')
+}
 @SuppressWarnings('GrMethodMayBeStatic')
 def relocate(origin) {
     shadowJar.relocate(origin, "tk.sciwhiz12.concord.shadow.$origin")
 }
 
-shadowJar {
+// noinspection UnnecessaryQualifiedReference
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
     archiveClassifier.set('')
-    configurations = [project.configurations.library]
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
     relocate 'net.sf.trove4j'
@@ -178,40 +150,39 @@ shadowJar {
     exclude 'module-info.class'
 
     finalizedBy 'reobfShadowJar'
-
-    assemble.dependsOn shadowJar
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-    archiveClassifier.set('sources')
+tasks.named('assemble') {
+    dependsOn shadowJar
 }
 
 reobf {
     shadowJar {}
 }
 
-tasks.withType(RenameJarInPlace) {
+// Without these two, Gradle will issue warnings about task inputs from other tasks outputs without declaring dependencies
+tasks.named('reobfShadowJar') { dependsOn tasks.named('jar') }
+tasks.named('shadowJar') { dependsOn 'reobfJar' }
+
+// noinspection UnnecessaryQualifiedReference
+tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
     args.add('--stable')
 }
 
 publishing {
-    publications.register("mavenJava", MavenPublication) {
-        it.artifactId = "concord"
-        it.version = "${versionInfo["raw_version"]}-${mc_version}${versionInfo["snapshot"] ? "-SNAPSHOT" : ""}"
-        it.artifact(jar) {
-            classifier = ""
-        }
-        it.artifact(shadowJar) {
-            classifier = "shadow"
-        }
-        it.artifact sourcesJar
+    publications.create('mavenJava', MavenPublication) {
+        project.shadow.component(it)
+        it.artifact(tasks.named('jar'))
+        it.artifact(tasks.named('sourcesJar'))
+
+        it.artifactId = project.name
+        it.version = "$mc_version-${versions.getRawVersion()}${versions.isSnapshot() ? '-SNAPSHOT' : ''}"
     }
+
     repositories {
         maven {
-            url = "file://" + file("repo").getAbsolutePath() + "/"
+            name 'projectLocal'
+            url "file://${project.file('repo').absolutePath}"
         }
     }
 }
