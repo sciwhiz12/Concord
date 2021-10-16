@@ -79,6 +79,7 @@ dependencies {
 
     library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
+        exclude module: 'slf4j-api'
     }
     //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
