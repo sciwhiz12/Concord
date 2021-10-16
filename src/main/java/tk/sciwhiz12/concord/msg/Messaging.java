@@ -1,6 +1,7 @@
 package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -31,11 +32,16 @@ public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
-    public static TranslatableComponent createMessage(boolean useIcons, Member member, String message) {
+    public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member, String message) {
         final MemberStatus status = MemberStatus.from(member);
 
+        boolean hasHoistedAdministrator = member.getGuild().getRoleCache().stream()
+            .anyMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
+        boolean showCrown = member.isOwner() && (crownVisibility == ConcordConfig.CrownVisibility.ALWAYS
+            || (crownVisibility == ConcordConfig.CrownVisibility.WITHOUT_ADMINISTRATORS && !hasHoistedAdministrator));
+
         final MutableComponent ownerText = new TextComponent(
-            member.isOwner() ? MemberStatus.CROWN_ICON + " " : "")
+            showCrown ? MemberStatus.CROWN_ICON + " " : "")
             .withStyle(style -> style.withColor(CROWN_COLOR));
 
         final MutableComponent statusText = new TextComponent("" + status.getIcon())
@@ -83,8 +89,10 @@ public class Messaging {
     }
 
     public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {
-        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, member, message));
-        TranslatableComponent withoutIcons = createMessage(false, member, message);
+        final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
+
+        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message));
+        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message);
 
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();

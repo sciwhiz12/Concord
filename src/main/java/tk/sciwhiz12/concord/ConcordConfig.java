@@ -16,6 +16,7 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
+    public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
 
     public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
@@ -85,6 +86,11 @@ public class ConcordConfig {
                         "installed.",
                     "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("lazy_translate", true);
+
+            HIDE_CROWN = builder.comment("Configures when the Server Owner crown is visible to clients.",
+                    "ALWAYS means the crown is always visible, NEVER means the crown is never visible.",
+                    "WITHOUT_ADMINISTRATORS means it is only visible when there are no hoisted Administrator roles.")
+                .defineEnum("hide_crown", CrownVisibility.WITHOUT_ADMINISTRATORS);
 
             builder.pop();
         }
@@ -162,5 +168,11 @@ public class ConcordConfig {
         }
 
         CONFIG_SPEC = builder.build();
+    }
+
+    public enum CrownVisibility {
+        ALWAYS,
+        WITHOUT_ADMINISTRATORS,
+        NEVER
     }
 }
