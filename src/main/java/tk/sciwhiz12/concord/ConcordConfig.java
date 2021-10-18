@@ -170,9 +170,23 @@ public class ConcordConfig {
         CONFIG_SPEC = builder.build();
     }
 
+    /**
+     * The visibility of the Server Owner's crown in messages to clients.
+     */
     public enum CrownVisibility {
+        /**
+         * The crown is always visible.
+         */
         ALWAYS,
+        /**
+         * The crown is only visible if there are no hoisted roles with {@link net.dv8tion.jda.api.Permission#ADMINISTRATOR}.
+         *
+         * <p>This follows the same logic that the official Discord client uses to hide the crown.</p>
+         */
         WITHOUT_ADMINISTRATORS,
+        /**
+         * The crown is never visible.
+         */
         NEVER
     }
 }
