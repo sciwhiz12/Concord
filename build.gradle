@@ -1,6 +1,8 @@
 plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 apply from: 'gradle/version.gradle'
@@ -108,6 +110,13 @@ tasks.withType(Jar).configureEach {
     includeEmptyDirs false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+
+    // Normalize line endings from CRLF to LF
+    filesMatching('META-INF/mods.toml') {
+        //noinspection UnnecessaryQualifiedReference
+        filter(org.apache.tools.ant.filters.FixCrLfFilter.class,
+                eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('lf'))
+    }
 }
 
 tasks.named('jar', Jar).configure {
@@ -166,7 +175,7 @@ tasks.named('reobfShadowJar') { dependsOn tasks.named('jar') }
 tasks.named('shadowJar') { dependsOn 'reobfJar' }
 
 // noinspection UnnecessaryQualifiedReference
-tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace) {
+tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace).configureEach {
     args.add('--stable')
 }
 

@@ -5,6 +5,10 @@ pluginManagement {
             name 'MinecraftForge'
             url 'https://maven.minecraftforge.net/'
         }
+        maven {
+            name 'ParchmentMC'
+            url 'https://maven.parchmentmc.org'
+        }
     }
     resolutionStrategy {
         eachPlugin {
@@ -12,6 +16,10 @@ pluginManagement {
                 case "net.minecraftforge.gradle": {
                     useModule("${requested.id}:ForgeGradle:${requested.version}")
                     break
+                }
+                case "org.spongepowered.mixin": {
+                    useModule("org.spongepowered:mixingradle:${requested.version}")
+                    break;
                 }
             }
         }
