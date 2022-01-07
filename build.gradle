@@ -1,9 +1,14 @@
+import org.w3c.dom.NodeList
+
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
+
 plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '5.1.+'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 apply from: 'gradle/version.gradle'
 
@@ -64,7 +69,6 @@ minecraft {
 configurations {
     library
     implementation.extendsFrom library
-    shadow.extendsFrom library
 
     dataImplementation.extendsFrom implementation
 }
@@ -90,7 +94,7 @@ dependencies {
 
 java {
     archivesBaseName = "${project.name}-${mc_version}"
-    toolchain.languageVersion = JavaLanguageVersion.of(16)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
 }
 
@@ -133,6 +137,9 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     preserveFileTimestamps = false
     reproducibleFileOrder = true
     archiveClassifier.set('')
+
+    configurations = [ project.configurations.library ]
+
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
     relocate 'net.sf.trove4j'
@@ -181,12 +188,31 @@ tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace).configu
 
 publishing {
     publications.create('mavenJava', MavenPublication) {
-        project.shadow.component(it)
-        it.artifact(tasks.named('jar'))
-        it.artifact(tasks.named('sourcesJar'))
+        it.from components.java
 
         it.artifactId = project.name
         it.version = "$mc_version-${versions.getRawVersion()}${versions.isSnapshot() ? '-SNAPSHOT' : ''}"
+
+        // Modifies POM by removing the '_mapped_' part of dependency versions
+        it.pom { MavenPom pom ->
+            pom.withXml { xml ->
+                var xmlElement = xml.asElement()
+                try {
+                    // Selects the 'version' child element of any 'dependency' element
+                    var xPath = XPathFactory.newInstance().newXPath().compile("//*[local-name()=\"dependency\"]/*[local-name()=\"version\"]")
+                    NodeList versionNodes = (NodeList) xPath.evaluate(xmlElement, XPathConstants.NODESET)
+                    for (int i = 0; i < versionNodes.length; i++) {
+                        var node = versionNodes.item(i)
+                        var mappedIdx = node.textContent.lastIndexOf("_mapped_")
+                        if (mappedIdx != -1) {
+                            node.setTextContent(node.textContent.substring(0, mappedIdx))
+                        }
+                    }
+                } catch (Exception e) {
+                    project.logger.error("Error attempting to modify pom file", e)
+                }
+            }
+        }
     }
 
     repositories {
