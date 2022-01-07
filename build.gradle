@@ -86,6 +86,7 @@ dependencies {
     library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
+        exclude module: 'annotations'
     }
     //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
@@ -148,9 +149,6 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     relocate 'com.neovisionaries.ws.client'
     relocate 'okio'
     relocate 'okhttp3'
-
-    relocate 'org.intellij.lang.annotations'
-    relocate 'org.jetbrains.annotations'
 
     relocate 'org.apache.commons.collections4'
     relocate 'org.slf4j'
