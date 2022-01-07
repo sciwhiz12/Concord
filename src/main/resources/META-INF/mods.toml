@@ -11,6 +11,16 @@ license = "MIT License"
     logoBlur = false
     description = '''
     A Discord chat integration mod.
+
+    Thank you to the following projects, which are repackaged in this mod:
+    - JDA, a Java wrapper for the Discord REST API
+      - nv-websocket-client, a high-quality WebSocket client implementation in Java
+      - OkHttp, a meticulous HTTP client for the JVM, Android, and GraalVM
+        - Okio, a modern I/O library for Android, Java, and Kotlin
+      - Apache Commons Collections, contains types that extend and augment the Java Collections Framework
+      - Jackson, a suite of data-processing tools for Java and the JVM platform, including a streaming JSON parser / generator library
+      - Trove, provides high speed Object and primitive collections for Java
+      - FindBugs JSR305, the JSR305 Annotations provided by Findbugs
     '''
 
 [[dependencies.concord]]
