@@ -154,7 +154,6 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     relocate 'okhttp3'
 
     relocate 'org.apache.commons.collections4'
-    relocate 'org.slf4j'
     relocate 'javax.annotation'
     relocate 'com.fasterxml.jackson'
 
