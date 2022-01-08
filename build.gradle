@@ -12,6 +12,9 @@ plugins {
 }
 apply from: 'gradle/version.gradle'
 
+versions {
+    customPrefix = mc_version
+}
 version = versions.getVersion()
 println "Mod version: $version"
 
