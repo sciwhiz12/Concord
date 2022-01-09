@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static net.minecraft.ChatFormatting.DARK_GRAY;
 import static net.minecraft.ChatFormatting.WHITE;
@@ -33,37 +32,11 @@ public class Messaging {
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
     public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member, String message) {
-        final MemberStatus status = MemberStatus.from(member);
-
-        boolean hasHoistedAdministrator = member.getGuild().getRoleCache().stream()
-            .anyMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
-        boolean showCrown = member.isOwner() && (crownVisibility == ConcordConfig.CrownVisibility.ALWAYS
-            || (crownVisibility == ConcordConfig.CrownVisibility.WITHOUT_ADMINISTRATORS && !hasHoistedAdministrator));
-
-        final MutableComponent ownerText = new TextComponent(
-            showCrown ? MemberStatus.CROWN_ICON + " " : "")
-            .withStyle(style -> style.withColor(CROWN_COLOR));
-
-        final MutableComponent statusText = new TextComponent("" + status.getIcon())
-            .withStyle(style -> style.withColor(status.getColor()));
-
-        if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
-            ownerText.withStyle(style -> style.withFont(ICONS_FONT));
-            statusText.withStyle(style -> style.withFont(ICONS_FONT));
-        }
-
-        final MutableComponent hover = new TranslatableComponent("chat.concord.hover.header",
-            new TextComponent(member.getUser().getName()).withStyle(WHITE),
-            new TextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
-            ownerText,
-            statusText,
-            new TranslatableComponent(status.getTranslationKey())
-                .withStyle(style -> style.withColor(status.getColor()))
-        ).withStyle(DARK_GRAY);
+        final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
 
         final List<Role> roles = member.getRoles().stream()
             .filter(((Predicate<Role>) Role::isPublicRole).negate())
-            .collect(Collectors.toList());
+            .toList();
         if (!roles.isEmpty()) {
             hover.append("\n").append(new TranslatableComponent("chat.concord.hover.roles"));
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
@@ -86,6 +59,34 @@ public class Messaging {
         );
         result.withStyle(DARK_GRAY);
         return result;
+    }
+
+    public static MutableComponent createUserHover(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member) {
+        final MemberStatus status = MemberStatus.from(member);
+        final boolean hasHoistedAdministrator = member.getGuild().getRoleCache().stream()
+            .anyMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
+        final boolean showCrown = member.isOwner() && (crownVisibility == ConcordConfig.CrownVisibility.ALWAYS
+            || (crownVisibility == ConcordConfig.CrownVisibility.WITHOUT_ADMINISTRATORS && !hasHoistedAdministrator));
+
+        final MutableComponent ownerText = new TextComponent(
+            showCrown ? MemberStatus.CROWN_ICON + " " : "")
+            .withStyle(style -> style.withColor(CROWN_COLOR));
+        final MutableComponent statusText = new TextComponent("" + status.getIcon())
+            .withStyle(style -> style.withColor(status.getColor()));
+
+        if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
+            ownerText.withStyle(style -> style.withFont(ICONS_FONT));
+            statusText.withStyle(style -> style.withFont(ICONS_FONT));
+        }
+
+        return new TranslatableComponent("chat.concord.hover.header",
+            new TextComponent(member.getUser().getName()).withStyle(WHITE),
+            new TextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
+            ownerText,
+            statusText,
+            new TranslatableComponent(status.getTranslationKey())
+                .withStyle(style -> style.withColor(status.getColor()))
+        ).withStyle(DARK_GRAY);
     }
 
     public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {
