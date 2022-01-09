@@ -7,7 +7,13 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.Util;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -63,17 +69,22 @@ public class Messaging {
 
     public static MutableComponent createUserHover(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member) {
         final MemberStatus status = MemberStatus.from(member);
-        final boolean hasHoistedAdministrator = member.getGuild().getRoleCache().stream()
-            .anyMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
-        final boolean showCrown = member.isOwner() && (crownVisibility == ConcordConfig.CrownVisibility.ALWAYS
-            || (crownVisibility == ConcordConfig.CrownVisibility.WITHOUT_ADMINISTRATORS && !hasHoistedAdministrator));
 
-        final MutableComponent ownerText = new TextComponent(
-            showCrown ? MemberStatus.CROWN_ICON + " " : "")
+        final boolean showCrown = switch (crownVisibility) {
+            case ALWAYS -> member.isOwner(); // Always show for the owner
+            case NEVER -> false; // Never show
+            case WITHOUT_ADMINISTRATORS -> member.isOwner() // Show if owner and there are no hoisted Admin roles
+                && member.getGuild().getRoleCache().streamUnordered()
+                .noneMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
+            // TODO: cache the result of the above stream
+        };
+
+        final MutableComponent ownerText = new TextComponent(showCrown ? MemberStatus.CROWN_ICON + " " : "")
             .withStyle(style -> style.withColor(CROWN_COLOR));
-        final MutableComponent statusText = new TextComponent("" + status.getIcon())
+        final MutableComponent statusText = new TextComponent(String.valueOf(status.getIcon()))
             .withStyle(style -> style.withColor(status.getColor()));
 
+        // Use Concord icon font if configured and told to do so
         if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
             ownerText.withStyle(style -> style.withFont(ICONS_FONT));
             statusText.withStyle(style -> style.withFont(ICONS_FONT));
