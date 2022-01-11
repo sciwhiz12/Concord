@@ -153,7 +153,7 @@ public class Messaging {
         server.sendMessage(withoutIcons, Util.NIL_UUID);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            BaseComponent sendingText;
+            MutableComponent sendingText;
             if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
                 TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);

@@ -30,17 +30,17 @@ public final class TranslationUtil {
      * @param args          Extra arguments to the message
      * @return a {@link BaseComponent} with the specified message
      */
-    public static BaseComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
+    public static MutableComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
         TranslatableComponent text = new TranslatableComponent(translation, args);
         return lazyTranslate ? text : eagerTranslate(text);
     }
 
-    public static BaseComponent createTranslation(@Nullable ServerPlayer entity, String translationKey, Object... args) {
+    public static MutableComponent createTranslation(@Nullable ServerPlayer entity, String translationKey, Object... args) {
         return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
             translationKey, args);
     }
 
-    public static BaseComponent eagerTranslate(final TranslatableComponent component) {
+    public static MutableComponent eagerTranslate(final TranslatableComponent component) {
         Object[] oldArgs = component.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 

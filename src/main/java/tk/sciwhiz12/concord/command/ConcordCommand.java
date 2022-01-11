@@ -6,6 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
@@ -37,7 +38,7 @@ public class ConcordCommand {
         );
     }
 
-    private static BaseComponent createMessage(CommandSourceStack source, String translation, Object... args) {
+    private static MutableComponent createMessage(CommandSourceStack source, String translation, Object... args) {
         return TranslationUtil.createTranslation((ServerPlayer) source.getEntity(), translation, args);
     }
 
