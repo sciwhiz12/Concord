@@ -4,8 +4,10 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.ChatType;
@@ -23,6 +25,7 @@ import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -30,6 +33,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static net.minecraft.ChatFormatting.DARK_GRAY;
+import static net.minecraft.ChatFormatting.GRAY;
 import static net.minecraft.ChatFormatting.WHITE;
 import static tk.sciwhiz12.concord.Concord.MODID;
 
@@ -37,7 +41,8 @@ public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
-    public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member, String message) {
+    public static MutableComponent createUserComponent(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
+                                                       Member member, @Nullable MutableComponent replyMessage) {
         final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
 
         final List<Role> roles = member.getRoles().stream()
@@ -54,15 +59,50 @@ public class Messaging {
             }
         }
 
-        final String name = member.getNickname() != null ? member.getNickname() : member.getUser().getName();
+        if (replyMessage != null) {
+            hover.append("\n")
+                .append(new TranslatableComponent("chat.concord.hover.reply",
+                    replyMessage.withStyle(WHITE))
+                    .withStyle(GRAY)
+                );
+        }
 
-        TranslatableComponent result = new TranslatableComponent("chat.concord.header",
-            new TextComponent(name)
-                .withStyle(style -> style
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
-                    .withColor(TextColor.fromRgb(member.getColorRaw()))),
-            new TextComponent(message).withStyle(WHITE)
-        );
+        final String userName = member.getNickname() != null ? member.getNickname() : member.getUser().getName();
+        return new TextComponent(userName)
+            .withStyle(style -> style
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                .withColor(TextColor.fromRgb(member.getColorRaw())));
+    }
+
+    public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
+                                                      Member member, String message,
+                                                      @Nullable MessageReference reference) {
+        final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, member, null);
+        MutableComponent text = new TextComponent(message).withStyle(WHITE);
+
+        if (reference != null) {
+            final Message referencedMessage = reference.getMessage();
+            if (referencedMessage != null) {
+                final MutableComponent referencedUserComponent;
+
+                final Member referencedMember = referencedMessage.getMember();
+                if (member.equals(referencedMember)) { // Reuse existing component if its a self-reply
+                    referencedUserComponent = userComponent;
+                } else if (referencedMember != null) {
+                    referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
+                        new TextComponent(referencedMessage.getContentDisplay()).withStyle(WHITE));
+                } else {
+                    referencedUserComponent = new TranslatableComponent("chat.concord.reply.unknown");
+                } // TODO: reply to the bot/webhook
+
+                text = new TranslatableComponent("chat.concord.reply", referencedUserComponent)
+                    .withStyle(ChatFormatting.GRAY)
+                    .append("\n")
+                    .append(text);
+            }
+        }
+
+        TranslatableComponent result = new TranslatableComponent("chat.concord.header", userComponent, text);
         result.withStyle(DARK_GRAY);
         return result;
     }
@@ -100,11 +140,12 @@ public class Messaging {
         ).withStyle(DARK_GRAY);
     }
 
-    public static void sendToAllPlayers(MinecraftServer server, Member member, String message) {
+    public static void sendToAllPlayers(MinecraftServer server, Member member, String message,
+                                        @Nullable MessageReference reference) {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
-        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message));
-        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message);
+        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message, reference));
+        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message, reference);
 
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();

@@ -2,6 +2,7 @@ package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.MiscUtil;
@@ -35,7 +36,12 @@ public class MessageListener extends ListenerAdapter {
         if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID.get()) &&
             event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID.get())) {
 
-            queuedMessages.add(new MessageEntry(event));
+            final MessageEntry entry = new MessageEntry(event);
+            final MessageReference reference = entry.message.getMessageReference();
+            if (reference != null) {
+                reference.resolve().queue();
+            }
+            queuedMessages.add(entry);
         }
     }
 
@@ -45,7 +51,8 @@ public class MessageListener extends ListenerAdapter {
 
         MessageEntry entry;
         while ((entry = queuedMessages.poll()) != null) { // TODO: rate-limiting
-            Messaging.sendToAllPlayers(bot.getServer(), entry.member, entry.message.getContentDisplay());
+            Messaging.sendToAllPlayers(bot.getServer(), entry.member, entry.message.getContentDisplay(),
+                entry.message.getMessageReference());
         }
     }
 
