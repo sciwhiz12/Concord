@@ -54,14 +54,9 @@ public class MessageListener extends ListenerAdapter {
         Messaging.sendToChannel(bot.getDiscord(), event.getComponent().getString());
     }
 
-    static class MessageEntry {
-        private final Member member;
-        private final Message message;
-
+    static record MessageEntry(Member member, Message message) {
         MessageEntry(GuildMessageReceivedEvent event) {
-            assert event.getMember() != null; // Shut IDEA inspection up
-            this.member = event.getMember();
-            this.message = event.getMessage();
+            this(event.getMember(), event.getMessage());
         }
     }
 }
