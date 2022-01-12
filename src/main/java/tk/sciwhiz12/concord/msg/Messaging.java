@@ -88,9 +88,7 @@ public class Messaging {
                 final MutableComponent referencedUserComponent;
 
                 final Member referencedMember = referencedMessage.getMember();
-                if (member.equals(referencedMember)) { // Reuse existing component if its a self-reply
-                    referencedUserComponent = userComponent;
-                } else if (referencedMember != null) {
+                if (referencedMember != null) {
                     referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
                         createContentComponent(referencedMessage));
                 } else {
