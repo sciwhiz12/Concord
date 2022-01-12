@@ -99,7 +99,6 @@ public class Messaging {
 
                 text = new TranslatableComponent("chat.concord.reply", referencedUserComponent)
                     .withStyle(ChatFormatting.GRAY)
-                    .append("\n")
                     .append(text);
             }
         }

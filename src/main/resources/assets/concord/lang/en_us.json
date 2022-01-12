@@ -6,7 +6,7 @@
   "chat.concord.status.offline": "Offline",
   "chat.concord.status.unknown": "UNKNOWN!",
   "chat.concord.header": "(%s) %s",
-  "chat.concord.reply": "in reply to %s",
+  "chat.concord.reply": "in reply to %s: ",
   "chat.concord.reply.unknown": "an unknown user",
   "chat.concord.attachment": "attachment:%s",
   "chat.concord.attachment.no_extension": "attachment",
