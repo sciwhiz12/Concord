@@ -9,8 +9,9 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -32,6 +33,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static net.minecraft.ChatFormatting.AQUA;
 import static net.minecraft.ChatFormatting.DARK_GRAY;
 import static net.minecraft.ChatFormatting.GRAY;
 import static net.minecraft.ChatFormatting.WHITE;
@@ -75,10 +77,10 @@ public class Messaging {
     }
 
     public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                                      Member member, String message,
-                                                      @Nullable MessageReference reference) {
+                                                      Member member, Message message) {
+        final MessageReference reference = message.getMessageReference();
         final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, member, null);
-        MutableComponent text = new TextComponent(message).withStyle(WHITE);
+        MutableComponent text = createContentComponent(message);
 
         if (reference != null) {
             final Message referencedMessage = reference.getMessage();
@@ -90,9 +92,11 @@ public class Messaging {
                     referencedUserComponent = userComponent;
                 } else if (referencedMember != null) {
                     referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
-                        new TextComponent(referencedMessage.getContentDisplay()).withStyle(WHITE));
+                        createContentComponent(referencedMessage));
                 } else {
-                    referencedUserComponent = new TranslatableComponent("chat.concord.reply.unknown");
+                    referencedUserComponent = new TranslatableComponent("chat.concord.reply.unknown")
+                        .withStyle(style -> style.withHoverEvent(
+                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
                 } // TODO: reply to the bot/webhook
 
                 text = new TranslatableComponent("chat.concord.reply", referencedUserComponent)
@@ -105,6 +109,48 @@ public class Messaging {
         TranslatableComponent result = new TranslatableComponent("chat.concord.header", userComponent, text);
         result.withStyle(DARK_GRAY);
         return result;
+    }
+
+    public static MutableComponent createContentComponent(Message message) {
+        final String content = message.getContentDisplay();
+        final MutableComponent text = new TextComponent(content).withStyle(WHITE);
+
+        boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
+        for (Message.Attachment attachment : message.getAttachments()) {
+            // Ensures a space between attachments, and a space between message and first attachment (whether added by
+            // us or from the message)
+            if (!skipSpace) {
+                text.append(" ");
+            }
+            skipSpace = false;
+
+            final String extension = attachment.getFileExtension();
+            MutableComponent attachmentComponent;
+            if (extension != null) {
+                attachmentComponent = new TranslatableComponent("chat.concord.attachment", extension);
+            } else {
+                attachmentComponent = new TranslatableComponent("chat.concord.attachment.no_extension");
+            }
+            attachmentComponent = ComponentUtils.wrapInSquareBrackets(attachmentComponent);
+            attachmentComponent.withStyle(AQUA);
+
+            final MutableComponent attachmentHoverComponent = new TextComponent("");
+            attachmentHoverComponent.append(
+                new TranslatableComponent("chat.concord.attachment.hover.filename",
+                    new TextComponent(attachment.getFileName()).withStyle(WHITE))
+                    .withStyle(GRAY)
+            ).append("\n");
+            attachmentHoverComponent.append(new TextComponent(attachment.getUrl()).withStyle(DARK_GRAY)).append("\n");
+            attachmentHoverComponent.append(new TranslatableComponent("chat.concord.attachment.hover.click"));
+
+            attachmentComponent.withStyle(style ->
+                style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
+                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl())));
+
+            text.append(attachmentComponent);
+        }
+
+        return text;
     }
 
     public static MutableComponent createUserHover(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member) {
@@ -140,12 +186,11 @@ public class Messaging {
         ).withStyle(DARK_GRAY);
     }
 
-    public static void sendToAllPlayers(MinecraftServer server, Member member, String message,
-                                        @Nullable MessageReference reference) {
+    public static void sendToAllPlayers(MinecraftServer server, Member member, Message message) {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
-        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message, reference));
-        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message, reference);
+        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message));
+        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message);
 
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
