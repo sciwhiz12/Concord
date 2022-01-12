@@ -1,12 +1,19 @@
 package tk.sciwhiz12.concord.util;
 
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 public final class TranslationUtil {
     private TranslationUtil() {
@@ -41,49 +48,63 @@ public final class TranslationUtil {
     }
 
     public static MutableComponent eagerTranslate(final TranslatableComponent component) {
+        return checkComponent(component);
+    }
+
+    public static MutableComponent checkComponent(Component component) {
+        if (component instanceof MutableComponent mutable) {
+            return checkComponent(mutable);
+        }
+        return checkComponent(component.copy());
+    }
+
+    // Use the above instead
+    private static MutableComponent checkComponent(MutableComponent component) {
+        if (component instanceof TranslatableComponent translatable) {
+            component = translateEagerly(translatable);
+        }
+        component.withStyle(TranslationUtil::checkHover);
+        checkSiblings(component);
+        return component;
+    }
+
+    private static void checkSiblings(MutableComponent component) {
+        final ArrayList<Component> originalSiblings = new ArrayList<>(component.getSiblings());
+        component.getSiblings().clear();
+        for (Component sibling : originalSiblings) {
+            if (sibling instanceof TranslatableComponent translatable) {
+                component.append(eagerTranslate(translatable));
+            } else {
+                component.append(checkComponent(sibling));
+            }
+        }
+    }
+
+    private static TranslatableComponent translateEagerly(TranslatableComponent component) {
         Object[] oldArgs = component.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
         for (int i = 0; i < oldArgs.length; i++) {
             Object obj = oldArgs[i];
-            if (obj instanceof TranslatableComponent) {
-                newArgs[i] = eagerTranslate((TranslatableComponent) obj);
-            } else if (obj instanceof MutableComponent) {
-                newArgs[i] = eagerCheckStyle((MutableComponent) obj);
-            } else {
-                newArgs[i] = oldArgs[i];
+            if (obj instanceof Component componentArg) {
+                obj = checkComponent(componentArg);
             }
+            newArgs[i] = obj;
         }
 
-        TranslatableComponent result =
-            new TranslatableComponent(Language.getInstance().getOrDefault(component.getKey()), newArgs);
+        TranslatableComponent result = new TranslatableComponent(Language.getInstance().getOrDefault(component.getKey()), newArgs);
         result.setStyle(component.getStyle());
-
-        for (Component sibling : component.getSiblings()) {
-            if (sibling instanceof TranslatableComponent) {
-                result.append(eagerTranslate((TranslatableComponent) sibling));
-            } else if (sibling instanceof MutableComponent) {
-                result.append(eagerCheckStyle((MutableComponent) sibling));
-            } else {
-                result.append(sibling);
-            }
-        }
-
-        return eagerCheckStyle(result);
+        return result;
     }
 
-    public static <Text extends MutableComponent> Text eagerCheckStyle(Text component) {
-        Style style = component.getStyle();
+    private static Style checkHover(Style style) {
         HoverEvent hover = style.getHoverEvent();
         if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
-            Component hoverText = hover.getValue(HoverEvent.Action.SHOW_TEXT);
-            if (hoverText instanceof TranslatableComponent) {
-                style = style.withHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, eagerTranslate((TranslatableComponent) hoverText))
-                );
+            Component hoverComponent = hover.getValue(HoverEvent.Action.SHOW_TEXT);
+            if (hoverComponent != null) {
+                return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, checkComponent(hoverComponent)));
             }
         }
-        component.setStyle(style);
-        return component;
+        return style;
     }
 }
