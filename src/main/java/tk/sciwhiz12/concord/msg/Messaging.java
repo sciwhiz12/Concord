@@ -1,5 +1,6 @@
 package tk.sciwhiz12.concord.msg;
 
+import com.google.common.base.Suppliers;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -21,7 +22,6 @@ import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.util.Lazy;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static net.minecraft.ChatFormatting.AQUA;
 import static net.minecraft.ChatFormatting.DARK_GRAY;
@@ -69,8 +70,7 @@ public class Messaging {
                 );
         }
 
-        final String userName = member.getNickname() != null ? member.getNickname() : member.getUser().getName();
-        return new TextComponent(userName)
+        return new TextComponent(member.getEffectiveName())
             .withStyle(style -> style
                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
                 .withColor(TextColor.fromRgb(member.getColorRaw())));
@@ -187,7 +187,7 @@ public class Messaging {
     public static void sendToAllPlayers(MinecraftServer server, Member member, Message message) {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
-        Lazy<TranslatableComponent> withIcons = Lazy.of(() -> createMessage(true, crownVisibility, member, message));
+        Supplier<TranslatableComponent> withIcons = Suppliers.memoize(() -> createMessage(true, crownVisibility, member, message));
         TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message);
 
         final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
