@@ -94,6 +94,7 @@ public final class TranslationUtil {
 
         TranslatableComponent result = new TranslatableComponent(Language.getInstance().getOrDefault(component.getKey()), newArgs);
         result.setStyle(component.getStyle());
+        component.getSiblings().forEach(result::append);
         return result;
     }
 
