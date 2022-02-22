@@ -3,8 +3,10 @@ package tk.sciwhiz12.concord.msg;
 import com.google.common.base.Suppliers;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -23,7 +25,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.util.StringReplacer;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 
 import javax.annotation.Nullable;
@@ -196,7 +199,7 @@ public class Messaging {
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             MutableComponent sendingText;
-            if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
+            if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
                 TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
             } else {
@@ -206,24 +209,39 @@ public class Messaging {
         }
     }
 
-    public static void sendToChannel(JDA discord, CharSequence text) {
+    private static final StringReplacer EMOJI_REPLACER = new StringReplacer();
+    
+	public static void addEmojiReplacement(Emote emote) {
+		EMOJI_REPLACER.add(":%s:".formatted(emote.getName()), emote.getAsMention());
+	}
+
+	public static void removeEmojiReplacement(String emoteName) {
+		EMOJI_REPLACER.remove(":%s:".formatted(emoteName));
+	}
+
+	public static void removeEmojiReplacement(Emote emote) {
+		removeEmojiReplacement(emote.getName());
+	}
+	
+	public static void sendToChannel(JDA discord, CharSequence text) {
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
         if (channel != null) {
-            Collection<Message.MentionType> allowedMentions = Collections.emptySet();
-            if (ConcordConfig.ALLOW_MENTIONS.get()) {
-                allowedMentions = EnumSet.noneOf(Message.MentionType.class);
-                if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.EVERYONE);
-                    allowedMentions.add(Message.MentionType.HERE);
-                }
-                if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.USER);
-                }
-                if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+			Collection<Message.MentionType> allowedMentions = Collections.emptySet();
+			if (ConcordConfig.ALLOW_MENTIONS.get()) {
+				allowedMentions = EnumSet.noneOf(Message.MentionType.class);
+				if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+					allowedMentions.add(Message.MentionType.EVERYONE);
+					allowedMentions.add(Message.MentionType.HERE);
+				}
+				if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+					allowedMentions.add(Message.MentionType.USER);
+				}
+				if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
                     allowedMentions.add(Message.MentionType.ROLE);
                 }
             }
-            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+			allowedMentions.add(MentionType.EMOTE);
+			channel.sendMessage(EMOJI_REPLACER.replace(text)).allowedMentions(allowedMentions).queue();
         }
     }
 }

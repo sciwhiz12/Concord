@@ -36,3 +36,10 @@ license = "MIT License"
     versionRange = "[1.18.1,)"
     ordering = "NONE"
     side = "BOTH"
+
+[[dependencies.concord]]
+    modId = "emojiful"
+    mandatory = false
+    versionRange = "[2.1.6,)"
+    ordering = "NONE"
+    side = "BOTH"
