@@ -39,8 +39,8 @@ public class EmojifulCompat {
     private static MethodHandle indexEmojisMethod;
     private static List<String> registeredGuildCategories = new ArrayList<>();
 
-    public static void loadDiscordEmoji(String guildName, long emojiId, String emojiName) {
-        final var emojifulEmoji = new EmojiFromDiscord(emojiId, emojiName);
+    public static void loadDiscordEmoji(String guildName, long emojiId, String emojiName, boolean animated) {
+        final var emojifulEmoji = new EmojiFromDiscord(emojiId, emojiName, animated);
         Emojiful.EMOJI_MAP.computeIfAbsent(guildName, n -> new ArrayList<>()).add(emojifulEmoji);
         Emojiful.EMOJI_LIST.add(emojifulEmoji);
         if (!registeredGuildCategories.contains(guildName)) {
@@ -50,9 +50,9 @@ public class EmojifulCompat {
         }
     }
 
-    public static void removeDiscordEmoji(String guildName, long emojiId, String emojiName) {
+    public static void removeDiscordEmoji(String guildName, long emojiId, String emojiName, boolean animated) {
         Emojiful.EMOJI_MAP.computeIfAbsent(guildName, n -> new ArrayList<>()).stream()
-                .filter(e -> e instanceof EmojiFromDiscord dcEmoji && dcEmoji.isSame(emojiId, emojiName)).findAny()
+                .filter(e -> e instanceof EmojiFromDiscord dcEmoji && dcEmoji.isSame(emojiId, emojiName, animated)).findAny()
                 .ifPresent(emoji -> {
                     Emojiful.EMOJI_MAP.computeIfAbsent(guildName, k -> new ArrayList<>()).remove(emoji);
                     Emojiful.EMOJI_LIST.remove(emoji);

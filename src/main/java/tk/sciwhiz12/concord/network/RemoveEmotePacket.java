@@ -52,7 +52,7 @@ public final class RemoveEmotePacket {
             if (Concord.emojifulLoaded()) {
                 emotes.forEach((guildName, emts) -> {
                     emts.forEach(
-                            data -> EmojifulCompat.removeDiscordEmoji(guildName, data.emoteId(), data.emoteName()));
+                            data -> EmojifulCompat.removeDiscordEmoji(guildName, data.emoteId(), data.emoteName(), data.animated()));
                     Concord.LOGGER.info("Removed {} Emojiful emojis from guild \"{}\"", emts.size(), guildName);
                 });
                 EmojifulCompat.indexEmojis();

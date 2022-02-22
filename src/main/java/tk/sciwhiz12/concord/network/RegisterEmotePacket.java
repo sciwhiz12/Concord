@@ -51,7 +51,7 @@ public final class RegisterEmotePacket {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             if (Concord.emojifulLoaded()) {
                 emotes.forEach((guildName, emts) -> {
-                    emts.forEach(data -> EmojifulCompat.loadDiscordEmoji(guildName, data.emoteId(), data.emoteName()));
+                    emts.forEach(data -> EmojifulCompat.loadDiscordEmoji(guildName, data.emoteId(), data.emoteName(), data.animated()));
                     Concord.LOGGER.info("Registered {} Emojiful emojis from guild \"{}\"", emts.size(), guildName);
                 });
                 EmojifulCompat.indexEmojis();
@@ -63,19 +63,20 @@ public final class RegisterEmotePacket {
         return new RegisterEmotePacket(buffer.readMap(FriendlyByteBuf::readUtf, buf -> buf.readList(EmoteData::new)));
     }
 
-    public record EmoteData(long emoteId, String emoteName) {
+    public record EmoteData(long emoteId, String emoteName, boolean animated) {
 
         public void write(FriendlyByteBuf buffer) {
             buffer.writeLong(emoteId);
             buffer.writeUtf(emoteName);
+            buffer.writeBoolean(animated);
         }
 
         public EmoteData(FriendlyByteBuf buffer) {
-            this(buffer.readLong(), buffer.readUtf());
+            this(buffer.readLong(), buffer.readUtf(), buffer.readBoolean());
         }
 
         public EmoteData(Emote emote) {
-            this(emote.getIdLong(), emote.getName());
+            this(emote.getIdLong(), emote.getName(), emote.isAnimated());
         }
     }
 }

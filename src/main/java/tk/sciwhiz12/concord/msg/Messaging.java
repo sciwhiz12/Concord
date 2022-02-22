@@ -134,7 +134,12 @@ public class Messaging {
     }
 
     public static MutableComponent createContentComponent(Message message) {
-        final String content = message.getContentDisplay();
+        String content = message.getContentDisplay();
+        for (var emote : message.getEmotes()) {
+            if (emote.isAnimated()) {
+                content = content.replace("<:a:%s>".formatted(emote.getId()), ":%s:".formatted(emote.getName()));
+            }
+        }
         final MutableComponent text = new TextComponent(content).withStyle(WHITE);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));

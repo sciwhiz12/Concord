@@ -28,16 +28,18 @@ public final class EmojiFromDiscord extends Emoji {
 
     private final String url;
     private final long emojiId;
+    private final boolean animated;
 
-    public EmojiFromDiscord(long emojiId, String name) {
+    public EmojiFromDiscord(long emojiId, String name, boolean animated) {
         this.emojiId = emojiId;
-        this.url = "https://cdn.discordapp.com/emojis/%s.png?size=80&quality=lossless".formatted(emojiId);
+        this.animated = animated;
+        this.url = "https://cdn.discordapp.com/emojis/%s.%s?size=80&quality=lossless".formatted(emojiId, animated ? "gif" : "png");
         this.name = name;
         this.strings.add(":%s:".formatted(name));
     }
 
-    public boolean isSame(long emojiId, String name) {
-        return this.emojiId == emojiId && this.name.equals(name);
+    public boolean isSame(long emojiId, String name, boolean animated) {
+        return this.emojiId == emojiId && this.name.equals(name) && this.animated == animated;
     }
 
     @Override
