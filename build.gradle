@@ -1,4 +1,5 @@
 import org.w3c.dom.NodeList
+import tk.sciwhiz12.gradle.license.LicenserExtensions
 
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
@@ -10,6 +11,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 	id 'eclipse'
+    id 'org.cadixdev.licenser'
 }
 apply from: 'gradle/version.gradle'
 
@@ -110,6 +112,11 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
 }
+
+license {
+    header = project.file('HEADER.txt')
+}
+LicenserExtensions.configure(project)
 
 var manifestAttributes = [
         'Specification-Title'   : modid,
