@@ -40,6 +40,6 @@ license = "MIT License"
 [[dependencies.concord]]
     modId = "emojiful"
     mandatory = false
-    versionRange = "[2.1.6,)"
+    versionRange = "[3.0.0,)"
     ordering = "NONE"
     side = "SERVER"
