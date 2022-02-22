@@ -42,4 +42,4 @@ license = "MIT License"
     mandatory = false
     versionRange = "[2.1.6,)"
     ordering = "NONE"
-    side = "BOTH"
+    side = "SERVER"
