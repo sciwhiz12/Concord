@@ -62,7 +62,7 @@ public class PlayerListener {
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
 
-        if (event.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
         	bot.getDiscord().getGuilds().forEach(guild -> {
         		// Split the guilds, just so the packet isn't giant
         		ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(new RegisterEmotePacket(Map.of(guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList())), 
@@ -81,7 +81,7 @@ public class PlayerListener {
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
         
-        if (event.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
         	bot.getDiscord().getGuilds().forEach(guild -> {
         		// Split the guilds, just so the packet isn't giant
         		ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(new RemoveEmotePacket(Map.of(guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList())), 
