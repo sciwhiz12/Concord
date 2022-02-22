@@ -1,1 +1,4 @@
+@net.minecraft.FieldsAreNonnullByDefault
+@javax.annotation.ParametersAreNonnullByDefault
+@net.minecraft.MethodsReturnNonnullByDefault
 package tk.sciwhiz12.concord.network;
