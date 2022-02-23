@@ -46,10 +46,14 @@ import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+
+import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.util.EmojifulToDiscordConverter;
 import tk.sciwhiz12.concord.util.StringReplacer;
 import tk.sciwhiz12.concord.util.TranslationUtil;
+import tk.sciwhiz12.concord.util.UnicodeConversion;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -135,10 +139,14 @@ public class Messaging {
 
     public static MutableComponent createContentComponent(Message message) {
         String content = message.getContentDisplay();
-        for (var emote : message.getEmotes()) {
-            if (emote.isAnimated()) {
-                content = content.replace("<:a:%s>".formatted(emote.getId()), ":%s:".formatted(emote.getName()));
+        // Only convert if emojiful is loaded. Else, it's useless
+        if (Concord.emojifulLoaded()) {
+            for (var emote : message.getEmotes()) {
+                if (emote.isAnimated()) {
+                    content = content.replace("<:a:%s>".formatted(emote.getId()), ":%s:".formatted(emote.getName()));
+                }
             }
+            content = UnicodeConversion.replace(content);
         }
         final MutableComponent text = new TextComponent(content).withStyle(WHITE);
 
@@ -251,6 +259,9 @@ public class Messaging {
 	}
 	
 	public static void sendToChannel(JDA discord, CharSequence text) {
+	    if (Concord.emojifulLoaded()) {
+	        text = EmojifulToDiscordConverter.replace(text);
+	    }
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
         if (channel != null) {
 			Collection<Message.MentionType> allowedMentions = Collections.emptySet();

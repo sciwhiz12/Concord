@@ -61,6 +61,8 @@ import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.util.EmojifulToDiscordConverter;
+import tk.sciwhiz12.concord.util.UnicodeConversion;
 
 @Mod(Concord.MODID)
 @Mod.EventBusSubscriber(modid = Concord.MODID, bus = Bus.MOD)
@@ -83,6 +85,11 @@ public class Concord {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
+        
+        if (emojifulLoaded()) {
+            UnicodeConversion.load();
+            EmojifulToDiscordConverter.load();
+        }
     }
     
     @SubscribeEvent

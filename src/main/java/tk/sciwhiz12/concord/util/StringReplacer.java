@@ -25,6 +25,8 @@ package tk.sciwhiz12.concord.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 public final class StringReplacer {
 
     private final Map<String, String> regex = new HashMap<>();
@@ -40,7 +42,9 @@ public final class StringReplacer {
     public String replace(String toFormat) {
         var str = toFormat;
         for (final var entry : regex.entrySet()) {
-            str = str.replace(entry.getKey(), entry.getValue());
+            if (str.contains(entry.getKey())) {
+                str = fastReplace(str, entry.getKey(), entry.getValue());
+            }
         }
         return str;
     }
@@ -49,4 +53,28 @@ public final class StringReplacer {
         return replace(toFormat.toString());
     }
 
+    @ParametersAreNonnullByDefault
+    public static String fastReplace(final String str, final String searchChars, String replaceChars) {
+        if ("".equals(str) || "".equals(searchChars) || searchChars.equals(replaceChars)) { return str; }
+        final int strLength = str.length();
+        final int searchCharsLength = searchChars.length();
+        StringBuilder buf = new StringBuilder(str);
+        boolean modified = false;
+        for (int i = 0; i < strLength; i++) {
+            int start = buf.indexOf(searchChars, i);
+
+            if (start == -1) {
+                if (i == 0) { return str; }
+                return buf.toString();
+            }
+            buf = buf.replace(start, start + searchCharsLength, replaceChars);
+            modified = true;
+
+        }
+        if (!modified) {
+            return str;
+        } else {
+            return buf.toString();
+        }
+    }
 }

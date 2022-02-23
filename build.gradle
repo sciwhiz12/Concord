@@ -35,7 +35,7 @@ println ", Arch: ${System.getProperty('os.arch')}"
 
 minecraft {
     mappings channel: mappings_channel, version: mappings_version
-
+    
     runs {
         configureEach {
             workingDirectory project.file('run/' + it.name) as File
