@@ -25,7 +25,7 @@ package tk.sciwhiz12.concord.msg;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.minecraftforge.common.MinecraftForge;
@@ -49,9 +49,13 @@ public class MessageListener extends ListenerAdapter {
         bot.getDiscord().addEventListener(this);
         MinecraftForge.EVENT_BUS.register(this);
     }
-
+    
     @Override
-    public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if (!event.isFromGuild()) {
+            return;
+        }
+        
         if (event.getAuthor().getIdLong() == bot.getDiscord().getSelfUser().getIdLong()) return;
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return; // TODO: maybe make this a config option
 
@@ -83,7 +87,7 @@ public class MessageListener extends ListenerAdapter {
     }
 
     static record MessageEntry(Member member, Message message) {
-        MessageEntry(GuildMessageReceivedEvent event) {
+        MessageEntry(MessageReceivedEvent event) {
             this(event.getMember(), event.getMessage());
         }
     }

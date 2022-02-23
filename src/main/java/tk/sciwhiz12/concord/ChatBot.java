@@ -33,6 +33,8 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import com.google.common.collect.Sets;
+import com.jagrosh.jdautilities.command.CommandClient;
+import com.jagrosh.jdautilities.command.CommandClientBuilder;
 
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
@@ -51,7 +53,10 @@ import net.dv8tion.jda.api.events.emote.update.EmoteUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.utils.MiscUtil;
 import net.minecraftforge.common.MinecraftForge;
+import tk.sciwhiz12.concord.command.discord.PlayersDiscordCommand;
+import tk.sciwhiz12.concord.command.discord.WhisperDiscordCommand;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
@@ -64,13 +69,14 @@ import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerManager.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
-        EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
+        EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND);
 
     private final JDA discord;
     private final MinecraftServer server;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+    private final CommandClient commandClient;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -79,6 +85,18 @@ public class ChatBot extends ListenerAdapter {
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+        commandClient = new CommandClientBuilder()
+                .setOwnerId(561254664750891009l)
+                .forceGuildOnly(MiscUtil.parseLong(ConcordConfig.GUILD_ID.get()))
+                .setShutdownAutomatically(true)
+                .setStatus(OnlineStatus.ONLINE)
+                .setActivity(null) // Don't let Chewtils override the activity
+                .addSlashCommands(
+                    new WhisperDiscordCommand(this),
+                    new PlayersDiscordCommand(this)
+                 )
+                .build();
+        discord.addEventListener(commandClient);
 
         // Prevent any mentions not explicitly specified
         MessageAction.setDefaultMentions(Collections.emptySet());
@@ -119,18 +137,22 @@ public class ChatBot extends ListenerAdapter {
 	public void onEmoteAdded(EmoteAddedEvent event) {
 		Messaging.addEmojiReplacement(event.getEmote());
 		
-		ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
-				new RegisterEmotePacket(Map.of(event.getGuild().getName(), 
-						List.of(new EmoteData(event.getEmote())))));
+		if (ConcordConfig.ENABLE_EMOJIFUL_INTEGRATION.get()) {
+		    ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
+	                new RegisterEmotePacket(Map.of(event.getGuild().getName(), 
+	                        List.of(new EmoteData(event.getEmote())))));
+		}
 	}
 
 	@Override
 	public void onEmoteRemoved(EmoteRemovedEvent event) {
 		Messaging.removeEmojiReplacement(event.getEmote());
 		
-		ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
-				new RemoveEmotePacket(Map.of(event.getGuild().getName(), 
-						List.of(new EmoteData(event.getEmote())))));
+		if (ConcordConfig.ENABLE_EMOJIFUL_INTEGRATION.get()) {
+		    ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
+	                new RemoveEmotePacket(Map.of(event.getGuild().getName(), 
+	                        List.of(new EmoteData(event.getEmote())))));
+		}
 	}
 
 	@Override
@@ -138,13 +160,15 @@ public class ChatBot extends ListenerAdapter {
 		Messaging.removeEmojiReplacement(event.getOldName());
 		Messaging.addEmojiReplacement(event.getEmote());
 		
-		ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
-				new RemoveEmotePacket(Map.of(event.getGuild().getName(), 
-						List.of(new EmoteData(event.getEmote())))));
-		
-		ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
-				new RegisterEmotePacket(Map.of(event.getGuild().getName(), 
-						List.of(new EmoteData(event.getEmote())))));
+		if (ConcordConfig.ENABLE_EMOJIFUL_INTEGRATION.get()) {
+		    ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
+	                new RemoveEmotePacket(Map.of(event.getGuild().getName(), 
+	                        List.of(new EmoteData(event.getEmote())))));
+	        
+	        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server, 
+	                new RegisterEmotePacket(Map.of(event.getGuild().getName(), 
+	                        List.of(new EmoteData(event.getEmote())))));
+		}
 	}
 
     void shutdown() {

@@ -30,7 +30,9 @@ public class ConcordConfig {
     static final ForgeConfigSpec CONFIG_SPEC;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_DISCORD_COMMANDS;
     public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_EMOJIFUL_INTEGRATION;
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
@@ -71,12 +73,21 @@ public class ConcordConfig {
             .comment("Whether the Discord integration is default enabled for integrated servers (i.e. singleplayer).",
                 "You can use the concord commands to force-enable discord integration for a session, if needed.")
             .define("enable_integrated", false);
+        
+        ENABLE_DISCORD_COMMANDS = builder
+            .comment("Whether Discord commands for server interaction should be enabled.")
+            .define("enable_discord_commands", true);
 
         SAY_COMMAND_HOOK = builder
             .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
                 "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
             .define("say_command_hook", true);
 
+        ENABLE_EMOJIFUL_INTEGRATION = builder
+            .comment("Whether Emojiful integration is enabled.",
+                 "If false, emojis from guilds will not be sent to clients.")
+            .define("enable_emojiful_integration", true);
+        
         {
             builder.comment("Discord connection settings").push("discord");
 

@@ -90,6 +90,9 @@ repositories {
 			includeGroup "curse.maven"
 		}
 	}
+    maven { 
+        url "https://m2.chew.pro/snapshots" 
+    }
 }
 
 dependencies {
@@ -99,6 +102,13 @@ dependencies {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
+    }
+    library(group: 'pw.chew', name: 'jda-chewtils', version: chewtils) {
+        exclude module: 'slf4j-api'
+        exclude module: 'okhttp'
+        exclude module: 'JDA'
+        exclude module: 'json'
+        exclude module: 'jsr305'
     }
     //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
 
@@ -175,6 +185,8 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
 
     relocate 'net.dv8tion.jda'
     relocate 'club.minnced.discord.webhook'
+    relocate 'com.jagrosh.jdautilities'
+    relocate 'pw.chew.jdachewtils'
     exclude 'META-INF/maven/**'
     exclude 'META-INF/proguard/**'
     exclude 'META-INF/services/**'

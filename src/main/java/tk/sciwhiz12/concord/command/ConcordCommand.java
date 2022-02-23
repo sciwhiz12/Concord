@@ -31,13 +31,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 
+import net.dv8tion.jda.api.requests.RestAction;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.literal;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConcordCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -57,6 +62,10 @@ public class ConcordCommand {
                 )
                 .then(literal("status")
                     .executes(ConcordCommand::status)
+                )
+                .then(literal("clear_discord_commands")
+                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
+                    .executes(ConcordCommand::clearDiscordCommands)
                 )
         );
     }
@@ -106,6 +115,26 @@ public class ConcordCommand {
             result = createMessage(source, "command.concord.status.disabled").withStyle(RED);
         }
         ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), false);
+        return Command.SINGLE_SUCCESS;
+    }
+    
+    private static int clearDiscordCommands(CommandContext<CommandSourceStack> ctx) {
+        final var source = ctx.getSource();
+        if (!Concord.isEnabled()) {
+            source.sendFailure(createMessage(source, "command.concord.integraton_disabled"));
+            return Command.SINGLE_SUCCESS;
+        }
+        final var guild = Concord.BOT.getDiscord().getGuildById(ConcordConfig.GUILD_ID.get());
+        guild.retrieveCommands()
+            .flatMap(cmds -> RestAction.accumulate(cmds.stream()
+                    .map(cmd -> guild.deleteCommandById(cmd.getId())).toList(), 
+                    Collectors.toList()))
+            .onErrorMap(t -> {
+                source.sendFailure(createMessage(source, "command.concord.clear_discord.exception"));
+                Concord.LOGGER.error("Exception while trying to clear Discord commands.", t);
+                return List.of();
+            })
+            .queue($ -> source.sendSuccess(createMessage(source, "command.concord.clear_discord.success", $.size()), true));
         return Command.SINGLE_SUCCESS;
     }
 }
