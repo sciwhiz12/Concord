@@ -23,7 +23,6 @@
 package tk.sciwhiz12.concord.command.discord;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Supplier;
 
 import com.google.common.base.Suppliers;
@@ -38,7 +37,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
 
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
