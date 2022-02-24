@@ -10,12 +10,12 @@ import tk.sciwhiz12.concord.ConcordConfig;
 public abstract class ConcordSlashCommand extends SlashCommand {
 
     protected final ChatBot bot;
-    
+
     protected ConcordSlashCommand(final ChatBot bot) {
         this.bot = bot;
-        this.guildOnly = true;
+        guildOnly = true;
     }
-    
+
     @Override
     protected final void execute(SlashCommandEvent event) {
         if (!event.isFromGuild()
@@ -24,9 +24,13 @@ public abstract class ConcordSlashCommand extends SlashCommand {
             event.deferReply(true).setContent("This command cannot be used in this channel.").queue();
             return;
         }
+        if (ConcordConfig.DISCORD_COMMANDS_ENABLED.containsKey(name) && !ConcordConfig.DISCORD_COMMANDS_ENABLED.get(name).get()) {
+            event.deferReply(true).setContent("This command is disabled!").queue();
+            return;
+        }
         execute0(event);
     }
-    
+
     protected abstract void execute0(SlashCommandEvent event);
-    
+
 }

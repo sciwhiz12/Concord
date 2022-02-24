@@ -22,15 +22,20 @@
 
 package tk.sciwhiz12.concord;
 
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 
+@SuppressWarnings("unchecked")
 public class ConcordConfig {
     static final ForgeConfigSpec CONFIG_SPEC;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_DISCORD_COMMANDS;
     public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
     public static final ForgeConfigSpec.BooleanValue ENABLE_EMOJIFUL_INTEGRATION;
 
@@ -61,6 +66,9 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GOAL;
 
     public static final ForgeConfigSpec.BooleanValue COMMAND_SAY;
+    
+    public static final List<String> COMMANDS = List.of("players", "whisper");
+    public static final Map<String, ForgeConfigSpec.BooleanValue> DISCORD_COMMANDS_ENABLED;
 
     public static void register() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC);
@@ -73,10 +81,6 @@ public class ConcordConfig {
             .comment("Whether the Discord integration is default enabled for integrated servers (i.e. singleplayer).",
                 "You can use the concord commands to force-enable discord integration for a session, if needed.")
             .define("enable_integrated", false);
-        
-        ENABLE_DISCORD_COMMANDS = builder
-            .comment("Whether Discord commands for server interaction should be enabled.")
-            .define("enable_discord_commands", true);
 
         SAY_COMMAND_HOOK = builder
             .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
@@ -100,6 +104,18 @@ public class ConcordConfig {
             CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post and receive messages.",
                     "If empty, the Discord integration will not be enabled.")
                 .define("channel_id", "");
+            
+            {
+                builder.comment("Discord commands").push("commands");
+                
+                DISCORD_COMMANDS_ENABLED = Map.ofEntries(COMMANDS.stream()
+                        .map(name ->  new AbstractMap.SimpleImmutableEntry<>(name, 
+                            builder.comment("If the command `/%s` should be enabled.".formatted(name))
+                            .define(name, true)))
+                        .toArray(Entry[]::new));
+                
+                builder.pop();
+            }
 
             builder.pop();
         }
