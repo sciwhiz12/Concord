@@ -27,7 +27,11 @@ import static tk.sciwhiz12.concord.Concord.LOGGER;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
@@ -51,7 +55,9 @@ import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
 import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
 import net.dv8tion.jda.api.events.emote.update.EmoteUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.minecraftforge.common.MinecraftForge;
@@ -217,5 +223,24 @@ public class ChatBot extends ListenerAdapter {
 
         // Required permissions are there. All checks satisfied.
         return true;
+    }
+    
+    public void suggestPlayers(CommandAutoCompleteInteractionEvent event, int limit, @Nullable Predicate<CommandAutoCompleteInteractionEvent> predicate) {
+        if (predicate != null && !predicate.test(event)) {
+            return;
+        }
+        final var currentChoice = event.getInteraction().getFocusedOption().getValue().toLowerCase(Locale.ROOT);
+        event.replyChoices(getPlayerSuggestions(currentChoice, limit)).queue();
+    }
+    
+    public List<Command.Choice> getPlayerSuggestions(String currentChoice, int limit) {
+        return getServer().getPlayerList()
+        .getPlayers().stream()
+        .filter(p -> p.getName().getString().startsWith(currentChoice))
+        .limit(limit)
+        .map(p -> {
+            final var name = p.getName().getString();
+            return new Command.Choice(name, name);
+        }).toList();
     }
 }

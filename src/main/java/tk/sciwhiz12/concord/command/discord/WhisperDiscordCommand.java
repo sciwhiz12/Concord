@@ -109,16 +109,7 @@ public final class WhisperDiscordCommand extends ConcordSlashCommand {
     
     @Override
     public void onAutoComplete(CommandAutoCompleteInteractionEvent event) {
-        if (event.getFocusedOption().getName().equals("player")) {
-            final var currentChoice = event.getInteraction().getFocusedOption().getValue().toLowerCase(Locale.ROOT);
-            event.replyChoices(bot.getServer().getPlayerList()
-                .getPlayers().stream()
-                .filter(p -> p.getName().getString().startsWith(currentChoice))
-                .map(p -> {
-                    final var name = p.getName().getString();
-                    return new Command.Choice(name, name);
-                }).toList()).queue();
-        }
+        bot.suggestPlayers(event, 10, e -> e.getFocusedOption().getName().equals("player"));
     }
 
 }
