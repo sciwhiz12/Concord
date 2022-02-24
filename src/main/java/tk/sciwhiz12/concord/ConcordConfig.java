@@ -111,9 +111,9 @@ public class ConcordConfig {
                     "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("lazy_translate", true);
 
-            USE_CUSTOM_FORMATTING = builder.comment("Allow Discord users to use Concord Message Formatting Coes in a message.",
+            USE_CUSTOM_FORMATTING = builder.comment("Allow Discord users to use Concord Message Formatting Codes in a message.",
                             "This will cause in-game messages to have color formatting.",
-                            "To use it, send a message with a dollar sign ($) followed by either an English-langauge color (ie. $red), or a hex code (ie. $#FF0000).",
+                            "To use it, send a message with a dollar sign ($) followed by either an English-language color (ie. $red), or a hex code (ie. $#FF0000).",
                             "Names are delimited by a space which will be consumed, so the string \"this is a $red colored text\" will be shown as \"this is a colored text\".",
                             "Please note that Custom Formatting will override Legacy Formatting when enabled. This is intentional.")
                     .define("use_custom_formatting", false);
