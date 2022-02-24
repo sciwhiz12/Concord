@@ -38,6 +38,7 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
+    public static final ForgeConfigSpec.BooleanValue USE_LEGACY_FORMATTING;
     public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
 
     public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
@@ -108,6 +109,11 @@ public class ConcordConfig {
                         "installed.",
                     "Set to false if you cannot ensure that all clients will have the mod installed.")
                 .define("lazy_translate", true);
+
+            USE_LEGACY_FORMATTING = builder.comment("Allow Discord users to put legacy-style chat formatting (&5, etc) in a message.",
+                    "This will cause in-game messages to have color, bold, italic, strikethrough and \"obfuscated\" formatting.",
+                    "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.")
+                    .define("use_legacy_formatting", false);
 
             HIDE_CROWN = builder.comment("Configures when the Server Owner crown is visible to clients.",
                     "ALWAYS means the crown is always visible, NEVER means the crown is never visible.",

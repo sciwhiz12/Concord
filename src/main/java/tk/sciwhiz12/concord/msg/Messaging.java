@@ -44,15 +44,13 @@ import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -132,7 +130,7 @@ public class Messaging {
 
     public static MutableComponent createContentComponent(Message message) {
         final String content = message.getContentDisplay();
-        final MutableComponent text = new TextComponent(content).withStyle(WHITE);
+        final MutableComponent text = processMessageFormatting(content);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
         for (Message.Attachment attachment : message.getAttachments()) {
@@ -246,6 +244,49 @@ public class Messaging {
                 }
             }
             channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+        }
+    }
+
+    /**
+     * Search a user-input string for legacy-style ChatFormatting.
+     * ie. the input "&5Sup?" will be sent to Minecraft as "Sup?" with a purple color.
+     * It is intentional that this only supports the default vanilla formatting.
+     *
+     * @param input the text from Discord
+     * @return a properly formatted MutableComponent to be echoed into chat.
+     * @author Curle
+     */
+    private static MutableComponent processMessageFormatting(String input) {
+        if(!ConcordConfig.USE_LEGACY_FORMATTING.get()) {
+            // Default to white if legacy formatting is disabled.
+            return new TextComponent(input).withStyle(WHITE);
+        } else {
+            final String[] parts = input.split("(?=&)");
+            MutableComponent currentComponent = new TextComponent("");
+
+            for (String part : parts) {
+                // Ensure that we only process non-empty strings
+                if (part.isEmpty()) continue;
+
+                final boolean partHasFormatter = part.charAt(0) == '&';
+                // Short circuit for strings of only "&" to avoid a temporal paradox
+                if (partHasFormatter && part.length() == 1) {
+                    currentComponent = currentComponent.append(new TextComponent(part).withStyle(WHITE));
+                    continue;
+                }
+
+                // Parse a formatting character after the & trigger
+                final ChatFormatting formatting = ChatFormatting.getByCode(part.charAt(1));
+                // Ensure that we only process if there's a formatting code
+                if (partHasFormatter && formatting != null) {
+                    currentComponent = currentComponent.append(new TextComponent(part.substring(2)).withStyle(formatting));
+                } else {
+                    // White by default!
+                    currentComponent = currentComponent.append(new TextComponent(part).withStyle(WHITE));
+                }
+            }
+
+            return currentComponent;
         }
     }
 }
