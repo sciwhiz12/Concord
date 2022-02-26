@@ -43,6 +43,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.command.discord.checks.ChecksSet;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.util.TranslationUtil;
@@ -58,51 +59,46 @@ public final class WhisperDiscordCommand extends ConcordSlashCommand {
             new OptionData(OptionType.STRING, "player", "The player to whisper to.").setRequired(true).setAutoComplete(true),
             new OptionData(OptionType.STRING, "message", "The message to whisper.").setRequired(true)
         );
+        checks = ChecksSet.DEFAULT.toBuilder()
+            .and(validPlayerChecker("player"))
+            .build();
     }
 
     @Override
     protected void execute0(SlashCommandEvent event) {
-        final var playerName = event.getOption("player", OptionMapping::getAsString);
-        bot.getServer()
-            .getPlayerList()
-            .getPlayers()
-            .stream()
-            .filter(p -> p.getName().getString().equals(playerName))
-            .findAny()
-            .ifPresentOrElse(player -> {
-                var text = event.getOption("message", OptionMapping::getAsString);
-                if (Concord.emojifulLoaded()) {
-                    text = UnicodeConversion.replace(text);
-                }
-                
-                final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
-                final var textComponent = new TextComponent(text).withStyle(s -> s.withColor(ChatFormatting.WHITE));
-                
-                class ComponentCreator {
-                    TranslatableComponent createComponent(boolean withIcons) {
-                        final var user = Messaging.createUserComponent(withIcons, crownVisibility, event.getMember(), null);
-                        return (TranslatableComponent) new TranslatableComponent("chat.concord.whisper", user.withStyle(s -> s.withItalic(false)), 
-                                textComponent.withStyle(s -> s.withItalic(false))).withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(true));
-                    }
-                }
-                final var creator = new ComponentCreator();
-                
-                final var withoutIcons = creator.createComponent(false);
-                Supplier<TranslatableComponent> withIcons = Suppliers.memoize(() -> creator.createComponent(true));
+        final var player = event.getOption("player", playerResolver);
+        var text = event.getOption("message", OptionMapping::getAsString);
+        if (Concord.emojifulLoaded()) {
+            text = UnicodeConversion.replace(text);
+        }
+        
+        final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
+        final var textComponent = new TextComponent(text).withStyle(s -> s.withColor(ChatFormatting.WHITE));
+        
+        class ComponentCreator {
+            TranslatableComponent createComponent(boolean withIcons) {
+                final var user = Messaging.createUserComponent(withIcons, crownVisibility, event.getMember(), null);
+                return (TranslatableComponent) new TranslatableComponent("chat.concord.whisper", user.withStyle(s -> s.withItalic(false)), 
+                        textComponent.withStyle(s -> s.withItalic(false))).withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(true));
+            }
+        }
+        final var creator = new ComponentCreator();
+        
+        final var withoutIcons = creator.createComponent(false);
+        Supplier<TranslatableComponent> withIcons = Suppliers.memoize(() -> creator.createComponent(true));
 
-                final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
-                final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
+        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
+        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
 
-                MutableComponent sendingText;
-                if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
-                    TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
-                    sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
-                } else {
-                    sendingText = TranslationUtil.eagerTranslate(withoutIcons);
-                }
-                player.connection.send(new ClientboundChatPacket(sendingText, ChatType.SYSTEM, Util.NIL_UUID));
-                event.deferReply(true).setContent("Successfully sent message!").queue();
-            }, () -> event.deferReply(true).setContent("Unknown player **%s**!".formatted(playerName)).queue());
+        MutableComponent sendingText;
+        if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
+            TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
+            sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
+        } else {
+            sendingText = TranslationUtil.eagerTranslate(withoutIcons);
+        }
+        player.connection.send(new ClientboundChatPacket(sendingText, ChatType.SYSTEM, Util.NIL_UUID));
+        event.deferReply(true).setContent("Successfully sent message!").queue();
     }
     
     @Override

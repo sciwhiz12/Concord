@@ -27,6 +27,7 @@
   "command.concord.integraton_disabled": "Discord integration is disabled!",
   "command.concord.clear_discord.success": "Successfully cleared %s from Discord!",
   "command.concord.clear_discord.exception": "Exception while trying to clear commands from Discord! Check the logs for more details.",
+  "command.concord.link": "Your linking code is %s and expires in 12 hours, or after a server restart. Go to Discord and run the command %s in order to link your Discord and Minecraft account!",
   "message.concord.bot.start": "_Discord integration is now active!_",
   "message.concord.bot.stop": "_Discord integration is being disabled!_",
   "message.concord.server.start": "_Server is now started!_",

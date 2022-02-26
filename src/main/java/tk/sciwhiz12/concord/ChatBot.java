@@ -22,13 +22,12 @@
 
 package tk.sciwhiz12.concord;
 
-import static tk.sciwhiz12.concord.Concord.LOGGER;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -39,6 +38,7 @@ import org.apache.logging.log4j.MarkerManager;
 import com.google.common.collect.Sets;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
+import com.mojang.authlib.GameProfile;
 
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
@@ -50,6 +50,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
 import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
@@ -61,8 +62,10 @@ import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.minecraftforge.common.MinecraftForge;
+import tk.sciwhiz12.concord.command.discord.LinkDiscordCommand;
 import tk.sciwhiz12.concord.command.discord.PlayersDiscordCommand;
 import tk.sciwhiz12.concord.command.discord.WhisperDiscordCommand;
+import tk.sciwhiz12.concord.command.discord.moderation.KickDiscordCommand;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
@@ -71,8 +74,11 @@ import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.network.RegisterEmotePacket;
 import tk.sciwhiz12.concord.network.RemoveEmotePacket;
 import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
+import tk.sciwhiz12.concord.util.LinkedUsers;
 
-public class ChatBot extends ListenerAdapter {
+import static tk.sciwhiz12.concord.Concord.LOGGER;
+
+public final class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerManager.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND);
@@ -83,6 +89,7 @@ public class ChatBot extends ListenerAdapter {
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
     private final CommandClient commandClient;
+    private final LinkedUsers linkedUsers;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -99,13 +106,17 @@ public class ChatBot extends ListenerAdapter {
                 .setActivity(null) // Don't let Chewtils override the activity
                 .addSlashCommands(
                     new WhisperDiscordCommand(this),
-                    new PlayersDiscordCommand(this)
+                    new PlayersDiscordCommand(this),
+                    new LinkDiscordCommand(this),
+                    new KickDiscordCommand(this)
                  )
                 .build();
         discord.addEventListener(commandClient);
 
         // Prevent any mentions not explicitly specified
         MessageAction.setDefaultMentions(Collections.emptySet());
+        
+        linkedUsers = new LinkedUsers(server.getServerDirectory().toPath().resolve(Concord.MODID + "_linked_users.json"));
     }
 
     public JDA getDiscord() {
@@ -242,5 +253,19 @@ public class ChatBot extends ListenerAdapter {
             final var name = p.getName().getString();
             return new Command.Choice(name, name);
         }).toList();
+    }
+    
+    public boolean isUserLinked(User user) {
+        return getLinkedAccount(user).isPresent();
+    }
+    
+    public Optional<GameProfile> getLinkedAccount(User user) {
+        return linkedUsers.getMinecraftUUID(user.getIdLong())
+                .map(id -> server.getProfileCache().get(id))
+                .map(Optional::get);
+    }
+    
+    public LinkedUsers getLinkedUsers() {
+        return linkedUsers;
     }
 }

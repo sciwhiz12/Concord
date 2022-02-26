@@ -22,20 +22,42 @@
 
 package tk.sciwhiz12.concord.command.discord;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 
+import net.minecraft.server.level.ServerPlayer;
+
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.command.discord.checks.ChecksSet;
+import tk.sciwhiz12.concord.command.discord.checks.SlashCommandContext;
 
 public abstract class ConcordSlashCommand extends SlashCommand {
 
     protected final ChatBot bot;
-
+    protected ChecksSet checks = ChecksSet.DEFAULT;
+    
+    protected final Function<? super OptionMapping, ServerPlayer> playerResolver;
+    
     protected ConcordSlashCommand(final ChatBot bot) {
         this.bot = bot;
         guildOnly = true;
+        
+        playerResolver = mapping -> {
+            final var playerName = mapping.getAsString();
+            return bot.getServer()
+                    .getPlayerList()
+                    .getPlayers()
+                    .stream()
+                    .filter(p -> p.getName().getString().equals(playerName))
+                    .findAny()
+                    .orElse(null);
+        };
     }
 
     @Override
@@ -46,13 +68,28 @@ public abstract class ConcordSlashCommand extends SlashCommand {
             event.deferReply(true).setContent("This command cannot be used in this channel.").queue();
             return;
         }
-        if (ConcordConfig.DISCORD_COMMANDS_ENABLED.containsKey(name) && !ConcordConfig.DISCORD_COMMANDS_ENABLED.get(name).get()) {
-            event.deferReply(true).setContent("This command is disabled!").queue();
+        final var ctx = new SlashCommandContext(event, bot);
+        if (!checks.test(ctx)) {
             return;
         }
         execute0(event);
     }
-
+    
     protected abstract void execute0(SlashCommandEvent event);
 
+    public static Predicate<SlashCommandContext> validPlayerChecker(String optionName) {
+        return ctx -> {
+            final var playerName = ctx.event().getOption(optionName, OptionMapping::getAsString);
+            final var playerFound = ctx.bot().getServer()
+                .getPlayerList()
+                .getPlayers()
+                .stream()
+                .anyMatch(p -> p.getName().getString().equals(playerName));
+            if (!playerFound) {
+                ctx.deferReply(true).setContent("Unknown player **%s**!".formatted(playerName)).queue();
+            }
+            return playerFound;
+        };
+    }
+    
 }

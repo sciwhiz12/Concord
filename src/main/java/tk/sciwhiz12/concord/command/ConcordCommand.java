@@ -24,11 +24,15 @@ package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 
 import net.dv8tion.jda.api.requests.RestAction;
@@ -66,6 +70,9 @@ public class ConcordCommand {
                 .then(literal("clear_discord_commands")
                     .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
                     .executes(ConcordCommand::clearDiscordCommands)
+                )
+                .then(literal("link")
+                    .executes(ConcordCommand::generateLinkCode)
                 )
         );
     }
@@ -135,6 +142,19 @@ public class ConcordCommand {
                 return List.of();
             })
             .queue($ -> source.sendSuccess(createMessage(source, "command.concord.clear_discord.success", $.size()), true));
+        return Command.SINGLE_SUCCESS;
+    }
+    
+    private static int generateLinkCode(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final var source = ctx.getSource();
+        if (!Concord.isEnabled()) {
+            source.sendFailure(createMessage(source, "command.concord.integraton_disabled"));
+            return Command.SINGLE_SUCCESS;
+        }
+        final var code = Concord.BOT.getLinkedUsers().generateLinkCode(source.getPlayerOrException().getUUID());
+        source.sendSuccess(createMessage(source, "command.concord.link", 
+                new TextComponent(String.valueOf(code)).withStyle(s -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, String.valueOf(code)))),
+                new TextComponent("/link").withStyle(s -> s.withColor(ChatFormatting.GREEN))), false);
         return Command.SINGLE_SUCCESS;
     }
 }
