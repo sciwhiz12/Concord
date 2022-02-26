@@ -230,7 +230,7 @@ public class Messaging {
     }
 
     public static void sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHANNEL_ID.get());
+        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
             Collection<Message.MentionType> allowedMentions = Collections.emptySet();
             if (ConcordConfig.ALLOW_MENTIONS.get()) {

@@ -125,7 +125,7 @@ public class Concord {
         } else if (Strings.isNullOrEmpty(ConcordConfig.GUILD_ID.get())) {
             LOGGER.warn("Guild ID is not set in config; Discord integration will not be enabled.");
             return;
-        } else if (Strings.isNullOrEmpty(ConcordConfig.CHANNEL_ID.get())) {
+        } else if (Strings.isNullOrEmpty(ConcordConfig.CHAT_CHANNEL_ID.get())) {
             LOGGER.warn("Channel ID is not set in config; Discord integration will not be enabled.");
             return;
         }

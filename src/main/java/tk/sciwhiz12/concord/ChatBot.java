@@ -113,16 +113,16 @@ public class ChatBot extends ListenerAdapter {
             return false;
         }
 
-        final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHANNEL_ID.get());
+        final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel == null) {
             Concord.LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
-                ConcordConfig.CHANNEL_ID.get());
+                ConcordConfig.CHAT_CHANNEL_ID.get());
             return false;
         }
 
         if (channel.getType() != ChannelType.TEXT) {
             Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
-                ConcordConfig.CHANNEL_ID.get(), channel.getType());
+                ConcordConfig.CHAT_CHANNEL_ID.get(), channel.getType());
             return false;
         }
 

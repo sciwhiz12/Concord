@@ -23,9 +23,13 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -43,6 +47,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class ConcordCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        // Concord bot control commands.
         event.getDispatcher().register(
             literal("concord")
                 .then(literal("reload")
@@ -60,6 +65,16 @@ public class ConcordCommand {
                 .then(literal("status")
                     .executes(ConcordCommand::status)
                 )
+        );
+
+        // Discord integration commands.
+        // Reports a user to the staff upon request of a user.
+        event.getDispatcher().register(
+                literal("report")
+                        .then(Commands.argument("target", EntityArgument.players())
+                            .then(Commands.argument("reason", StringArgumentType.greedyString())
+                                    .executes(ConcordCommand::report))
+                        )
         );
     }
 
@@ -111,6 +126,43 @@ public class ConcordCommand {
             result = resolve(source, Translations.COMMAND_STATUS_DISABLED.component()).withStyle(RED);
         }
         ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_STATUS_PREFIX.component(result)), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int report(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        // If Concord is disabled for whatever reason, tell the player.
+        if (!Concord.isEnabled()) {
+            ctx.getSource().sendFailure(
+                    createMessage(ctx.getSource(), "command.concord.status",
+                            createMessage(ctx.getSource(), "command.concord.status.disabled")
+                    ).withStyle(RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        // If reporting is disabled, also tell the user
+        if (ConcordConfig.REPORT_CHANNEL_ID.get().isEmpty()) {
+            ctx.getSource().sendFailure(
+                    createMessage(ctx.getSource(), "command.concord.report.status",
+                            createMessage(ctx.getSource(), "command.concord.status.disabled")
+                    ).withStyle(RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        var players = EntityArgument.getPlayers(ctx, "target");
+        var reason = StringArgumentType.getString(ctx, "reason");
+        var bot = Concord.getBot();
+        var channel = bot.getDiscord().getTextChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
+
+        for (ServerPlayer player : players) {
+            channel.sendMessageEmbeds(
+                    new EmbedBuilder()
+                            .setDescription("A user has been reported!")
+                            .addField("",
+                                    "**" + player.getName().getString() + "** has been reported for " + reason, false)
+                            .build()
+            ).queue();
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 }

@@ -35,7 +35,8 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
-    public static final ForgeConfigSpec.ConfigValue<String> CHANNEL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
@@ -87,9 +88,12 @@ public class ConcordConfig {
             GUILD_ID = builder.comment("The snowflake ID of the guild where this bot belongs to.",
                     "If empty, the Discord integration will not be enabled.")
                 .define("guild_id", "");
-            CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post and receive messages.",
+            CHAT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post and receive messages.",
                     "If empty, the Discord integration will not be enabled.")
-                .define("channel_id", "");
+                .define("chat_channel_id", "");
+            REPORT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post reports from in-game users.",
+                            "If empty, reports will be disabled.")
+                    .define("report_channel_id", "");
 
             builder.pop();
         }
