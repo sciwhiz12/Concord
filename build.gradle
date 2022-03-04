@@ -193,6 +193,23 @@ tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace).configu
     args.add('--stable')
 }
 
+tasks.named('javadoc', Javadoc).configure {
+    failOnError = false
+
+    options.addStringOption('Xdoclint:all,-missing', '-public')
+    options {
+        tags = [
+                'apiNote:a:<em>API Note:</em>',
+                'implSpec:a:<em>Implementation Requirements:</em>',
+                'implNote:a:<em>Implementation Note:</em>'
+        ]
+
+        author = false
+        noSince = true
+        noHelp = true
+    }
+}
+
 publishing {
     publications.create('mavenJava', MavenPublication) {
         it.from components.java
