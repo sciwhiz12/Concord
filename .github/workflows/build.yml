@@ -27,14 +27,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           check-latest: true
-      - name: Cache Minecraft assets
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches/forge_gradle/assets
-          key: ${{ runner.os }}-gradle-mc-assets-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/*versions.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-mc-assets-
       - name: Cache ForgeGradle and Librarian caches
         uses: actions/cache@v2
         with:
