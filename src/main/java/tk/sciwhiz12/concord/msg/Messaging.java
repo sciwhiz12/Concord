@@ -47,6 +47,7 @@ import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
+import tk.sciwhiz12.concord.util.Translations;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -74,7 +75,7 @@ public class Messaging {
             .filter(((Predicate<Role>) Role::isPublicRole).negate())
             .toList();
         if (!roles.isEmpty()) {
-            hover.append("\n").append(new TranslatableComponent("chat.concord.hover.roles"));
+            hover.append("\n").append(Translations.HOVER_ROLES.component());
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
                 if (i != 0) hover.append(", "); // add joiner for more than one role
                 Role role = roles.get(i);
@@ -86,7 +87,7 @@ public class Messaging {
 
         if (replyMessage != null) {
             hover.append("\n")
-                .append(new TranslatableComponent("chat.concord.hover.reply",
+                .append(Translations.HOVER_REPLY.component(
                     replyMessage.withStyle(WHITE))
                     .withStyle(GRAY)
                 );
@@ -114,18 +115,18 @@ public class Messaging {
                     referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
                         createContentComponent(referencedMessage));
                 } else {
-                    referencedUserComponent = new TranslatableComponent("chat.concord.reply.unknown")
+                    referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
                         .withStyle(style -> style.withHoverEvent(
                             new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
                 } // TODO: reply to the bot/webhook
 
-                text = new TranslatableComponent("chat.concord.reply", referencedUserComponent)
+                text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
                     .withStyle(ChatFormatting.GRAY)
                     .append(text);
             }
         }
 
-        TranslatableComponent result = new TranslatableComponent("chat.concord.header", userComponent, text);
+        TranslatableComponent result = Translations.CHAT_HEADER.component(userComponent, text);
         result.withStyle(DARK_GRAY);
         return result;
     }
@@ -146,21 +147,21 @@ public class Messaging {
             final String extension = attachment.getFileExtension();
             MutableComponent attachmentComponent;
             if (extension != null) {
-                attachmentComponent = new TranslatableComponent("chat.concord.attachment", extension);
+                attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component(extension);
             } else {
-                attachmentComponent = new TranslatableComponent("chat.concord.attachment.no_extension");
+                attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component();
             }
             attachmentComponent = ComponentUtils.wrapInSquareBrackets(attachmentComponent);
             attachmentComponent.withStyle(AQUA);
 
             final MutableComponent attachmentHoverComponent = new TextComponent("");
             attachmentHoverComponent.append(
-                new TranslatableComponent("chat.concord.attachment.hover.filename",
+                Translations.HOVER_ATTACHMENT_FILENAME.component(
                     new TextComponent(attachment.getFileName()).withStyle(WHITE))
                     .withStyle(GRAY)
             ).append("\n");
             attachmentHoverComponent.append(new TextComponent(attachment.getUrl()).withStyle(DARK_GRAY)).append("\n");
-            attachmentHoverComponent.append(new TranslatableComponent("chat.concord.attachment.hover.click"));
+            attachmentHoverComponent.append(Translations.HOVER_ATTACHMENT_CLICK.component());
 
             attachmentComponent.withStyle(style ->
                 style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
@@ -195,12 +196,12 @@ public class Messaging {
             statusText.withStyle(style -> style.withFont(ICONS_FONT));
         }
 
-        return new TranslatableComponent("chat.concord.hover.header",
+        return Translations.HOVER_HEADER.component(
             new TextComponent(member.getUser().getName()).withStyle(WHITE),
             new TextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
             ownerText,
             statusText,
-            new TranslatableComponent(status.getTranslationKey())
+            status.getTranslation().component()
                 .withStyle(style -> style.withColor(status.getColor()))
         ).withStyle(DARK_GRAY);
     }

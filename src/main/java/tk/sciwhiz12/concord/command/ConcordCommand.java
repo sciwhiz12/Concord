@@ -26,13 +26,16 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
+import tk.sciwhiz12.concord.util.Translations;
 
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
@@ -60,13 +63,16 @@ public class ConcordCommand {
         );
     }
 
-    private static MutableComponent createMessage(CommandSourceStack source, String translation, Object... args) {
-        return TranslationUtil.createTranslation((ServerPlayer) source.getEntity(), translation, args);
+    public static MutableComponent resolve(CommandSourceStack source, final TranslatableComponent text){
+        return !ConcordConfig.LAZY_TRANSLATIONS.get() 
+                || (source.getEntity() instanceof ServerPlayer player && ModPresenceTracker.isModPresent(player)) 
+                ? text 
+                : TranslationUtil.eagerTranslate(text);
     }
 
     private static int reload(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
-        ctx.getSource().sendSuccess(createMessage(source, "command.concord.reload"), true);
+        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_ENABLING.component()), true);
         if (Concord.isEnabled()) {
             Concord.disable();
         }
@@ -77,10 +83,10 @@ public class ConcordCommand {
     private static int enable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (Concord.isEnabled()) {
-            ctx.getSource().sendFailure(createMessage(source, "command.concord.enable.already_enabled"));
+            ctx.getSource().sendFailure(resolve(source, Translations.COMMAND_ALREADY_ENABLED.component()));
             return Command.SINGLE_SUCCESS;
         }
-        ctx.getSource().sendSuccess(createMessage(source, "command.concord.enable"), true);
+        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_ENABLING.component()), true);
         Concord.enable(source.getServer());
         return Command.SINGLE_SUCCESS;
     }
@@ -88,10 +94,10 @@ public class ConcordCommand {
     private static int disable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (!Concord.isEnabled()) {
-            ctx.getSource().sendFailure(createMessage(source, "command.concord.disable.already_disabled"));
+            ctx.getSource().sendFailure(resolve(source, Translations.COMMAND_ALREADY_DISABLED.component()));
             return Command.SINGLE_SUCCESS;
         }
-        ctx.getSource().sendSuccess(createMessage(source, "command.concord.disable"), true);
+        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_DISABLING.component()), true);
         Concord.disable();
         return Command.SINGLE_SUCCESS;
     }
@@ -100,11 +106,11 @@ public class ConcordCommand {
         CommandSourceStack source = ctx.getSource();
         Component result;
         if (Concord.isEnabled()) {
-            result = createMessage(source, "command.concord.status.enabled").withStyle(GREEN);
+            result = resolve(source, Translations.COMMAND_STATUS_ENABLED.component()).withStyle(GREEN);
         } else {
-            result = createMessage(source, "command.concord.status.disabled").withStyle(RED);
+            result = resolve(source, Translations.COMMAND_STATUS_DISABLED.component()).withStyle(RED);
         }
-        ctx.getSource().sendSuccess(createMessage(source, "command.concord.status", result), false);
+        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_STATUS_PREFIX.component(result)), false);
         return Command.SINGLE_SUCCESS;
     }
 }

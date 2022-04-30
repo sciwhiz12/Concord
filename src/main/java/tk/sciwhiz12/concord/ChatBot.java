@@ -33,7 +33,6 @@ import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Marker;
@@ -42,6 +41,7 @@ import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
+import tk.sciwhiz12.concord.util.Messages;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -92,7 +92,7 @@ public class ChatBot extends ListenerAdapter {
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
-        Messaging.sendToChannel(discord, new TranslatableComponent("message.concord.bot.start").getString());
+        Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
     }
 
     void shutdown() {

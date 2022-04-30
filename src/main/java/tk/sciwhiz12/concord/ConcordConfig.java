@@ -25,6 +25,7 @@ package tk.sciwhiz12.concord;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import tk.sciwhiz12.concord.util.Messages;
 
 public class ConcordConfig {
     static final ForgeConfigSpec CONFIG_SPEC;
@@ -145,24 +146,24 @@ public class ConcordConfig {
                 .push("notify");
 
             SERVER_STOP = builder.comment("Complete startup of server",
-                    "Translation key: message.concord.server.start")
+                    "Translation key: " + Messages.SERVER_START.key())
                 .define("server.start", true);
             SERVER_START = builder.comment("Stopping of server.",
-                    "Translation key: message.concord.server.stop")
+                    "Translation key: " + Messages.SERVER_STOP.key())
                 .define("server.stop", true);
 
             BOT_START = builder.comment("Enabling of Discord integration.",
-                    "Translation key: message.concord.bot.start")
+                    "Translation key: " + Messages.BOT_START.key())
                 .define("bot.start", false);
             BOT_STOP = builder.comment("Disabling of Discord integration.",
-                    "Translation key: message.concord.bot.stop")
+                    "Translation key: " + Messages.BOT_STOP.key())
                 .define("bot.stop", false);
 
             PLAYER_JOIN = builder.comment("Player joining the game",
-                    "Translation key: message.concord.player.join")
+                    "Translation key: " + Messages.PLAYER_JOIN.key())
                 .define("player.join", true);
             PLAYER_LEAVE = builder.comment("Player leaving the game",
-                    "Translation key: message.concord.player.leave")
+                    "Translation key: " + Messages.PLAYER_LEAVE.key())
                 .define("player.leave", true);
             PLAYER_DEATH = builder.comment("Player death message")
                 .define("player.death", true);
@@ -172,17 +173,17 @@ public class ConcordConfig {
                     "If false, the advancement notifications settings always apply.")
                 .define("player.adv.respect_gamerule", true);
             PLAYER_ADV_TASK = builder.comment("Player completed an normal advancement",
-                    "Translation key: message.concord.player.advancement.task")
+                    "Translation key: " + Messages.ADVANCEMENT_TASK.key())
                 .define("player.adv.task", true);
             PLAYER_ADV_CHALLENGE = builder.comment("Player completed a challenge advancement",
-                    "Translation key: message.concord.player.advancement.challenge")
+                    "Translation key: " + Messages.ADVANCEMENT_CHALLENGE.key())
                 .define("player.adv.challenge", true);
             PLAYER_ADV_GOAL = builder.comment("Player completed a goal advancement",
-                    "Translation key: message.concord.player.advancement.goal")
+                    "Translation key: " + Messages.ADVANCEMENT_GOAL.key())
                 .define("player.adv.goal", true);
 
             COMMAND_SAY = builder.comment("Message from /say command",
-                    "Translation key: message.concord.command.say")
+                    "Translation key: " + Messages.SAY_COMMAND.key())
                 .define("command.say", true);
 
             builder.pop();

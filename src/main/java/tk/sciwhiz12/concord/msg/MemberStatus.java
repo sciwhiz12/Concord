@@ -26,23 +26,25 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.minecraft.network.chat.TextColor;
+import tk.sciwhiz12.concord.util.Translations;
+import tk.sciwhiz12.concord.util.Translation;
 
 public enum MemberStatus {
-    ONLINE(OnlineStatus.ONLINE, "chat.concord.status.online", 0x43b581, '\u25cf'),
-    IDLE(OnlineStatus.IDLE, "chat.concord.status.idle", 0xfaa61a, '\u263d'),
-    DO_NOT_DISTURB(OnlineStatus.DO_NOT_DISTURB, "chat.concord.status.do_not_disturb", 0xf04747, '\u2205'),
-    STREAMING(OnlineStatus.DO_NOT_DISTURB, "chat.concord.status.streaming", 0x593695, '\u25b6'),
-    OFFLINE(OnlineStatus.OFFLINE, "chat.concord.status.offline", 0x747f8d, '\u25cb'),
-    UNKNOWN(OnlineStatus.UNKNOWN, "chat.concord.status.unknown", 0x7c0000, '\u003f');
+    ONLINE(OnlineStatus.ONLINE, Translations.STATUS_ONLINE, 0x43b581, '\u25cf'),
+    IDLE(OnlineStatus.IDLE, Translations.STATUS_IDLE, 0xfaa61a, '\u263d'),
+    DO_NOT_DISTURB(OnlineStatus.DO_NOT_DISTURB, Translations.STATUS_DO_NOT_DISTURB, 0xf04747, '\u2205'),
+    STREAMING(OnlineStatus.DO_NOT_DISTURB, Translations.STATUS_STREAMING, 0x593695, '\u25b6'),
+    OFFLINE(OnlineStatus.OFFLINE, Translations.STATUS_OFFLINE, 0x747f8d, '\u25cb'),
+    UNKNOWN(OnlineStatus.UNKNOWN, Translations.STATUS_UNKNOWN, 0x7c0000, '\u003f');
 
     public static final char CROWN_ICON = '\u2606';
 
     private final OnlineStatus discordStatus;
-    private final String translationKey;
+    private final Translation translationKey;
     private final TextColor color;
     private final char icon;
 
-    MemberStatus(OnlineStatus discordStatus, String translationKey, int colorHex, char icon) {
+    MemberStatus(OnlineStatus discordStatus, Translation translationKey, int colorHex, char icon) {
         this.discordStatus = discordStatus;
         this.translationKey = translationKey;
         this.color = TextColor.fromRgb(colorHex);
@@ -53,7 +55,7 @@ public enum MemberStatus {
         return discordStatus;
     }
 
-    public String getTranslationKey() {
+    public Translation getTranslation() {
         return translationKey;
     }
 

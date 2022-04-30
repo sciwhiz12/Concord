@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.util.Messages;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -65,7 +66,7 @@ public class SayCommandHook {
                     } else {
                         try {
                             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                                Messaging.sendToChannel(Concord.getBot().getDiscord(), new TranslatableComponent("message.concord.command.say", ctx.getSource().getDisplayName(), message).getString());
+                                Messaging.sendToChannel(Concord.getBot().getDiscord(), Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
                             }
                         } catch (Exception e) {
                             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

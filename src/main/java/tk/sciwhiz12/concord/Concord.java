@@ -31,7 +31,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -46,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.util.Messages;
 
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
@@ -110,7 +110,7 @@ public class Concord {
         if (BOT == null || !isEnabled()) return;
         LOGGER.info("Shutting down Discord integration...");
         if (!suppressMessage) {
-            Messaging.sendToChannel(BOT.getDiscord(), new TranslatableComponent("message.concord.bot.stop").getString());
+            Messaging.sendToChannel(BOT.getDiscord(), Messages.BOT_STOP.component().getString());
         }
         BOT.shutdown();
         BOT = null;

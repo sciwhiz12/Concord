@@ -35,6 +35,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.util.Messages;
+import tk.sciwhiz12.concord.util.Translation;
 
 public class PlayerListener {
     private final ChatBot bot;
@@ -49,8 +51,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
-        TranslatableComponent text = new TranslatableComponent("message.concord.player.join",
-            event.getPlayer().getDisplayName());
+        TranslatableComponent text = Messages.PLAYER_JOIN.component(event.getPlayer().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
     }
@@ -60,8 +61,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
 
-        TranslatableComponent text = new TranslatableComponent("message.concord.player.leave",
-            event.getPlayer().getDisplayName());
+        TranslatableComponent text = Messages.PLAYER_LEAVE.component(event.getPlayer().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
     }
@@ -91,9 +91,13 @@ public class PlayerListener {
                 case CHALLENGE -> ConcordConfig.PLAYER_ADV_CHALLENGE.get();
                 case GOAL -> ConcordConfig.PLAYER_ADV_GOAL.get();
             };
+            Translation translation = switch (info.getFrame()) {
+                case TASK -> Messages.ADVANCEMENT_TASK;
+                case CHALLENGE -> Messages.ADVANCEMENT_CHALLENGE;
+                case GOAL -> Messages.ADVANCEMENT_GOAL;
+            };
             if (!enabled) return;
-            TranslatableComponent text = new TranslatableComponent(
-                "message.concord.player.advancement." + info.getFrame().getName(),
+            TranslatableComponent text = translation.component(
                 event.getPlayer().getDisplayName(),
                 info.getTitle(),
                 info.getDescription());

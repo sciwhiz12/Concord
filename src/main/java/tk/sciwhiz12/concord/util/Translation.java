@@ -20,36 +20,20 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord.msg;
+package tk.sciwhiz12.concord.util;
 
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import tk.sciwhiz12.concord.ChatBot;
-import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.util.Messages;
+import net.minecraft.network.chat.TranslatableComponent;
 
-public class StatusListener {
-    private final ChatBot bot;
+public interface Translation {
+    String key();
 
-    public StatusListener(ChatBot bot) {
-        this.bot = bot;
-        MinecraftForge.EVENT_BUS.register(this);
+    String englishText();
+
+    default TranslatableComponent component() {
+        return new TranslatableComponent(key());
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    void onServerStarted(ServerStartedEvent event) {
-        if (!ConcordConfig.SERVER_START.get()) return;
-
-        Messaging.sendToChannel(bot.getDiscord(), Messages.SERVER_START.component().getString());
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOW)
-    void onServerStopping(ServerStoppingEvent event) {
-        if (!ConcordConfig.SERVER_STOP.get()) return;
-
-        Messaging.sendToChannel(bot.getDiscord(), Messages.SERVER_STOP.component().getString());
+    default TranslatableComponent component(Object... formatArgs) {
+        return new TranslatableComponent(key(), formatArgs);
     }
 }
