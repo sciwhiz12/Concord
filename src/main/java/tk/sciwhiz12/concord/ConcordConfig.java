@@ -164,8 +164,7 @@ public class ConcordConfig {
             PLAYER_LEAVE = builder.comment("Player leaving the game",
                     "Translation key: message.concord.player.leave")
                 .define("player.leave", true);
-            PLAYER_DEATH = builder.comment("Player death message",
-                    "Translation key: message.concord.player.death")
+            PLAYER_DEATH = builder.comment("Player death message")
                 .define("player.death", true);
 
             PLAYER_ADV_GAMERULE = builder.comment("Whether to respect the `announceAdvancements` gamerule",
