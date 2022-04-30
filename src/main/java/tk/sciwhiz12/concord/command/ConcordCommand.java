@@ -175,16 +175,12 @@ public class ConcordCommand {
                             .setColor(0xFF0000)
                             .setDescription("**" + reportedName + "** has been reported by **" + senderName + "**")
                             .addField("Reason", reason, false)
-                            .addField("Location",
-                                    "Reported: **" + reportedName + "**\n" +
+                            .addField("Reported", "**" + reportedName + "** (`" + reportedPlayer.getGameProfile().getId().toString() + "`)\n" +
                                             "Dimension: `" + reportedPlayer.level.dimension().location() + "`\n" +
-                                            "XYZ: " + (int) reportedPlayer.position().x + " " + (int) reportedPlayer.position().y + " " + (int) reportedPlayer.position().z + "\n\n" +
-
-                                            "Reporter: **" + senderName + "**\n" +
+                                            "XYZ: `" + (int) reportedPlayer.position().x + " " + (int) reportedPlayer.position().y + " " + (int) reportedPlayer.position().z + "`", false)
+                            .addField("Reporter", "**" + senderName + "** (`" + sender.getGameProfile().getId().toString() + "`)\n" +
                                             "Dimension: `" + sender.level.dimension().location() + "`\n" +
-                                            "XYZ: " + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z
-                                    , false)
-                            .addField(reportedName + "'s UUID", reportedPlayer.getGameProfile().getId().toString(), false)
+                                            "XYZ: `" + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z + "`", false)
                             .build()
             ).queue();
 
