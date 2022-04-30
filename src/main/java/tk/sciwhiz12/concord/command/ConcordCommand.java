@@ -41,6 +41,8 @@ import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
+import java.time.Instant;
+
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.literal;
@@ -181,6 +183,8 @@ public class ConcordCommand {
                             .addField("Reporter", "**" + senderName + "** (`" + sender.getGameProfile().getId().toString() + "`)\n" +
                                             "Dimension: `" + sender.level.dimension().location() + "`\n" +
                                             "XYZ: `" + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z + "`", false)
+                            .setTimestamp(Instant.now())
+                            .setFooter("Game time: " + sender.level.getGameTime())
                             .build()
             ).queue();
 
