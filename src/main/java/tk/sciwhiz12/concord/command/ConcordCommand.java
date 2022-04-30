@@ -159,17 +159,32 @@ public class ConcordCommand {
         }
 
         var players = EntityArgument.getPlayers(ctx, "target");
+        var sender = ctx.getSource().getPlayerOrException();
         var reason = StringArgumentType.getString(ctx, "reason");
         var bot = Concord.getBot();
         var channel = bot.getDiscord().getTextChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
 
         if (!players.isEmpty()) {
             var reportedPlayer = (ServerPlayer) players.toArray()[0];
+
+            var reportedName = reportedPlayer.getName().getString();
+            var senderName = sender.getName().getString();
             channel.sendMessageEmbeds(
                     new EmbedBuilder()
-                            .setDescription("A user has been reported!")
-                            .addField("",
-                                    "**" + reportedPlayer.getName().getString() + "** has been reported for " + reason, false)
+                            .setAuthor("Concord Integrations")
+                            .setColor(0xFF0000)
+                            .setDescription("**" + reportedName + "** has been reported by **" + senderName + "**")
+                            .addField("Reason", reason, false)
+                            .addField("Location",
+                                    "Reported: **" + reportedName + "**\n" +
+                                            "Dimension: `" + reportedPlayer.level.dimension().location() + "`\n" +
+                                            "XYZ: " + (int) reportedPlayer.position().x + " " + (int) reportedPlayer.position().y + " " + (int) reportedPlayer.position().z + "\n\n" +
+
+                                            "Reporter: **" + senderName + "**\n" +
+                                            "Dimension: `" + sender.level.dimension().location() + "`\n" +
+                                            "XYZ: " + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z
+                                    , false)
+                            .addField(reportedName + "'s UUID", reportedPlayer.getGameProfile().getId().toString(), false)
                             .build()
             ).queue();
 
