@@ -133,8 +133,13 @@ public class ConcordCommand {
         // If Concord is disabled for whatever reason, tell the player.
         if (!Concord.isEnabled()) {
             ctx.getSource().sendFailure(
-                    createMessage(ctx.getSource(), "command.concord.status",
-                            createMessage(ctx.getSource(), "command.concord.status.disabled")
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_STATUS
+                                    .component(
+                                            resolve(ctx.getSource(),
+                                                    Translations.COMMAND_STATUS_DISABLED.component()
+                                            )
+                                    )
                     ).withStyle(RED));
             return Command.SINGLE_SUCCESS;
         }
@@ -142,8 +147,13 @@ public class ConcordCommand {
         // If reporting is disabled, also tell the user
         if (ConcordConfig.REPORT_CHANNEL_ID.get().isEmpty()) {
             ctx.getSource().sendFailure(
-                    createMessage(ctx.getSource(), "command.concord.report.status",
-                            createMessage(ctx.getSource(), "command.concord.status.disabled")
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_STATUS
+                                    .component(
+                                            resolve(ctx.getSource(),
+                                                    Translations.COMMAND_STATUS_DISABLED.component()
+                                            )
+                                    )
                     ).withStyle(RED));
             return Command.SINGLE_SUCCESS;
         }
@@ -153,15 +163,25 @@ public class ConcordCommand {
         var bot = Concord.getBot();
         var channel = bot.getDiscord().getTextChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
 
-        for (ServerPlayer player : players) {
+        if (!players.isEmpty()) {
+            var reportedPlayer = (ServerPlayer) players.toArray()[0];
             channel.sendMessageEmbeds(
                     new EmbedBuilder()
                             .setDescription("A user has been reported!")
                             .addField("",
-                                    "**" + player.getName().getString() + "** has been reported for " + reason, false)
+                                    "**" + reportedPlayer.getName().getString() + "** has been reported for " + reason, false)
                             .build()
             ).queue();
+
+            ctx.getSource().sendSuccess(
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_SUCCESS
+                                    .component(
+                                        reportedPlayer.getName()
+                                    )
+                    ).withStyle(GREEN), true);
         }
+
 
         return Command.SINGLE_SUCCESS;
     }

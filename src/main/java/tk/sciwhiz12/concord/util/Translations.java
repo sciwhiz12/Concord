@@ -58,6 +58,8 @@ public enum Translations implements Translation {
     COMMAND_DISABLING("command", "disable", "Disabling discord integration..."),
     COMMAND_ALREADY_DISABLED("command", "disable.already_disabled", "Discord integration is already disabled!"),
     COMMAND_RELOADING("command", "reload", "Reloading discord integration..."),
+    COMMAND_REPORT_STATUS("command", "report.status", "Reporting users is currently %s"),
+    COMMAND_REPORT_SUCCESS("command", "report.success", "A report has been submitted for %s."),
     COMMAND_STATUS_PREFIX("command", "status", "Discord integration status: %s"),
     COMMAND_STATUS_ENABLED("command", "status.enabled", "ENABLED"),
     COMMAND_STATUS_DISABLED("command", "status.disabled", "DISABLED");
