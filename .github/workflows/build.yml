@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
 
   build:
@@ -19,16 +19,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
           check-latest: true
       - name: Cache ForgeGradle and Librarian caches
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches/forge_gradle/**
@@ -45,7 +43,7 @@ jobs:
           gradle-dependencies-cache-key: |
             gradle/libs.versions.toml
           gradle-distribution-sha-256-sum-warning: false
-      - uses: actions/upload-artifact@v2.2.4
+      - uses: actions/upload-artifact@v3
         with:
           name: Build artifacts
           path: build/libs/*.jar

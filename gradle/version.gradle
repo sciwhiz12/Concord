@@ -26,7 +26,7 @@ class VersionExtension {
 
     Project project
     boolean stripBranchPrefix = true
-    String customPrefix = null
+    List<String> customPrefixes = []
     boolean useDirty = false
     boolean parsedVersion = false
     String timestamp = '1970-01-01T00:00:00+00:00'
@@ -35,6 +35,8 @@ class VersionExtension {
     String rawVersion = '0.0.0'
     boolean snapshot = true
     String classifiers = '-UNKNOWN'
+    int incrementPositionIfSnapshot = 0
+    Spec<VersionInformation> skipIncrement = Specs.satisfyNone()
 
     VersionExtension(Project project) {
         this.project = project
@@ -86,17 +88,20 @@ class VersionExtension {
                 descCount = allExceptLast.substring(secondToLastSep + 1)
 
                 if (stripBranchPrefix) {
-                    if (customPrefix != null && descVer.length() > customPrefix.length() + 1) {
-                        String sep = descVer.charAt(customPrefix.length())
-                        if (descVer.startsWith(customPrefix) && (sep == '/' || sep == '-')) {
-                            descVer = descVer.substring(customPrefix.length() + 1)
-                        }
-                    }
-
                     if (branchName != null && descVer.length() > branchName.length() + 1) {
                         String sep = descVer.charAt(branchName.length())
                         if (descVer.startsWith(branchName) && (sep == '/' || sep == '-')) {
                             descVer = descVer.substring(branchName.length() + 1)
+                        }
+                    }
+
+                    for (String prefix : customPrefixes) {
+                        if (descVer.length() > prefix.length() + 1) {
+                            String sep = descVer.charAt(prefix.length())
+                            if (descVer.startsWith(prefix) && (sep == '/' || sep == '-')) {
+                                descVer = descVer.substring(prefix.length() + 1)
+                                break
+                            }
                         }
                     }
                 }
@@ -114,6 +119,28 @@ class VersionExtension {
             }
 
             if (snapshot) {
+                if (classifiers != '-UNKNOWN' && rawVersion != '0.0.0' && incrementPositionIfSnapshot != 0
+                        && !skipIncrement.isSatisfiedBy(new VersionInformation(rawVersion, snapshot, classifiers, timestamp, commitId))) {
+                    String[] rawVersionSplit = rawVersion.split('[\\-+_]', 2)
+                    String[] versionSplit = rawVersionSplit[0].split('\\.')
+                    boolean changed
+                    if (versionSplit.length >= Math.abs(incrementPositionIfSnapshot)) {
+                        int i = incrementPositionIfSnapshot < 0
+                                ? versionSplit.length + incrementPositionIfSnapshot
+                                : incrementPositionIfSnapshot - 1
+                        try {
+                            versionSplit[i] = (Integer.parseInt(versionSplit[i]) + 1) as int
+
+                            boolean hasExtra = rawVersionSplit.length > 1
+                            if (hasExtra) {
+                                rawVersion = String.join("${rawVersion.charAt(rawVersionSplit[0].length())}",
+                                        [String.join('.', versionSplit), rawVersionSplit[1]])
+                            } else {
+                                rawVersion = String.join('.', versionSplit)
+                            }
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
                 classifiers = '-SNAPSHOT' + classifiers
             }
         } catch (Exception e) {
@@ -130,11 +157,18 @@ class VersionExtension {
     }
 
     void setCustomPrefix(String customPrefix) {
-        this.customPrefix = customPrefix
+        if (customPrefix?.empty) return
+        if (customPrefix == null) this.customPrefixes.clear()
+        else this.customPrefixes += customPrefix
     }
 
-    String getCustomPrefix() {
-        return customPrefix
+    void customPrefix(String customPrefix) {
+        if (customPrefix?.empty) return
+        if (customPrefix != null) this.customPrefixes += customPrefix
+    }
+
+    String[] getCustomPrefixes() {
+        return customPrefixes
     }
 
     void setUseDirty(boolean useDirty) {
@@ -143,6 +177,50 @@ class VersionExtension {
 
     boolean getUseDirty() {
         return useDirty
+    }
+
+    /**
+     * @param incrementPositionIfSnapshot the one-based position to increment, or {@code 0} to disable. Negative values 
+     * are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
+     * would be the second-to-last position, and so on.
+     */
+    void incrementPositionIfSnapshot(int incrementPositionIfSnapshot) {
+        this.setIncrementPositionIfSnapshot(incrementPositionIfSnapshot)
+    }
+
+    /**
+     * @param incrementPositionIfSnapshot the one-based position to increment, or {@code 0} to disable. Negative values 
+     * are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
+     * would be the second-to-last position, and so on.
+     */
+    void setIncrementPositionIfSnapshot(int incrementPositionIfSnapshot) {
+        this.incrementPositionIfSnapshot = incrementPositionIfSnapshot
+    }
+
+    boolean getIncrementPositionIfSnapshot() {
+        return incrementPositionIfSnapshot
+    }
+
+    void skipIncrementForClassifiers(List<String> classifiers) {
+        skipIncrement { ver ->
+            classifiers.any {ver.rawVersion.contains("-$it")}
+        }
+    }
+
+    void skipIncrementForClassifiers(String... classifiers) {
+        skipIncrementForClassifiers([classifiers].flatten().findAll { it != null })
+    }
+
+    void skipIncrement(Spec<VersionInformation> skipIncrement) {
+        this.setSkipIncrement(skipIncrement)
+    }
+
+    void setSkipIncrement(Spec<VersionInformation> skipIncrement) {
+        this.skipIncrement = skipIncrement
+    }
+
+    Spec<String> getSkipIncrement() {
+        return skipIncrement
     }
 
     String getVersion() {
@@ -183,6 +261,19 @@ class VersionExtension {
     boolean isSnapshot() {
         calculateVersion()
         return this.snapshot
+    }
+
+    @groovy.transform.Immutable
+    class VersionInformation {
+        String rawVersion
+        boolean snapshot
+        /**
+         * The classifiers of the version. This does not include the automatically prepended {@code -SNAPSHOT} classifier
+         * when {@link #snapshot} is {@code true}.
+         */
+        String classifiers
+        String commitTimestamp
+        String commitId
     }
 }
 
