@@ -23,9 +23,13 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -37,12 +41,15 @@ import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
+import java.time.Instant;
+
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.literal;
 
 public class ConcordCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        // Concord bot control commands.
         event.getDispatcher().register(
             literal("concord")
                 .then(literal("reload")
@@ -60,6 +67,16 @@ public class ConcordCommand {
                 .then(literal("status")
                     .executes(ConcordCommand::status)
                 )
+        );
+
+        // Discord integration commands.
+        // Reports a user to the staff upon request of a user.
+        event.getDispatcher().register(
+                literal("report")
+                        .then(Commands.argument("target", EntityArgument.players())
+                            .then(Commands.argument("reason", StringArgumentType.greedyString())
+                                    .executes(ConcordCommand::report))
+                        )
         );
     }
 
@@ -111,6 +128,76 @@ public class ConcordCommand {
             result = resolve(source, Translations.COMMAND_STATUS_DISABLED.component()).withStyle(RED);
         }
         ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_STATUS_PREFIX.component(result)), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int report(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        // If Concord is disabled for whatever reason, tell the player.
+        if (!Concord.isEnabled()) {
+            ctx.getSource().sendFailure(
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_STATUS
+                                    .component(
+                                            resolve(ctx.getSource(),
+                                                    Translations.COMMAND_STATUS_DISABLED.component()
+                                            )
+                                    )
+                    ).withStyle(RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        // If reporting is disabled, also tell the user
+        if (ConcordConfig.REPORT_CHANNEL_ID.get().isEmpty()) {
+            ctx.getSource().sendFailure(
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_STATUS
+                                    .component(
+                                            resolve(ctx.getSource(),
+                                                    Translations.COMMAND_STATUS_DISABLED.component()
+                                            )
+                                    )
+                    ).withStyle(RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        var players = EntityArgument.getPlayers(ctx, "target");
+        var sender = ctx.getSource().getPlayerOrException();
+        var reason = StringArgumentType.getString(ctx, "reason");
+        var bot = Concord.getBot();
+        var channel = bot.getDiscord().getTextChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
+
+        if (!players.isEmpty()) {
+            var reportedPlayer = (ServerPlayer) players.toArray()[0];
+
+            var reportedName = reportedPlayer.getName().getString();
+            var senderName = sender.getName().getString();
+            channel.sendMessageEmbeds(
+                    new EmbedBuilder()
+                            .setAuthor("Concord Integrations")
+                            .setColor(0xFF0000)
+                            .setDescription("**" + reportedName + "** has been reported by **" + senderName + "**")
+                            .addField("Reason", reason, false)
+                            .addField("Reported", "**" + reportedName + "** (`" + reportedPlayer.getGameProfile().getId().toString() + "`)\n" +
+                                            "Dimension: `" + reportedPlayer.level.dimension().location() + "`\n" +
+                                            "XYZ: `" + (int) reportedPlayer.position().x + " " + (int) reportedPlayer.position().y + " " + (int) reportedPlayer.position().z + "`", false)
+                            .addField("Reporter", "**" + senderName + "** (`" + sender.getGameProfile().getId().toString() + "`)\n" +
+                                            "Dimension: `" + sender.level.dimension().location() + "`\n" +
+                                            "XYZ: `" + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z + "`", false)
+                            .setTimestamp(Instant.now())
+                            .setFooter("Game time: " + sender.level.getGameTime())
+                            .build()
+            ).queue();
+
+            ctx.getSource().sendSuccess(
+                    resolve(ctx.getSource(),
+                            Translations.COMMAND_REPORT_SUCCESS
+                                    .component(
+                                        reportedPlayer.getName()
+                                    )
+                    ).withStyle(GREEN), true);
+        }
+
+
         return Command.SINGLE_SUCCESS;
     }
 }

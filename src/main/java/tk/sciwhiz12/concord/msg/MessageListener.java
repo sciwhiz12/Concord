@@ -56,7 +56,7 @@ public class MessageListener extends ListenerAdapter {
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return; // TODO: maybe make this a config option
 
         if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID.get()) &&
-            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHANNEL_ID.get())) {
+            event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHAT_CHANNEL_ID.get())) {
 
             final MessageEntry entry = new MessageEntry(event);
             final MessageReference reference = entry.message.getMessageReference();
