@@ -2,14 +2,10 @@ package tk.sciwhiz12.concord.command;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.minecraft.core.Registry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.dimension.DimensionType;
-import org.lwjgl.system.CallbackI;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.command.discord.CommandDispatcher;
 
