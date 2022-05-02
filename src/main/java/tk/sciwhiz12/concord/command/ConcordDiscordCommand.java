@@ -10,6 +10,7 @@ import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.command.discord.BanCommand;
 import tk.sciwhiz12.concord.command.discord.CommandDispatcher;
 import tk.sciwhiz12.concord.command.discord.KickCommand;
+import tk.sciwhiz12.concord.command.discord.WhitelistCommand;
 
 import java.awt.*;
 import java.time.Instant;
@@ -86,6 +87,7 @@ public class ConcordDiscordCommand {
 
         dispatcher.registerSingle(KickCommand.INSTANCE);
         dispatcher.registerSingle(BanCommand.INSTANCE);
+        dispatcher.registerSingle(WhitelistCommand.INSTANCE);
     }
 
     public static void postInit() {

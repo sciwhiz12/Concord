@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLLoader;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 
@@ -38,7 +40,7 @@ public class KickCommand extends SlashCommand {
         var server = Concord.BOT.getServer();
 
         // Short-circuit for integrated servers.
-        if (!ConcordConfig.ENABLE_INTEGRATED.get() && server instanceof IntegratedServer) {
+        if (!ConcordConfig.ENABLE_INTEGRATED.get() && FMLLoader.getDist() == Dist.CLIENT) {
             event.reply("Sorry, but this command is disabled on Integrated Servers. Check the enable_integrated option in the Concord Config.").setEphemeral(true).queue();
             return;
         }

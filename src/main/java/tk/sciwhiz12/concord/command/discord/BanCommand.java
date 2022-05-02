@@ -7,12 +7,24 @@ import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.players.UserBanListEntry;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLLoader;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 
 import java.util.Date;
 import java.util.List;
 
+
+/**
+ * This command takes the form:
+ *  /ban <user> [reason]
+ *
+ * It removes a user from the server and prevents them from joining again (known as a ban, or kickban),
+ *  optionally with the specified reason.
+ *
+ * @author Curle
+ */
 public class BanCommand extends SlashCommand {
     private static final OptionData USER_OPTION = new OptionData(OptionType.STRING, "user", "The name of the user to ban from the server", true);
     private static final OptionData REASON_OPTION = new OptionData(OptionType.STRING, "reason", "The reason for the user to be banned.", false);
@@ -32,7 +44,7 @@ public class BanCommand extends SlashCommand {
 
 
         // Short-circuit for integrated servers.
-        if (!ConcordConfig.ENABLE_INTEGRATED.get() && server instanceof IntegratedServer) {
+        if (!ConcordConfig.ENABLE_INTEGRATED.get() && FMLLoader.getDist() == Dist.CLIENT) {
             event.reply("Sorry, but this command is disabled on Integrated Servers. Check the enable_integrated option in the Concord Config.").setEphemeral(true).queue();
             return;
         }
