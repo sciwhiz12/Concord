@@ -37,17 +37,6 @@ public class ConcordDiscordCommand {
     private static JDA bot;
     private static MinecraftServer server;
 
-    private static void listCommand(SlashCommandEvent listEvent) {
-        listEvent.replyEmbeds(new EmbedBuilder()
-                .setTitle("Concord Integrations")
-                .setDescription("There are currently " + server.getPlayerCount() + " people online.")
-                .addField("Online Players", String.join("\n", server.getPlayerNames()), false)
-                .setTimestamp(Instant.now())
-                .setColor(Color.CYAN)
-                .build()
-        ).setEphemeral(true).queue();
-    }
-
     private static void tpsCommand(SlashCommandEvent tpsEvent) {
         double meanTickTime = Mth.average(server.tickTimes) * 1.0E-6D;;
         double meanTPS = Math.min(1000.0/meanTickTime, 20);
@@ -82,22 +71,31 @@ public class ConcordDiscordCommand {
         // TODO
     }
 
-    private static void stopCommand(SlashCommandEvent stopEvent) {
-        // Short-circuit if on integrated server
-        if(FMLLoader.getDist() == Dist.CLIENT) {
-            stopEvent.reply("Sorry! This command is disabled on Integrated servers.").setEphemeral(true).queue();
-            return;
-        }
-
-        stopEvent.reply("Shutting the server down..").queue();
-        Concord.BOT.getServer().halt(false);
-    }
-
     public static void initialize(CommandDispatcher dispatcher) {
-        dispatcher.registerSingle("list", "List all online users.", "Show a count of online users, and their names.", ConcordDiscordCommand::listCommand);
+        dispatcher.registerSingle("list", "List all online users.", "Show a count of online users, and their names.", (listEvent) -> {
+            listEvent.replyEmbeds(new EmbedBuilder()
+                    .setTitle("Concord Integrations")
+                    .setDescription("There are currently " + server.getPlayerCount() + " people online.")
+                    .addField("Online Players", String.join("\n", server.getPlayerNames()), false)
+                    .setTimestamp(Instant.now())
+                    .setColor(Color.CYAN)
+                    .build()
+            ).setEphemeral(true).queue();
+        });
+
         dispatcher.registerSingle("tps", "Show the performance of the server.", "Display a breakdown of server performance, in current, average and separated by dimension.", ConcordDiscordCommand::tpsCommand);
-        dispatcher.registerSingle("stop", "Shut down your Minecraft server.", "Immediately schedule the shutdown of the Minecraft server, akin to /stop from in-game.", ConcordDiscordCommand::stopCommand);
         dispatcher.registerSingle("help", "Show detailed information about every single available command.", "Show the help information you are currently reading.", ConcordDiscordCommand::helpCommand);
+        dispatcher.registerSingle("stop", "Shut down your Minecraft server.", "Immediately schedule the shutdown of the Minecraft server, akin to /stop from in-game.", (event) -> {
+            // Short-circuit if on integrated server
+            if(FMLLoader.getDist() == Dist.CLIENT) {
+                event.reply("Sorry! This command is disabled on Integrated servers.").setEphemeral(true).queue();
+                return;
+            }
+
+            event.reply("Shutting the server down..").queue();
+            Concord.BOT.getServer().halt(false);
+        });
+
 
         dispatcher.registerSingle(KickCommand.INSTANCE);
         dispatcher.registerSingle(BanCommand.INSTANCE);

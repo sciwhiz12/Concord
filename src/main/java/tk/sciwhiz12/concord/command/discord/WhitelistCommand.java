@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
-import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLLoader;
 import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
 
 import java.util.Optional;
 
@@ -39,6 +39,24 @@ public class WhitelistCommand extends SlashCommand {
 
     @Override
     public void execute(SlashCommandEvent event) {
+        var roleConfig = ConcordConfig.MODERATOR_ROLE_ID.get();
+        if (!roleConfig.isEmpty()) {
+            var role = Concord.BOT.getDiscord().getRoleById(roleConfig);
+            // If no role, then it's non-empty and invalid; disable the command
+            if (role == null) {
+                event.reply("Sorry, but this command is disabled by configuration. Check the moderator_role_id option in the config.").setEphemeral(true).queue();
+                return;
+            } else {
+                // If the member doesn't have the moderator role, then deny them the ability to use the command.
+                if (!event.getMember().getRoles().contains(role)) {
+                    event.reply("Sorry, but you don't have permission to use this command.").setEphemeral(true).queue();
+                    return;
+                }
+                // Fall-through; member has the role, so they can use the command.
+            }
+            // Fall-through; the role is empty, so all permissions are handled by Discord.
+        }
+
         var server = Concord.BOT.getServer();
 
         // Short circuit for singleplayer worlds
