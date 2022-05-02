@@ -106,6 +106,18 @@ public class CommandDispatcher extends ListenerAdapter {
     }
 
     /**
+     * A short way to add a single command to the dispatcher.
+     * This is not the recommended way to do this - use the variadic constructor instead.
+     * @param command the command to add
+     * @return the new Dispatcher, for chaining.
+     */
+    public CommandDispatcher registerSingle(SlashCommand command) {
+        this.commands.add(command);
+        this.commandsByName.put(command.getName(), command);
+        return this;
+    }
+
+    /**
      * Set this Dispatcher to a test mode, which will only upsert commands to the specified guild.
      * This effectively allows for immediate usage of specified commands, rather than the 1 hour delay in regular mode.
      * However, it is limited to a single guild in this mode, so do not use it for production usage.
