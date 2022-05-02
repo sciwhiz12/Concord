@@ -56,6 +56,7 @@ public class ChatBot extends ListenerAdapter {
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+    private final CommandDispatcher dispatcher;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -64,6 +65,10 @@ public class ChatBot extends ListenerAdapter {
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+
+        // Initialize Discord-side commands
+        dispatcher = new CommandDispatcher();
+        discord.addEventListener(dispatcher);
 
         // Prevent any mentions not explicitly specified
         MessageAction.setDefaultMentions(Collections.emptySet());
