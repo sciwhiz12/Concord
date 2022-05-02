@@ -43,7 +43,7 @@ public class ConcordDiscordCommand {
     }
 
     private static void tpsCommand(SlashCommandEvent tpsEvent) {
-        double meanTickTime = Mth.average(server.tickTimes);
+        double meanTickTime = Mth.average(server.tickTimes) * 1.0E-6D;;
         double meanTPS = Math.min(1000.0/meanTickTime, 20);
 
         StringBuilder builder = new StringBuilder();
@@ -54,15 +54,16 @@ public class ConcordDiscordCommand {
             if (times == null)
                 times = new long[]{0};
 
-            double worldTickTime = Mth.average(times);
+            double worldTickTime = Mth.average(times) * 1.0E-6D;;
             double worldTPS = Math.min(1000.0 / worldTickTime, 20);
 
             builder.append(dim.dimension().location()).append(": Mean tick time: ").append(worldTickTime).append(" ms. Mean TPS: ").append(worldTPS).append("\n");
         }
 
         tpsEvent.replyEmbeds(new EmbedBuilder()
-                .setTitle("TPS Performance Report")
-                .setDescription("Overall performance: Mean tick time: " + meanTickTime + " ms. Mean TPS: " + meanTPS)
+                .setTitle("Concord integrations")
+                .setDescription("TPS Performance Report")
+                .addField("Overall performance", "Mean tick time: " + meanTickTime + " ms. Mean TPS: " + meanTPS, false)
                 .addField("Performance per dimension", builder.toString(), false)
                 .setColor(Color.ORANGE)
                 .setTimestamp(Instant.now())
@@ -71,6 +72,7 @@ public class ConcordDiscordCommand {
     }
 
     private static void helpCommand(SlashCommandEvent helpEvent) {
+        helpEvent.reply("TODO").queue();
         // TODO
     }
 
