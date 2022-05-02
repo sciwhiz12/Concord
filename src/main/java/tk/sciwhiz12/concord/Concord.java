@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.EmoteCommandHook;
 import tk.sciwhiz12.concord.command.ReportCommand;
+import tk.sciwhiz12.concord.command.ConcordDiscordCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.util.Messages;
@@ -76,7 +77,7 @@ public class Concord {
         MinecraftForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
     }
 
-    
+
     public void onServerStarting(ServerStartingEvent event) {
         if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
@@ -146,6 +147,7 @@ public class Concord {
         try {
             final JDA jda = jdaBuilder.build();
             BOT = new ChatBot(jda, server);
+            ConcordDiscordCommand.postInit();
         } catch (LoginException e) {
             LOGGER.error("Error while trying to login to Discord; integration will not be enabled.", e);
         }
