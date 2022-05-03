@@ -27,11 +27,12 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.Translations;
@@ -40,6 +41,7 @@ import java.time.Instant;
 
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
+import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static tk.sciwhiz12.concord.command.ConcordCommand.resolve;
 
@@ -48,16 +50,19 @@ import static tk.sciwhiz12.concord.command.ConcordCommand.resolve;
  * allows players to quickly report another player for some specific reason from within the game, without needing to
  * open Discord and manually communicate with a server operator.
  *
- * <p>The configuration setting for the Discord channel is {@link ConcordConfig#REPORT_CHANNEL_ID}.</p>
+ * <p>The configuration setting for the Discord channel is {@link ConcordConfig#REPORT_CHANNEL_ID}. If this setting is 
+ * blank, this command is disabled and not registered.</p>
  *
  * @author Curle
  */
 public class ReportCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        if (ConcordConfig.REPORT_CHANNEL_ID.get().isBlank()) return;
+
         event.getDispatcher().register(
                 literal("report")
-                        .then(Commands.argument("target", EntityArgument.players())
-                                .then(Commands.argument("reason", StringArgumentType.greedyString())
+                        .then(argument("target", EntityArgument.players())
+                                .then(argument("reason", StringArgumentType.greedyString())
                                         .executes(ReportCommand::report))
                         )
         );
@@ -78,8 +83,12 @@ public class ReportCommand {
             return Command.SINGLE_SUCCESS;
         }
 
+        final ChatBot bot = Concord.getBot();
+        final String channelID = ConcordConfig.REPORT_CHANNEL_ID.get();
+        final TextChannel channel = channelID.isBlank() ? null : bot.getDiscord().getTextChannelById(channelID);
+
         // If reporting is disabled, also tell the user
-        if (ConcordConfig.REPORT_CHANNEL_ID.get().isEmpty()) {
+        if (channel == null) {
             ctx.getSource().sendFailure(
                     resolve(ctx.getSource(),
                             Translations.COMMAND_REPORT_STATUS
@@ -95,8 +104,6 @@ public class ReportCommand {
         var players = EntityArgument.getPlayers(ctx, "target");
         var sender = ctx.getSource().getPlayerOrException();
         var reason = StringArgumentType.getString(ctx, "reason");
-        var bot = Concord.getBot();
-        var channel = bot.getDiscord().getTextChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
 
         if (!players.isEmpty()) {
             var reportedPlayer = (ServerPlayer) players.toArray()[0];
