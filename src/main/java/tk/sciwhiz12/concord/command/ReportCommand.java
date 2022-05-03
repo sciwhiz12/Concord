@@ -42,7 +42,6 @@ import tk.sciwhiz12.concord.util.Translations;
 import java.time.Instant;
 
 import static net.dv8tion.jda.api.utils.MarkdownSanitizer.escape;
-import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -122,7 +121,7 @@ public class ReportCommand {
             ctx.getSource().sendSuccess(
                     Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
                                     reportedPlayer.getName(), reason
-                            ).withStyle(GREEN), true);
+                            ), true);
         }
 
 
