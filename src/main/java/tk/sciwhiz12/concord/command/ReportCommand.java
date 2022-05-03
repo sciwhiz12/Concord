@@ -43,7 +43,6 @@ import java.time.Instant;
 
 import static net.dv8tion.jda.api.utils.MarkdownSanitizer.escape;
 import static net.minecraft.ChatFormatting.GREEN;
-import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -76,7 +75,7 @@ public class ReportCommand {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                                     Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
-                            ).withStyle(RED));
+                            ));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -89,7 +88,7 @@ public class ReportCommand {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                                     Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
-                            ).withStyle(RED));
+                            ));
             return Command.SINGLE_SUCCESS;
         }
 
