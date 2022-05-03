@@ -44,7 +44,7 @@ public final class TranslationUtil {
     /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */
 
     /**
-     * Creates a {@link BaseComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
+     * Creates a {@link MutableComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
      * <p>
      * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link TextComponent} with the message
      * specified by the translation key being eagerly evaluated now. This text component is safe to send to clients, as it does
@@ -57,7 +57,7 @@ public final class TranslationUtil {
      * @param lazyTranslate Whether to lazily translate the message
      * @param translation   The translation key
      * @param args          Extra arguments to the message
-     * @return a {@link BaseComponent} with the specified message
+     * @return a {@link MutableComponent} with the specified message
      */
     public static MutableComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
         TranslatableComponent text = new TranslatableComponent(translation, args);
@@ -69,8 +69,8 @@ public final class TranslationUtil {
             translationKey, args);
     }
 
-    public static MutableComponent eagerTranslate(final TranslatableComponent component) {
-        return checkComponent(component);
+    public static TranslatableComponent eagerTranslate(final TranslatableComponent component) {
+        return (TranslatableComponent) checkComponent(component);
     }
 
     public static MutableComponent checkComponent(Component component) {

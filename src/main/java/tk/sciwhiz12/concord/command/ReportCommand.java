@@ -43,7 +43,6 @@ import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
-import static tk.sciwhiz12.concord.command.ConcordCommand.resolve;
 
 /**
  * {@code /report} command for reporting players to a configured Discord channel, usually visible to server staff. This
@@ -72,14 +71,9 @@ public class ReportCommand {
         // If Concord is disabled for whatever reason, tell the player.
         if (!Concord.isEnabled()) {
             ctx.getSource().sendFailure(
-                    resolve(ctx.getSource(),
-                            Translations.COMMAND_REPORT_STATUS
-                                    .component(
-                                            resolve(ctx.getSource(),
-                                                    Translations.COMMAND_STATUS_DISABLED.component()
-                                            )
-                                    )
-                    ).withStyle(RED));
+                    Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
+                                    Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
+                            ).withStyle(RED));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -90,14 +84,9 @@ public class ReportCommand {
         // If reporting is disabled, also tell the user
         if (channel == null) {
             ctx.getSource().sendFailure(
-                    resolve(ctx.getSource(),
-                            Translations.COMMAND_REPORT_STATUS
-                                    .component(
-                                            resolve(ctx.getSource(),
-                                                    Translations.COMMAND_STATUS_DISABLED.component()
-                                            )
-                                    )
-                    ).withStyle(RED));
+                    Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
+                                    Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
+                            ).withStyle(RED));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -128,12 +117,9 @@ public class ReportCommand {
             ).queue();
 
             ctx.getSource().sendSuccess(
-                    resolve(ctx.getSource(),
-                            Translations.COMMAND_REPORT_SUCCESS
-                                    .component(
-                                            reportedPlayer.getName()
-                                    )
-                    ).withStyle(GREEN), true);
+                    Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
+                                    reportedPlayer.getName()
+                            ).withStyle(GREEN), true);
         }
 
 

@@ -27,14 +27,8 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
-import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ModPresenceTracker;
-import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
 import static net.minecraft.ChatFormatting.GREEN;
@@ -64,16 +58,9 @@ public class ConcordCommand {
         );
     }
 
-    public static MutableComponent resolve(CommandSourceStack source, final TranslatableComponent text){
-        return !ConcordConfig.LAZY_TRANSLATIONS.get() 
-                || (source.getEntity() instanceof ServerPlayer player && ModPresenceTracker.isModPresent(player)) 
-                ? text 
-                : TranslationUtil.eagerTranslate(text);
-    }
-
     private static int reload(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
-        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_ENABLING.component()), true);
+        ctx.getSource().sendSuccess(Translations.COMMAND_ENABLING.resolvedComponent(source), true);
         if (Concord.isEnabled()) {
             Concord.disable();
         }
@@ -84,10 +71,10 @@ public class ConcordCommand {
     private static int enable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (Concord.isEnabled()) {
-            ctx.getSource().sendFailure(resolve(source, Translations.COMMAND_ALREADY_ENABLED.component()));
+            ctx.getSource().sendFailure(Translations.COMMAND_ALREADY_ENABLED.resolvedComponent(source));
             return Command.SINGLE_SUCCESS;
         }
-        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_ENABLING.component()), true);
+        ctx.getSource().sendSuccess(Translations.COMMAND_ENABLING.resolvedComponent(source), true);
         Concord.enable(source.getServer());
         return Command.SINGLE_SUCCESS;
     }
@@ -95,10 +82,10 @@ public class ConcordCommand {
     private static int disable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         if (!Concord.isEnabled()) {
-            ctx.getSource().sendFailure(resolve(source, Translations.COMMAND_ALREADY_DISABLED.component()));
+            ctx.getSource().sendFailure(Translations.COMMAND_ALREADY_DISABLED.resolvedComponent(source));
             return Command.SINGLE_SUCCESS;
         }
-        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_DISABLING.component()), true);
+        ctx.getSource().sendSuccess(Translations.COMMAND_DISABLING.resolvedComponent(source), true);
         Concord.disable();
         return Command.SINGLE_SUCCESS;
     }
@@ -107,11 +94,11 @@ public class ConcordCommand {
         CommandSourceStack source = ctx.getSource();
         Component result;
         if (Concord.isEnabled()) {
-            result = resolve(source, Translations.COMMAND_STATUS_ENABLED.component()).withStyle(GREEN);
+            result = Translations.COMMAND_STATUS_ENABLED.resolvedComponent(source).withStyle(GREEN);
         } else {
-            result = resolve(source, Translations.COMMAND_STATUS_DISABLED.component()).withStyle(RED);
+            result = Translations.COMMAND_STATUS_DISABLED.resolvedComponent(source).withStyle(RED);
         }
-        ctx.getSource().sendSuccess(resolve(source, Translations.COMMAND_STATUS_PREFIX.component(result)), false);
+        ctx.getSource().sendSuccess(Translations.COMMAND_STATUS_PREFIX.resolvedComponent(source, result), false);
         return Command.SINGLE_SUCCESS;
     }
 }
