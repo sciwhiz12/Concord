@@ -30,7 +30,9 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
@@ -39,6 +41,7 @@ import tk.sciwhiz12.concord.util.Translations;
 
 import java.time.Instant;
 
+import static net.dv8tion.jda.api.utils.MarkdownSanitizer.escape;
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.commands.Commands.argument;
@@ -101,16 +104,17 @@ public class ReportCommand {
             var senderName = sender.getName().getString();
             channel.sendMessageEmbeds(
                     new EmbedBuilder()
-                            .setAuthor("Concord Integrations")
-                            .setColor(0xFF0000)
-                            .setDescription("**" + reportedName + "** has been reported by **" + senderName + "**")
+                            .setColor(0xF5E65C)
+                            .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
+                            .addField("Reported",
+                                    "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
+                                    "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)), 
+                                    false)
                             .addField("Reason", reason, false)
-                            .addField("Reported", "**" + reportedName + "** (`" + reportedPlayer.getGameProfile().getId().toString() + "`)\n" +
-                                    "Dimension: `" + reportedPlayer.level.dimension().location() + "`\n" +
-                                    "XYZ: `" + (int) reportedPlayer.position().x + " " + (int) reportedPlayer.position().y + " " + (int) reportedPlayer.position().z + "`", false)
-                            .addField("Reporter", "**" + senderName + "** (`" + sender.getGameProfile().getId().toString() + "`)\n" +
-                                    "Dimension: `" + sender.level.dimension().location() + "`\n" +
-                                    "XYZ: `" + (int) sender.position().x + " " + (int) sender.position().y + " " + (int) sender.position().z + "`", false)
+                            .addField("Reporter", 
+                                    "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
+                                    "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
+                                    false)
                             .setTimestamp(Instant.now())
                             .setFooter("Game time: " + sender.level.getGameTime())
                             .build()
@@ -124,5 +128,10 @@ public class ReportCommand {
 
 
         return Command.SINGLE_SUCCESS;
+    }
+    
+    private static String position(Entity entity) {
+        final BlockPos blockPos = entity.blockPosition();
+        return "%s %s %s".formatted(blockPos.getX(), blockPos.getY(), blockPos.getZ());
     }
 }
