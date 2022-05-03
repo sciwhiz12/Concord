@@ -121,7 +121,7 @@ public class ReportCommand {
 
             ctx.getSource().sendSuccess(
                     Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
-                                    reportedPlayer.getName()
+                                    reportedPlayer.getName(), reason
                             ).withStyle(GREEN), true);
         }
 

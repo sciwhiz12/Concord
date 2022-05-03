@@ -21,7 +21,7 @@
   "command.concord.enable.already_enabled": "Discord integration is already enabled!",
   "command.concord.reload": "Reloading discord integration...",
   "command.concord.report.status": "Reporting users is currently %s",
-  "command.concord.report.success": "A report has been submitted for %s.",
+  "command.concord.report.success": "Submitted report for %s for reason: %s",
   "command.concord.status": "Discord integration status: %s",
   "command.concord.status.disabled": "DISABLED",
   "command.concord.status.enabled": "ENABLED",
