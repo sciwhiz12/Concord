@@ -31,7 +31,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.ChatBot;
@@ -61,7 +60,7 @@ public class ReportCommand {
 
         event.getDispatcher().register(
                 literal("report")
-                        .then(argument("target", EntityArgument.players())
+                        .then(argument("target", EntityArgument.player())
                                 .then(argument("reason", StringArgumentType.greedyString())
                                         .executes(ReportCommand::report))
                         )
@@ -91,38 +90,34 @@ public class ReportCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        var players = EntityArgument.getPlayers(ctx, "target");
+        var reportedPlayer = EntityArgument.getPlayer(ctx, "target");
         var sender = ctx.getSource().getPlayerOrException();
         var reason = StringArgumentType.getString(ctx, "reason");
 
-        if (!players.isEmpty()) {
-            var reportedPlayer = (ServerPlayer) players.toArray()[0];
+        var reportedName = reportedPlayer.getName().getString();
+        var senderName = sender.getName().getString();
+        channel.sendMessageEmbeds(
+                new EmbedBuilder()
+                        .setColor(0xF5E65C)
+                        .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
+                        .addField("Reported",
+                                "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
+                                "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)), 
+                                false)
+                        .addField("Reason", reason, false)
+                        .addField("Reporter", 
+                                "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
+                                "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
+                                false)
+                        .setTimestamp(Instant.now())
+                        .setFooter("Game time: " + sender.level.getGameTime())
+                        .build()
+        ).queue();
 
-            var reportedName = reportedPlayer.getName().getString();
-            var senderName = sender.getName().getString();
-            channel.sendMessageEmbeds(
-                    new EmbedBuilder()
-                            .setColor(0xF5E65C)
-                            .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
-                            .addField("Reported",
-                                    "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
-                                    "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)), 
-                                    false)
-                            .addField("Reason", reason, false)
-                            .addField("Reporter", 
-                                    "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
-                                    "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
-                                    false)
-                            .setTimestamp(Instant.now())
-                            .setFooter("Game time: " + sender.level.getGameTime())
-                            .build()
-            ).queue();
-
-            ctx.getSource().sendSuccess(
-                    Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
-                                    reportedPlayer.getName(), reason
-                            ), true);
-        }
+        ctx.getSource().sendSuccess(
+                Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
+                                reportedPlayer.getName(), reason
+                        ), true);
 
 
         return Command.SINGLE_SUCCESS;
