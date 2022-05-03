@@ -74,7 +74,7 @@ public class ReportCommand {
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                                     Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
                             ));
-            return Command.SINGLE_SUCCESS;
+            return 0;
         }
 
         final ChatBot bot = Concord.getBot();
@@ -87,7 +87,7 @@ public class ReportCommand {
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                                     Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
                             ));
-            return Command.SINGLE_SUCCESS;
+            return 0;
         }
 
         var reportedPlayer = EntityArgument.getPlayer(ctx, "target");
