@@ -26,8 +26,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.minecraft.network.chat.TextColor;
-import tk.sciwhiz12.concord.util.Translations;
 import tk.sciwhiz12.concord.util.Translation;
+import tk.sciwhiz12.concord.util.Translations;
 
 public enum MemberStatus {
     ONLINE(OnlineStatus.ONLINE, Translations.STATUS_ONLINE, 0x43b581, '\u25cf'),

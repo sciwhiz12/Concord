@@ -23,7 +23,6 @@
 package tk.sciwhiz12.concord.util;
 
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
