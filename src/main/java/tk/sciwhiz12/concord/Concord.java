@@ -23,6 +23,7 @@
 package tk.sciwhiz12.concord;
 
 import com.google.common.base.Strings;
+import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -40,8 +41,7 @@ import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkConstants;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
@@ -55,7 +55,7 @@ import java.util.EnumSet;
 @Mod(Concord.MODID)
 public class Concord {
     public static final String MODID = "concord";
-    public static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     @Nullable
     public static ChatBot BOT;

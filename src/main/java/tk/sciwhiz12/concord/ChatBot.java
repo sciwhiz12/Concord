@@ -35,8 +35,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 
 public class ChatBot extends ListenerAdapter {
-    private static final Marker BOT = MarkerManager.getMarker("BOT");
+    private static final Marker BOT = MarkerFactory.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
         EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
 
