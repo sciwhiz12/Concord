@@ -23,8 +23,11 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -36,6 +39,8 @@ import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.util.Messages;
+
+import java.util.function.Supplier;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -50,33 +55,33 @@ public class SayCommandHook {
         event.getDispatcher().register(literal("say")
                 .requires((ctx) -> ctx.hasPermission(2))
                 .then(argument("message", MessageArgument.message())
-                        .executes((ctx) -> {
-                            Component message = MessageArgument.getMessage(ctx, "message");
-                            TranslatableComponent text = new TranslatableComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
-                            Entity entity = ctx.getSource().getEntity();
-                            if (entity != null) {
-                                try {
-                                    if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                                        Messaging.sendToChannel(Concord.getBot().getDiscord(), text.getString());
-                                    }
-                                } catch (Exception e) {
-                                    LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
-                                }
-                                ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.CHAT, entity.getUUID());
-                            } else {
-                                try {
-                                    if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                                        Messaging.sendToChannel(Concord.getBot().getDiscord(), Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
-                                    }
-                                } catch (Exception e) {
-                                    LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
-                                }
-                                ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.SYSTEM, Util.NIL_UUID);
-                            }
-
-                            return Command.SINGLE_SUCCESS;
-                        })
+                        .executes(SayCommandHook::execute)
                 )
         );
+    }
+
+    private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Component message = MessageArgument.getMessage(ctx, "message");
+        TranslatableComponent text = new TranslatableComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
+        Entity entity = ctx.getSource().getEntity();
+        if (entity != null) {
+            sendMessage(text::getString);
+            ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.CHAT, entity.getUUID());
+        } else {
+            sendMessage(() -> Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
+            ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.SYSTEM, Util.NIL_UUID);
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static void sendMessage(Supplier<String> message) {
+        try {
+            if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
+                Messaging.sendToChannel(Concord.getBot().getDiscord(), message.get());
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
+        }
     }
 }
