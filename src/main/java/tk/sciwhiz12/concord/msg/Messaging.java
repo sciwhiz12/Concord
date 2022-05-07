@@ -72,31 +72,31 @@ public class Messaging {
         final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
 
         final List<Role> roles = member.getRoles().stream()
-            .filter(((Predicate<Role>) Role::isPublicRole).negate())
-            .toList();
+                .filter(((Predicate<Role>) Role::isPublicRole).negate())
+                .toList();
         if (!roles.isEmpty()) {
             hover.append("\n").append(Translations.HOVER_ROLES.component());
             for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
                 if (i != 0) hover.append(", "); // add joiner for more than one role
                 Role role = roles.get(i);
                 hover.append(new TextComponent(role.getName())
-                    .withStyle(style -> style.withColor(TextColor.fromRgb(role.getColorRaw())))
+                        .withStyle(style -> style.withColor(TextColor.fromRgb(role.getColorRaw())))
                 );
             }
         }
 
         if (replyMessage != null) {
             hover.append("\n")
-                .append(Translations.HOVER_REPLY.component(
-                    replyMessage.withStyle(WHITE))
-                    .withStyle(GRAY)
-                );
+                    .append(Translations.HOVER_REPLY.component(
+                                    replyMessage.withStyle(WHITE))
+                            .withStyle(GRAY)
+                    );
         }
 
         return new TextComponent(member.getEffectiveName())
-            .withStyle(style -> style
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
-                .withColor(TextColor.fromRgb(member.getColorRaw())));
+                .withStyle(style -> style
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                        .withColor(TextColor.fromRgb(member.getColorRaw())));
     }
 
     public static TranslatableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
@@ -113,16 +113,16 @@ public class Messaging {
                 final Member referencedMember = referencedMessage.getMember();
                 if (referencedMember != null) {
                     referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
-                        createContentComponent(referencedMessage));
+                            createContentComponent(referencedMessage));
                 } else {
                     referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
-                        .withStyle(style -> style.withHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
+                            .withStyle(style -> style.withHoverEvent(
+                                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
                 } // TODO: reply to the bot/webhook
 
                 text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
-                    .withStyle(ChatFormatting.GRAY)
-                    .append(text);
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(text);
             }
         }
 
@@ -156,16 +156,16 @@ public class Messaging {
 
             final MutableComponent attachmentHoverComponent = new TextComponent("");
             attachmentHoverComponent.append(
-                Translations.HOVER_ATTACHMENT_FILENAME.component(
-                    new TextComponent(attachment.getFileName()).withStyle(WHITE))
-                    .withStyle(GRAY)
+                    Translations.HOVER_ATTACHMENT_FILENAME.component(
+                                    new TextComponent(attachment.getFileName()).withStyle(WHITE))
+                            .withStyle(GRAY)
             ).append("\n");
             attachmentHoverComponent.append(new TextComponent(attachment.getUrl()).withStyle(DARK_GRAY)).append("\n");
             attachmentHoverComponent.append(Translations.HOVER_ATTACHMENT_CLICK.component());
 
             attachmentComponent.withStyle(style ->
-                style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl())));
+                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl())));
 
             text.append(attachmentComponent);
         }
@@ -180,15 +180,15 @@ public class Messaging {
             case ALWAYS -> member.isOwner(); // Always show for the owner
             case NEVER -> false; // Never show
             case WITHOUT_ADMINISTRATORS -> member.isOwner() // Show if owner and there are no hoisted Admin roles
-                && member.getGuild().getRoleCache().streamUnordered()
-                .noneMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
+                    && member.getGuild().getRoleCache().streamUnordered()
+                    .noneMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
             // TODO: cache the result of the above stream
         };
 
         final MutableComponent ownerText = new TextComponent(showCrown ? MemberStatus.CROWN_ICON + " " : "")
-            .withStyle(style -> style.withColor(CROWN_COLOR));
+                .withStyle(style -> style.withColor(CROWN_COLOR));
         final MutableComponent statusText = new TextComponent(String.valueOf(status.getIcon()))
-            .withStyle(style -> style.withColor(status.getColor()));
+                .withStyle(style -> style.withColor(status.getColor()));
 
         // Use Concord icon font if configured and told to do so
         if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
@@ -197,12 +197,12 @@ public class Messaging {
         }
 
         return Translations.HOVER_HEADER.component(
-            new TextComponent(member.getUser().getName()).withStyle(WHITE),
-            new TextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
-            ownerText,
-            statusText,
-            status.getTranslation().component()
-                .withStyle(style -> style.withColor(status.getColor()))
+                new TextComponent(member.getUser().getName()).withStyle(WHITE),
+                new TextComponent(member.getUser().getDiscriminator()).withStyle(WHITE),
+                ownerText,
+                statusText,
+                status.getTranslation().component()
+                        .withStyle(style -> style.withColor(status.getColor()))
         ).withStyle(DARK_GRAY);
     }
 

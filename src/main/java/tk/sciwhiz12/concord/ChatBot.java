@@ -49,7 +49,7 @@ import java.util.EnumSet;
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
-        EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
+            EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
 
     private final JDA discord;
     private final MinecraftServer server;
@@ -108,7 +108,7 @@ public class ChatBot extends ListenerAdapter {
         final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID.get());
         if (guild == null) {
             Concord.LOGGER.warn(BOT, "This bot is not connected to a guild with ID {}, as specified in the config.",
-                ConcordConfig.GUILD_ID.get());
+                    ConcordConfig.GUILD_ID.get());
             Concord.LOGGER.warn(BOT, "This indicates either the bot was not invited to the guild, or a wrongly-typed guild ID.");
             return false;
         }
@@ -116,25 +116,25 @@ public class ChatBot extends ListenerAdapter {
         final GuildChannel channel = guild.getGuildChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel == null) {
             Concord.LOGGER.error(BOT, "There is no channel with ID {} within the guild, as specified in the config.",
-                ConcordConfig.CHAT_CHANNEL_ID.get());
+                    ConcordConfig.CHAT_CHANNEL_ID.get());
             return false;
         }
 
         if (channel.getType() != ChannelType.TEXT) {
             Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
-                ConcordConfig.CHAT_CHANNEL_ID.get(), channel.getType());
+                    ConcordConfig.CHAT_CHANNEL_ID.get(), channel.getType());
             return false;
         }
 
         // Guild and channel IDs are correct, now to check permissions
         final Sets.SetView<Permission> missingPermissions = Sets
-            .difference(REQUIRED_PERMISSIONS, guild.getSelfMember().getPermissions(channel));
+                .difference(REQUIRED_PERMISSIONS, guild.getSelfMember().getPermissions(channel));
 
         if (!missingPermissions.isEmpty()) {
             Concord.LOGGER.error(BOT, "This bot is missing the following required permissions in the channel: {}.",
-                missingPermissions);
+                    missingPermissions);
             Concord.LOGGER.error(BOT, "As reference, the bot requires the following permissions in the channel: {}.",
-                REQUIRED_PERMISSIONS);
+                    REQUIRED_PERMISSIONS);
             return false;
         }
 

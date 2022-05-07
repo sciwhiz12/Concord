@@ -98,9 +98,9 @@ public class PlayerListener {
             };
             if (!enabled) return;
             TranslatableComponent text = translation.component(
-                event.getPlayer().getDisplayName(),
-                info.getTitle(),
-                info.getDescription());
+                    event.getPlayer().getDisplayName(),
+                    info.getTitle(),
+                    info.getDescription());
 
             Messaging.sendToChannel(bot.getDiscord(), text.getString());
         }

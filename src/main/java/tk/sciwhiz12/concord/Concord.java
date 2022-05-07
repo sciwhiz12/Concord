@@ -62,7 +62,7 @@ public class Concord {
 
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-            () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
         ModPresenceTracker.register();
 
         ConcordConfig.register();
@@ -133,13 +133,13 @@ public class Concord {
         }
         LOGGER.info("Initializing Discord integration.");
         JDABuilder jdaBuilder = JDABuilder.createDefault(token)
-            .setChunkingFilter(ChunkingFilter.ALL)
-            .setMemberCachePolicy(MemberCachePolicy.ONLINE)
-            .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
-            .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
-            .setAutoReconnect(true)
-            .setActivity(Activity.playing("the readying game..."))
-            .setStatus(OnlineStatus.DO_NOT_DISTURB);
+                .setChunkingFilter(ChunkingFilter.ALL)
+                .setMemberCachePolicy(MemberCachePolicy.ONLINE)
+                .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
+                .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
+                .setAutoReconnect(true)
+                .setActivity(Activity.playing("the readying game..."))
+                .setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
             final JDA jda = jdaBuilder.build();
             BOT = new ChatBot(jda, server);

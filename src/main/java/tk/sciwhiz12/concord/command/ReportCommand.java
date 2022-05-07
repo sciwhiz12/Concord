@@ -49,7 +49,7 @@ import static net.minecraft.commands.Commands.literal;
  * allows players to quickly report another player for some specific reason from within the game, without needing to
  * open Discord and manually communicate with a server operator.
  *
- * <p>The configuration setting for the Discord channel is {@link ConcordConfig#REPORT_CHANNEL_ID}. If this setting is 
+ * <p>The configuration setting for the Discord channel is {@link ConcordConfig#REPORT_CHANNEL_ID}. If this setting is
  * blank, this command is disabled and not registered.</p>
  *
  * @author Curle
@@ -72,8 +72,8 @@ public class ReportCommand {
         if (!Concord.isEnabled()) {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
-                                    Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
-                            ));
+                            Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
+                    ));
             return 0;
         }
 
@@ -85,8 +85,8 @@ public class ReportCommand {
         if (channel == null) {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
-                                    Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
-                            ));
+                            Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
+                    ));
             return 0;
         }
 
@@ -102,12 +102,12 @@ public class ReportCommand {
                         .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
                         .addField("Reported",
                                 "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
-                                "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)), 
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)),
                                 false)
                         .addField("Reason", reason, false)
-                        .addField("Reporter", 
+                        .addField("Reporter",
                                 "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
-                                "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
                                 false)
                         .setTimestamp(Instant.now())
                         .setFooter("Game time: " + sender.level.getGameTime())
@@ -116,13 +116,13 @@ public class ReportCommand {
 
         ctx.getSource().sendSuccess(
                 Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
-                                reportedPlayer.getName(), reason
-                        ), true);
+                        reportedPlayer.getName(), reason
+                ), true);
 
 
         return Command.SINGLE_SUCCESS;
     }
-    
+
     private static String position(Entity entity) {
         final BlockPos blockPos = entity.blockPosition();
         return "%s %s %s".formatted(blockPos.getX(), blockPos.getY(), blockPos.getZ());

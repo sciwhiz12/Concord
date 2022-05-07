@@ -65,7 +65,7 @@ public final class TranslationUtil {
 
     public static MutableComponent createTranslation(@Nullable ServerPlayer entity, String translationKey, Object... args) {
         return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ModPresenceTracker.isModPresent(entity),
-            translationKey, args);
+                translationKey, args);
     }
 
     public static TranslatableComponent eagerTranslate(final TranslatableComponent component) {

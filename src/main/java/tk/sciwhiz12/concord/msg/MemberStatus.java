@@ -82,8 +82,9 @@ public enum MemberStatus {
             case ONLINE -> ONLINE;
             case IDLE -> IDLE;
             case INVISIBLE, OFFLINE -> OFFLINE;
-            case DO_NOT_DISTURB -> member.getActivities().stream().anyMatch(act -> act.getType() == Activity.ActivityType.STREAMING)
-                ? STREAMING : DO_NOT_DISTURB;
+            case DO_NOT_DISTURB ->
+                    member.getActivities().stream().anyMatch(act -> act.getType() == Activity.ActivityType.STREAMING)
+                            ? STREAMING : DO_NOT_DISTURB;
             default -> UNKNOWN;
         };
     }

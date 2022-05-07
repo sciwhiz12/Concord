@@ -39,22 +39,22 @@ public class ConcordCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         // Concord bot control commands.
         event.getDispatcher().register(
-            literal("concord")
-                .then(literal("reload")
-                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
-                    .executes(ConcordCommand::reload)
-                )
-                .then(literal("enable")
-                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
-                    .executes(ConcordCommand::enable)
-                )
-                .then(literal("disable")
-                    .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
-                    .executes(ConcordCommand::disable)
-                )
-                .then(literal("status")
-                    .executes(ConcordCommand::status)
-                )
+                literal("concord")
+                        .then(literal("reload")
+                                .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
+                                .executes(ConcordCommand::reload)
+                        )
+                        .then(literal("enable")
+                                .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
+                                .executes(ConcordCommand::enable)
+                        )
+                        .then(literal("disable")
+                                .requires(source -> source.hasPermission(Commands.LEVEL_ADMINS))
+                                .executes(ConcordCommand::disable)
+                        )
+                        .then(literal("status")
+                                .executes(ConcordCommand::status)
+                        )
         );
     }
 
