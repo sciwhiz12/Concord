@@ -36,6 +36,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -84,7 +85,8 @@ public class MessageListener extends ListenerAdapter {
 
     static record MessageEntry(Member member, Message message) {
         MessageEntry(GuildMessageReceivedEvent event) {
-            this(event.getMember(), event.getMessage());
+            // Currently, only events with non-null members ever get here
+            this(Objects.requireNonNull(event.getMember()), event.getMessage());
         }
     }
 }
