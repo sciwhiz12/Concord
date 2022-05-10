@@ -47,13 +47,13 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.NetworkConstants;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.ReportCommand;
@@ -78,7 +78,9 @@ public class Concord {
 
         ConcordConfig.register();
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ConcordClient::setup);
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            ConcordClient.setup();
+        }
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(Concord::commonSetup);
 
