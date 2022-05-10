@@ -22,8 +22,18 @@
 
 package tk.sciwhiz12.concord;
 
+import java.util.EnumSet;
+
+import javax.annotation.Nullable;
+import javax.security.auth.login.LoginException;
+
+import org.slf4j.Logger;
+
 import com.google.common.base.Strings;
 import com.mojang.logging.LogUtils;
+
+import net.minecraft.server.MinecraftServer;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -32,25 +42,27 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.IExtensionPoint;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkConstants;
-import org.slf4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.util.Messages;
-
-import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
-import java.util.EnumSet;
+import tk.sciwhiz12.concord.util.conversion.EmojifulToDiscordConverter;
+import tk.sciwhiz12.concord.util.conversion.UnicodeConversion;
 
 @Mod(Concord.MODID)
 public class Concord {
@@ -63,15 +75,27 @@ public class Concord {
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
                 () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
-        ModPresenceTracker.register();
 
         ConcordConfig.register();
+
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ConcordClient::setup);
+
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(Concord::commonSetup);
 
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
+
+        if (emojifulLoaded()) {
+            EmojifulToDiscordConverter.load();
+            UnicodeConversion.load();
+        }
+    }
+
+    static void commonSetup(final FMLCommonSetupEvent event) {
+        ConcordNetwork.register();
     }
 
     public void onServerStarting(ServerStartingEvent event) {
@@ -146,5 +170,9 @@ public class Concord {
         } catch (LoginException e) {
             LOGGER.error("Error while trying to login to Discord; integration will not be enabled.", e);
         }
+    }
+
+    public static boolean emojifulLoaded() {
+        return ModList.get().isLoaded("emojiful");
     }
 }

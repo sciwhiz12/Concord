@@ -27,14 +27,20 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.network.NetworkDirection;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.network.RegisterEmotePacket;
+import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
+import tk.sciwhiz12.concord.network.RemoveEmotePacket;
 import tk.sciwhiz12.concord.util.Messages;
 import tk.sciwhiz12.concord.util.Translation;
 
@@ -49,7 +55,18 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        if (!ConcordConfig.PLAYER_JOIN.get()) return;
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
+            bot.getDiscord().getGuilds().forEach(guild -> {
+                // Split the guilds, just so the packet isn't giant
+                ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(
+                    new RegisterEmotePacket(
+                        guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList()),
+                    serverPlayer.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+            });
+        }
+
+        if (!ConcordConfig.PLAYER_JOIN.get())
+            return;
 
         TranslatableComponent text = Messages.PLAYER_JOIN.component(event.getPlayer().getDisplayName());
 
@@ -59,7 +76,17 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        if (!ConcordConfig.PLAYER_LEAVE.get()) return;
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
+            bot.getDiscord().getGuilds().forEach(guild -> {
+                // Split the guilds, just so the packet isn't giant
+                ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(
+                    new RemoveEmotePacket(guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList()),
+                    serverPlayer.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+            });
+        }
+
+        if (!ConcordConfig.PLAYER_LEAVE.get())
+            return;
 
         TranslatableComponent text = Messages.PLAYER_LEAVE.component(event.getPlayer().getDisplayName());
 

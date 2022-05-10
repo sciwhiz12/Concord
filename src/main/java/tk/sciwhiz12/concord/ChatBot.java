@@ -22,7 +22,17 @@
 
 package tk.sciwhiz12.concord;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+
 import com.google.common.collect.Sets;
+
+import net.minecraft.server.MinecraftServer;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
@@ -31,20 +41,22 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
+import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
+import net.dv8tion.jda.api.events.emote.update.EmoteUpdateNameEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.network.RegisterEmotePacket;
+import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
+import tk.sciwhiz12.concord.network.RemoveEmotePacket;
 import tk.sciwhiz12.concord.util.Messages;
-
-import java.util.Collections;
-import java.util.EnumSet;
 
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
@@ -93,6 +105,39 @@ public class ChatBot extends ListenerAdapter {
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
         Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
+    }
+
+    @Override
+    public void onGuildReady(GuildReadyEvent event) {
+        event.getGuild().getEmotes().forEach(Messaging::addEmojiReplacement);
+    }
+
+    @Override
+    public void onEmoteAdded(EmoteAddedEvent event) {
+        Messaging.addEmojiReplacement(event.getEmote());
+
+        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+            new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+    }
+
+    @Override
+    public void onEmoteRemoved(EmoteRemovedEvent event) {
+        Messaging.removeEmojiReplacement(event.getEmote());
+
+        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+            new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+    }
+
+    @Override
+    public void onEmoteUpdateName(EmoteUpdateNameEvent event) {
+        Messaging.removeEmojiReplacement(event.getOldName());
+        Messaging.addEmojiReplacement(event.getEmote());
+
+        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+            new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+
+        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+            new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
     }
 
     void shutdown() {

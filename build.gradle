@@ -10,6 +10,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'eclipse'
 }
 apply from: 'gradle/version.gradle'
 
@@ -84,6 +85,12 @@ repositories {
         name 'm2-dv8tion'
         url 'https://m2.dv8tion.net/releases'
     }
+    maven {
+        url "https://cfa2.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -95,6 +102,8 @@ dependencies {
         exclude module: 'annotations'
     }
     //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    
+    implementation fg.deobf("curse.maven:emojiful-284324:3550915")
 
     dataImplementation sourceSets.main.output
 }

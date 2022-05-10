@@ -20,34 +20,32 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord;
+package tk.sciwhiz12.concord.compat.emojiful;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.event.EventNetworkChannel;
+import com.hrznstudio.emojiful.api.Emoji;
 
-import javax.annotation.Nullable;
+public final class EmojiFromDiscord extends Emoji {
 
-/**
- * Tracks if a client has this mod installed.
- *
- * @author SciWhiz12
- */
-public class ModPresenceTracker {
-    public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
-    public static final EventNetworkChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(CHANNEL_NAME)
-            .networkProtocolVersion(() -> "yes")
-            .clientAcceptedVersions(version -> true)
-            .serverAcceptedVersions(version -> true)
-            .eventNetworkChannel();
+    private final String url;
+    private final long emojiId;
+    private final boolean animated;
 
-    public static void register() {
-        // Channel is created as part of class initialization
+    public EmojiFromDiscord(long emojiId, String name, boolean animated) {
+        this.emojiId = emojiId;
+        this.animated = animated;
+        this.url = "https://cdn.discordapp.com/emojis/%s.%s?size=80&quality=lossless".formatted(emojiId,
+            animated ? "gif" : "png");
+        this.name = name;
+        this.strings.add(":%s:".formatted(name));
     }
 
-    public static boolean isModPresent(@Nullable ServerPlayer client) {
-        return client != null && CHANNEL.isRemotePresent(client.connection.getConnection());
+    public boolean isSame(long emojiId, String name, boolean animated) {
+        return this.emojiId == emojiId && this.name.equals(name) && animated == this.animated;
     }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
 }

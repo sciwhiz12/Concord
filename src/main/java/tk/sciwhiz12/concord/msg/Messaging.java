@@ -22,14 +22,17 @@
 
 package tk.sciwhiz12.concord.msg;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
 import com.google.common.base.Suppliers;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.ChatType;
@@ -44,24 +47,29 @@ import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ModPresenceTracker;
-import tk.sciwhiz12.concord.util.TranslationUtil;
-import tk.sciwhiz12.concord.util.Translations;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static net.minecraft.ChatFormatting.AQUA;
 import static net.minecraft.ChatFormatting.DARK_GRAY;
 import static net.minecraft.ChatFormatting.GRAY;
 import static net.minecraft.ChatFormatting.WHITE;
 import static tk.sciwhiz12.concord.Concord.MODID;
+
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReference;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
+import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.util.StringReplacer;
+import tk.sciwhiz12.concord.util.TranslationUtil;
+import tk.sciwhiz12.concord.util.Translations;
+import tk.sciwhiz12.concord.util.conversion.EmojifulToDiscordConverter;
+import tk.sciwhiz12.concord.util.conversion.UnicodeConversion;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
@@ -132,7 +140,16 @@ public class Messaging {
     }
 
     public static MutableComponent createContentComponent(Message message) {
-        final String content = message.getContentDisplay();
+        String content = message.getContentDisplay();
+        // Only convert if emojiful is loaded. Else, it's useless
+        if (Concord.emojifulLoaded()) {
+            for (var emote : message.getEmotes()) {
+                if (emote.isAnimated()) {
+                    content = content.replace("<:a:%s>".formatted(emote.getId()), ":%s:".formatted(emote.getName()));
+                }
+            }
+            content = UnicodeConversion.replace(content);
+        }
         final MutableComponent text = new TextComponent(content).withStyle(WHITE);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
@@ -219,7 +236,7 @@ public class Messaging {
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             MutableComponent sendingText;
-            if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
+            if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
                 TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
             } else {
@@ -229,7 +246,24 @@ public class Messaging {
         }
     }
 
+    private static final StringReplacer EMOJI_REPLACER = new StringReplacer();
+
+    public static void addEmojiReplacement(Emote emote) {
+        EMOJI_REPLACER.add(":%s:".formatted(emote.getName()), emote.getAsMention());
+    }
+
+    public static void removeEmojiReplacement(String emoteName) {
+        EMOJI_REPLACER.remove(":%s:".formatted(emoteName));
+    }
+
+    public static void removeEmojiReplacement(Emote emote) {
+        removeEmojiReplacement(emote.getName());
+    }
+
     public static void sendToChannel(JDA discord, CharSequence text) {
+        if (Concord.emojifulLoaded()) {
+            text = EmojifulToDiscordConverter.replace(text);
+        }
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
             Collection<Message.MentionType> allowedMentions = Collections.emptySet();
@@ -246,7 +280,7 @@ public class Messaging {
                     allowedMentions.add(Message.MentionType.ROLE);
                 }
             }
-            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+            channel.sendMessage(EMOJI_REPLACER.replace(text)).allowedMentions(allowedMentions).queue();
         }
     }
 }
