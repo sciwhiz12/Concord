@@ -94,7 +94,12 @@ dependencies {
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
     }
-    //library group: 'club.minnced', name: 'discord-webhooks', version: webhook_version
+    library(group: 'club.minnced', name: 'discord-webhooks', version: webhook_version) {
+        exclude module: 'slf4j-api'
+        exclude module: 'annotations'
+        exclude module: 'okhttp'
+        exclude module: 'json'
+    }
 
     dataImplementation sourceSets.main.output
 }

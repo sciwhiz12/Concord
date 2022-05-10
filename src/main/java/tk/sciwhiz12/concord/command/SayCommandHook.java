@@ -26,6 +26,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.MessageArgument;
@@ -33,6 +34,7 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
+
 import net.minecraftforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.Concord;
@@ -78,7 +80,7 @@ public class SayCommandHook {
     private static void sendMessage(Supplier<String> message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                Messaging.sendToChannel(Concord.getBot().getDiscord(), message.get());
+                Messaging.sendToChannel(Concord.getBot(), message.get());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

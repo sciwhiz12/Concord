@@ -23,13 +23,14 @@
 package tk.sciwhiz12.concord.msg;
 
 import com.google.common.base.Suppliers;
-import net.dv8tion.jda.api.JDA;
+
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.ChatType;
@@ -44,6 +45,7 @@ import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
@@ -229,24 +231,21 @@ public class Messaging {
         }
     }
 
-    public static void sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
-        if (channel != null) {
-            Collection<Message.MentionType> allowedMentions = Collections.emptySet();
-            if (ConcordConfig.ALLOW_MENTIONS.get()) {
-                allowedMentions = EnumSet.noneOf(Message.MentionType.class);
-                if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.EVERYONE);
-                    allowedMentions.add(Message.MentionType.HERE);
-                }
-                if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.USER);
-                }
-                if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.ROLE);
-                }
+    public static void sendToChannel(ChatBot bot, CharSequence text) {
+        Collection<Message.MentionType> allowedMentions = Collections.emptySet();
+        if (ConcordConfig.ALLOW_MENTIONS.get()) {
+            allowedMentions = EnumSet.noneOf(Message.MentionType.class);
+            if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.EVERYONE);
+                allowedMentions.add(Message.MentionType.HERE);
             }
-            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+            if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.USER);
+            }
+            if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.ROLE);
+            }
         }
+        bot.sendMessage(new MessageBuilder(text).setAllowedMentions(allowedMentions).build());
     }
 }

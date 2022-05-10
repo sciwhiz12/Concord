@@ -80,7 +80,7 @@ public class MessageListener extends ListenerAdapter {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onServerChat(ServerChatEvent event) {
-        Messaging.sendToChannel(bot.getDiscord(), event.getComponent().getString());
+        Messaging.sendToChannel(bot, event.getComponent().getString());
     }
 
     static record MessageEntry(Member member, Message message) {

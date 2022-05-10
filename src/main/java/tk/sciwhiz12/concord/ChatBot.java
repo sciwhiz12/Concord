@@ -22,7 +22,21 @@
 
 package tk.sciwhiz12.concord;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Locale;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+
 import com.google.common.collect.Sets;
+
+import net.minecraft.server.MinecraftServer;
+
+import club.minnced.discord.webhook.WebhookClientBuilder;
+import club.minnced.discord.webhook.external.JDAWebhookClient;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
@@ -30,32 +44,31 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
 import tk.sciwhiz12.concord.util.Messages;
 
-import java.util.Collections;
-import java.util.EnumSet;
-
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
             EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
+    public static final String MINECRAFT_ICON_URL = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-96x96.png";
 
     private final JDA discord;
     private final MinecraftServer server;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+
+    private JDAWebhookClient webhook;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -77,6 +90,57 @@ public class ChatBot extends ListenerAdapter {
         return server;
     }
 
+    @Nullable
+    public JDAWebhookClient getWebhook() {
+        return webhook;
+    }
+
+    public void sendMessage(Message message) {
+        if (webhook == null) {
+            final var webhookUrl = ConcordConfig.WEBHOOK_URL.get();
+            final var textChannel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
+            if (!webhookUrl.isBlank()) {
+                if (webhookUrl.toLowerCase(Locale.ROOT).equals(ConcordConfig.GENERATE_WEBHOOK_KEY)) {
+                    if (textChannel != null) {
+                        try {
+                            textChannel.createWebhook("Minecraft")
+                                // TODO the line below seems to throw an exception: java.net.SocketException: A
+                                // connection attempt failed because the connected party did not properly
+                                // respond after a period of time, or established connection failed because
+                                // connected host has failed to respond:
+
+                                // .setAvatar(Icon.from(new URL(MINECRAFT_ICON_URL).openStream(), IconType.PNG))
+                                .queue(web -> {
+                                    webhook = WebhookClientBuilder.fromJDA(web).setHttpClient(discord.getHttpClient())
+                                        .buildJDA();
+
+                                    ConcordConfig.WEBHOOK_URL.set(web.getUrl());
+
+                                    webhook.send(message);
+                                });
+                        } catch (Exception e) {
+                            Concord.LOGGER.error(BOT, "Exception trying to setup webhook in channel with ID {}: ",
+                                textChannel.getId(), e);
+                        }
+                    }
+                } else {
+                    webhook = new WebhookClientBuilder(webhookUrl).setHttpClient(discord.getHttpClient()).buildJDA();
+
+                    webhook.send(message);
+                }
+            } else
+                sendMessageInChannel(textChannel, message);
+        } else {
+            webhook.send(message);
+        }
+    }
+
+    private void sendMessageInChannel(@Nullable TextChannel channel, Message message) {
+        if (channel != null) {
+            channel.sendMessage(message).queue();
+        }
+    }
+
     @Override
     public void onReady(ReadyEvent event) {
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));
@@ -92,7 +156,7 @@ public class ChatBot extends ListenerAdapter {
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
-        Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
+        Messaging.sendToChannel(this, Messages.BOT_START.component().getString());
     }
 
     void shutdown() {

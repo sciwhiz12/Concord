@@ -28,6 +28,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import tk.sciwhiz12.concord.util.Messages;
 
 public class ConcordConfig {
+    public static final String GENERATE_WEBHOOK_KEY = "gen";
+    
     static final ForgeConfigSpec CONFIG_SPEC;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
@@ -37,6 +39,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
     public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> WEBHOOK_URL;
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
@@ -88,12 +91,17 @@ public class ConcordConfig {
             GUILD_ID = builder.comment("The snowflake ID of the guild where this bot belongs to.",
                             "If empty, the Discord integration will not be enabled.")
                     .define("guild_id", "");
-            CHAT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post and receive messages.",
+            CHAT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will and / or receive messages.",
                             "If empty, the Discord integration will not be enabled.")
                     .define("chat_channel_id", "");
             REPORT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post reports from in-game users.",
                             "If empty, reports will be disabled.")
                     .define("report_channel_id", "");
+            WEBHOOK_URL = builder.comment("The URL of the webhook that the bot will use for sending messages from Minecraft chat.",
+                            "If empty, messages will be sent as the bot.",
+                "A value of \"" + GENERATE_WEBHOOK_KEY
+                    + "\" will make the bot create a webhook in the specified chat channel ID.")
+                    .define("webhook", "");
 
             builder.pop();
         }
