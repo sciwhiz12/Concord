@@ -142,7 +142,7 @@ public class Messaging {
     public static MutableComponent createContentComponent(Message message) {
         String content = message.getContentDisplay();
         // Only convert if emojiful is loaded. Else, it's useless
-        if (Concord.emojifulLoaded()) {
+        if (Concord.emojifulLoaded(true)) {
             for (var emote : message.getEmotes()) {
                 if (emote.isAnimated()) {
                     content = content.replace("<:a:%s>".formatted(emote.getId()), ":%s:".formatted(emote.getName()));
@@ -261,7 +261,7 @@ public class Messaging {
     }
 
     public static void sendToChannel(JDA discord, CharSequence text) {
-        if (Concord.emojifulLoaded()) {
+        if (Concord.emojifulLoaded(true)) {
             text = EmojifulToDiscordConverter.replace(text);
         }
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());

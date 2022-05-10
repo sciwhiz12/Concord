@@ -116,16 +116,18 @@ public class ChatBot extends ListenerAdapter {
     public void onEmoteAdded(EmoteAddedEvent event) {
         Messaging.addEmojiReplacement(event.getEmote());
 
-        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-            new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+        if (Concord.emojifulLoaded(true))
+            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+                new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
     }
 
     @Override
     public void onEmoteRemoved(EmoteRemovedEvent event) {
         Messaging.removeEmojiReplacement(event.getEmote());
 
-        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-            new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+        if (Concord.emojifulLoaded(true))
+            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+                new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
     }
 
     @Override
@@ -133,11 +135,13 @@ public class ChatBot extends ListenerAdapter {
         Messaging.removeEmojiReplacement(event.getOldName());
         Messaging.addEmojiReplacement(event.getEmote());
 
-        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-            new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+        if (Concord.emojifulLoaded(true)) {
+            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+                new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
 
-        ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-            new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
+                new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+        }
     }
 
     void shutdown() {

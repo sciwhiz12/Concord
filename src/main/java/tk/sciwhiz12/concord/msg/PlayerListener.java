@@ -36,6 +36,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.NetworkDirection;
 import tk.sciwhiz12.concord.ChatBot;
+import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.network.RegisterEmotePacket;
@@ -55,7 +56,8 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && Concord.emojifulLoaded(true)
+            && ConcordNetwork.isModPresent(serverPlayer)) {
             bot.getDiscord().getGuilds().forEach(guild -> {
                 // Split the guilds, just so the packet isn't giant
                 ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(
@@ -76,7 +78,8 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        if (event.getPlayer() instanceof ServerPlayer serverPlayer && ConcordNetwork.isModPresent(serverPlayer)) {
+        if (event.getPlayer() instanceof ServerPlayer serverPlayer && Concord.emojifulLoaded(true)
+            && ConcordNetwork.isModPresent(serverPlayer)) {
             bot.getDiscord().getGuilds().forEach(guild -> {
                 // Split the guilds, just so the packet isn't giant
                 ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(

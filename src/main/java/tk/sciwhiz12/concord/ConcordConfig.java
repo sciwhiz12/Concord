@@ -62,6 +62,9 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.BooleanValue COMMAND_SAY;
 
+    // Integrations
+    public static final ForgeConfigSpec.BooleanValue EMOJIFUL_INTEGRATION;
+
     public static void register() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC);
     }
@@ -189,6 +192,15 @@ public class ConcordConfig {
             COMMAND_SAY = builder.comment("Message from /say command",
                             "Translation key: " + Messages.SAY_COMMAND.key())
                     .define("command.say", true);
+
+            builder.pop();
+        }
+
+        {
+            builder.comment("Inter-mod integration settings").push("integration");
+
+            EMOJIFUL_INTEGRATION = builder.comment("If Emojiful integration should be enabled.").define("emojiful",
+                true);
 
             builder.pop();
         }

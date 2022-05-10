@@ -66,6 +66,7 @@ import tk.sciwhiz12.concord.util.conversion.UnicodeConversion;
 
 @Mod(Concord.MODID)
 public class Concord {
+
     public static final String MODID = "concord";
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -74,7 +75,7 @@ public class Concord {
 
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+            () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
 
         ConcordConfig.register();
 
@@ -90,7 +91,7 @@ public class Concord {
         MinecraftForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
 
-        if (emojifulLoaded()) {
+        if (emojifulLoaded(false)) {
             EmojifulToDiscordConverter.load();
             UnicodeConversion.load();
         }
@@ -135,7 +136,8 @@ public class Concord {
     }
 
     public static void disable(boolean suppressMessage) {
-        if (BOT == null || !isEnabled()) return;
+        if (BOT == null || !isEnabled())
+            return;
         LOGGER.info("Shutting down Discord integration...");
         if (!suppressMessage) {
             Messaging.sendToChannel(BOT.getDiscord(), Messages.BOT_STOP.component().getString());
@@ -145,7 +147,8 @@ public class Concord {
     }
 
     public static void enable(MinecraftServer server) {
-        if (isEnabled()) return;
+        if (isEnabled())
+            return;
         final String token = ConcordConfig.TOKEN.get();
         if (Strings.isNullOrEmpty(token)) {
             LOGGER.warn("Bot token is not set in config; Discord integration will not be enabled.");
@@ -158,14 +161,11 @@ public class Concord {
             return;
         }
         LOGGER.info("Initializing Discord integration.");
-        JDABuilder jdaBuilder = JDABuilder.createDefault(token)
-                .setChunkingFilter(ChunkingFilter.ALL)
-                .setMemberCachePolicy(MemberCachePolicy.ONLINE)
-                .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
-                .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
-                .setAutoReconnect(true)
-                .setActivity(Activity.playing("the readying game..."))
-                .setStatus(OnlineStatus.DO_NOT_DISTURB);
+        JDABuilder jdaBuilder = JDABuilder.createDefault(token).setChunkingFilter(ChunkingFilter.ALL)
+            .setMemberCachePolicy(MemberCachePolicy.ONLINE)
+            .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
+            .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)).setAutoReconnect(true)
+            .setActivity(Activity.playing("the readying game...")).setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
             final JDA jda = jdaBuilder.build();
             BOT = new ChatBot(jda, server);
@@ -174,7 +174,16 @@ public class Concord {
         }
     }
 
-    public static boolean emojifulLoaded() {
-        return ModList.get().isLoaded("emojiful");
+    /**
+     * Checks if emojiful is loaded.
+     * 
+     * @param  checkConfig if true, the config value
+     *                     {@link ConcordConfig#EMOJIFUL_INTEGRATION} will be and-ed
+     *                     with the result of the mod loaded check
+     * @return             if emojiful is loaded / integration is enabled
+     */
+    public static boolean emojifulLoaded(boolean checkConfig) {
+        return checkConfig ? ConcordConfig.EMOJIFUL_INTEGRATION.get() && ModList.get().isLoaded("emojiful")
+            : ModList.get().isLoaded("emojiful");
     }
 }

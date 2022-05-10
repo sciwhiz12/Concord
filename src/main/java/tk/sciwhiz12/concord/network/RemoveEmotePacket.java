@@ -50,7 +50,7 @@ public final class RemoveEmotePacket {
 
     public void handle(NetworkEvent.Context context) {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            if (Concord.emojifulLoaded()) {
+            if (Concord.emojifulLoaded(false)) {
                 emotes.forEach(data -> EmojifulCompat.removeDiscordEmoji(guildName, data.emoteId(), data.emoteName(),
                     data.animated()));
                 Concord.LOGGER.info("Removed {} Emojiful emojis from guild \"{}\"", emotes.size(), guildName);

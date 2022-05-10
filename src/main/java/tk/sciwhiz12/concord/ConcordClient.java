@@ -27,7 +27,7 @@ import tk.sciwhiz12.concord.compat.emojiful.EmojifulCompat;
 public class ConcordClient {
 
     static void setup() {
-        if (Concord.emojifulLoaded()) {
+        if (Concord.emojifulLoaded(false)) {
             try {
                 EmojifulCompat.lookupIndexEmojisMethod();
             } catch (NoSuchMethodException | IllegalAccessException e) {
