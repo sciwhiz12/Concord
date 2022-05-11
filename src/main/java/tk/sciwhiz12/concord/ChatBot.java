@@ -22,6 +22,7 @@
 
 package tk.sciwhiz12.concord;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -49,6 +50,8 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.Icon.IconType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.Message.MentionType;
@@ -66,7 +69,6 @@ public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
             EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
-    public static final String MINECRAFT_ICON_URL = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-96x96.png";
     public static final String HEAD_URL = "https://crafatar.com/renders/head/%s?default=MHF_Steve&size=128";
     
     private final JDA discord;
@@ -122,12 +124,7 @@ public class ChatBot extends ListenerAdapter {
                     if (textChannel != null) {
                         try {
                             textChannel.createWebhook("Minecraft")
-                                // TODO the line below seems to throw an exception: java.net.SocketException: A
-                                // connection attempt failed because the connected party did not properly
-                                // respond after a period of time, or established connection failed because
-                                // connected host has failed to respond:
-
-                                // .setAvatar(Icon.from(new URL(MINECRAFT_ICON_URL).openStream(), IconType.PNG))
+                                .setAvatar(Icon.from(new URL(discord.getSelfUser().getAvatarUrl()).openStream(), IconType.PNG))
                                 .queue(web -> {
                                     webhook = WebhookClientBuilder.fromJDA(web).setHttpClient(discord.getHttpClient())
                                         .buildJDA();

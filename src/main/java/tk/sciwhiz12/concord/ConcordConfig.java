@@ -102,7 +102,7 @@ public class ConcordConfig {
                             "If empty, messages will be sent as the bot.",
                 "A value of \"" + GENERATE_WEBHOOK_KEY
                     + "\" will make the bot create a webhook in the specified chat channel ID.")
-                    .define("webhook", "");
+                .define("webhook", "gen");
 
             builder.pop();
         }
