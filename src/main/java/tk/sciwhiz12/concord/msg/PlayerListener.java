@@ -53,7 +53,7 @@ public class PlayerListener {
 
         TranslatableComponent text = Messages.PLAYER_JOIN.component(event.getPlayer().getDisplayName());
 
-        Messaging.sendToChannel(bot, text.getString());
+        Messaging.sendToChannel(bot, text.getString(), event.getPlayer().getGameProfile(), false);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -63,7 +63,7 @@ public class PlayerListener {
 
         TranslatableComponent text = Messages.PLAYER_LEAVE.component(event.getPlayer().getDisplayName());
 
-        Messaging.sendToChannel(bot, text.getString());
+        Messaging.sendToChannel(bot, text.getString(), event.getPlayer().getGameProfile(), false);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -72,7 +72,7 @@ public class PlayerListener {
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
         if (event.getEntity() instanceof ServerPlayer player) {
-            Messaging.sendToChannel(bot, player.getCombatTracker().getDeathMessage().getString());
+            Messaging.sendToChannel(bot, player.getCombatTracker().getDeathMessage().getString(), player.getGameProfile(), false);
         }
     }
 
@@ -102,7 +102,7 @@ public class PlayerListener {
                     info.getTitle(),
                     info.getDescription());
 
-            Messaging.sendToChannel(bot, text.getString());
+            Messaging.sendToChannel(bot, text.getString(), null);
         }
     }
 }

@@ -98,7 +98,6 @@ dependencies {
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
         exclude module: 'okhttp'
-        exclude module: 'json'
     }
 
     dataImplementation sourceSets.main.output

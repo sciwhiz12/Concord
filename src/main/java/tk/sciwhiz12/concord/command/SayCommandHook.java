@@ -80,7 +80,7 @@ public class SayCommandHook {
     private static void sendMessage(Supplier<String> message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                Messaging.sendToChannel(Concord.getBot(), message.get());
+                Messaging.sendToChannel(Concord.getBot(), message.get(), null);
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

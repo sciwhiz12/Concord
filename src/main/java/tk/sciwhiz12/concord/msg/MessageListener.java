@@ -41,7 +41,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MessageListener extends ListenerAdapter {
-    // Using a concurrent queue because messages is received on a different thread from the main server thread.
+    // Using a concurrent queue because messages are received on a different thread from the main server thread.
     private final Queue<MessageEntry> queuedMessages = new ConcurrentLinkedQueue<>();
     private final ChatBot bot;
 
@@ -80,7 +80,7 @@ public class MessageListener extends ListenerAdapter {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onServerChat(ServerChatEvent event) {
-        Messaging.sendToChannel(bot, event.getComponent().getString());
+        Messaging.sendToChannel(bot, event.getComponent().getString().replace("<" + event.getUsername() + ">", ""), event.getPlayer().getGameProfile());
     }
 
     static record MessageEntry(Member member, Message message) {

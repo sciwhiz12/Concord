@@ -43,13 +43,13 @@ public class StatusListener {
     void onServerStarted(ServerStartedEvent event) {
         if (!ConcordConfig.SERVER_START.get()) return;
 
-        Messaging.sendToChannel(bot, Messages.SERVER_START.component().getString());
+        Messaging.sendToChannel(bot, Messages.SERVER_START.component().getString(), null);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     void onServerStopping(ServerStoppingEvent event) {
         if (!ConcordConfig.SERVER_STOP.get()) return;
 
-        Messaging.sendToChannel(bot, Messages.SERVER_STOP.component().getString());
+        Messaging.sendToChannel(bot, Messages.SERVER_STOP.component().getString(), null);
     }
 }

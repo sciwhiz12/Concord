@@ -22,6 +22,7 @@
 
 package tk.sciwhiz12.concord;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
@@ -32,12 +33,16 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import com.google.common.collect.Sets;
+import com.mojang.authlib.GameProfile;
 
 import net.minecraft.server.MinecraftServer;
 
 import club.minnced.discord.webhook.WebhookClientBuilder;
 import club.minnced.discord.webhook.external.JDAWebhookClient;
+import club.minnced.discord.webhook.send.AllowedMentions;
+import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
@@ -46,6 +51,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
@@ -61,7 +67,8 @@ public class ChatBot extends ListenerAdapter {
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
             EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
     public static final String MINECRAFT_ICON_URL = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-96x96.png";
-
+    public static final String HEAD_URL = "https://crafatar.com/renders/head/%s?default=MHF_Steve&size=128";
+    
     private final JDA discord;
     private final MinecraftServer server;
     private final MessageListener msgListener;
@@ -94,8 +101,19 @@ public class ChatBot extends ListenerAdapter {
     public JDAWebhookClient getWebhook() {
         return webhook;
     }
+    
+    public void sendMessage(CharSequence content, @Nullable GameProfile sender, Collection<Message.MentionType> allowedMentions) {
+        sendMessage(content, sender, true, allowedMentions);
+    }
 
-    public void sendMessage(Message message) {
+    /**
+     * Sends a message in the channel of the bot. That message can either be sent by the bot, or by a webhook, depending on configuration.
+     * @param content the content of the message to send
+     * @param sender the sender of the message. Maybe be null
+     * @param addSender if the code {@code sender} is not null, if {@code true} and if a webhook isn't configured, the bot will send the message using its account, but prefixed with {@code <senderName>}
+     * @param allowedMentions the mentions that should be allowed to be sent by the message
+     */
+    public void sendMessage(CharSequence content, @Nullable GameProfile sender, boolean addSender, Collection<Message.MentionType> allowedMentions) {
         if (webhook == null) {
             final var webhookUrl = ConcordConfig.WEBHOOK_URL.get();
             final var textChannel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
@@ -116,7 +134,7 @@ public class ChatBot extends ListenerAdapter {
 
                                     ConcordConfig.WEBHOOK_URL.set(web.getUrl());
 
-                                    webhook.send(message);
+                                    webhook.send(buildWebhookMessage(content, sender, allowedMentions).build());
                                 });
                         } catch (Exception e) {
                             Concord.LOGGER.error(BOT, "Exception trying to setup webhook in channel with ID {}: ",
@@ -126,18 +144,48 @@ public class ChatBot extends ListenerAdapter {
                 } else {
                     webhook = new WebhookClientBuilder(webhookUrl).setHttpClient(discord.getHttpClient()).buildJDA();
 
-                    webhook.send(message);
+                    webhook.send(buildWebhookMessage(content, sender, allowedMentions).build());
                 }
             } else
-                sendMessageInChannel(textChannel, message);
+                sendMessageInChannel(textChannel, addSender, content, sender, allowedMentions);
         } else {
-            webhook.send(message);
+            webhook.send(buildWebhookMessage(content, sender, allowedMentions).build());
         }
     }
+    
+    private static WebhookMessageBuilder buildWebhookMessage(CharSequence content, @Nullable GameProfile sender, Collection<Message.MentionType> allowedMentions) {
+        final var mentions = AllowedMentions.none();
+        if (allowedMentions.contains(MentionType.EVERYONE)) {
+            mentions.withParseEveryone(true);
+        }
+        if (allowedMentions.contains(MentionType.USER)) {
+            mentions.withParseUsers(true);
+        } 
+        if (allowedMentions.contains(MentionType.ROLE)) {
+            mentions.withParseRoles(true);
+        }
+        
+        final var builder = new WebhookMessageBuilder();
+        if (sender != null) {
+            if (ConcordConfig.SEND_AS_PLAYER.get()) {
+                builder.setAvatarUrl(HEAD_URL.formatted(sender.getId()))
+                    .setUsername(sender.getName());
+            } else {
+                content = "<" + sender.getName() + ">";
+            }
+        }
+        
+        builder.setContent(content.toString())
+            .setAllowedMentions(mentions);
+        return builder;
+    }
 
-    private void sendMessageInChannel(@Nullable TextChannel channel, Message message) {
+    private static void sendMessageInChannel(@Nullable TextChannel channel, boolean addSender, CharSequence content, @Nullable GameProfile sender, Collection<Message.MentionType> allowedMentions) {
         if (channel != null) {
-            channel.sendMessage(message).queue();
+            if (sender != null) {
+                content = "<" + sender.getName() + ">";
+            }
+            channel.sendMessage(new MessageBuilder().append(content).setAllowedMentions(allowedMentions).build()).queue();
         }
     }
 
@@ -156,7 +204,7 @@ public class ChatBot extends ListenerAdapter {
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
-        Messaging.sendToChannel(this, Messages.BOT_START.component().getString());
+        Messaging.sendToChannel(this, Messages.BOT_START.component().getString(), null);
     }
 
     void shutdown() {
@@ -165,6 +213,9 @@ public class ChatBot extends ListenerAdapter {
         MinecraftForge.EVENT_BUS.unregister(playerListener);
         MinecraftForge.EVENT_BUS.unregister(statusListener);
         discord.shutdown();
+        if (webhook != null) {
+            webhook.close();
+        }
     }
 
     boolean checkSatisfaction() {

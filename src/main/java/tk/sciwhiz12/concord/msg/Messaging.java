@@ -23,6 +23,7 @@
 package tk.sciwhiz12.concord.msg;
 
 import com.google.common.base.Suppliers;
+import com.mojang.authlib.GameProfile;
 
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -231,7 +232,11 @@ public class Messaging {
         }
     }
 
-    public static void sendToChannel(ChatBot bot, CharSequence text) {
+    public static void sendToChannel(ChatBot bot, CharSequence text, @Nullable GameProfile sender) {
+        sendToChannel(bot, text, sender, true);
+    }
+    
+    public static void sendToChannel(ChatBot bot, CharSequence text, @Nullable GameProfile sender, boolean addSender) {
         Collection<Message.MentionType> allowedMentions = Collections.emptySet();
         if (ConcordConfig.ALLOW_MENTIONS.get()) {
             allowedMentions = EnumSet.noneOf(Message.MentionType.class);
@@ -246,6 +251,6 @@ public class Messaging {
                 allowedMentions.add(Message.MentionType.ROLE);
             }
         }
-        bot.sendMessage(new MessageBuilder(text).setAllowedMentions(allowedMentions).build());
+        bot.sendMessage(text, sender, addSender, allowedMentions);
     }
 }

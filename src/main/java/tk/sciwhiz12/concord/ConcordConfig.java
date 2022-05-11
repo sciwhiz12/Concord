@@ -44,6 +44,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
     public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
+    public static final ForgeConfigSpec.BooleanValue SEND_AS_PLAYER;
 
     public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
@@ -127,6 +128,9 @@ public class ConcordConfig {
                             "WITHOUT_ADMINISTRATORS means it is only visible when there are no hoisted Administrator roles.")
                     .defineEnum("hide_crown", CrownVisibility.WITHOUT_ADMINISTRATORS);
 
+            SEND_AS_PLAYER = builder.comment("If true, messages sent through the webhook (if configured to do so) will use the player's head and username.")
+                    .define("send_as_player", true);
+            
             builder.pop();
         }
 
