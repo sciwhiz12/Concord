@@ -92,7 +92,7 @@ public class ConcordConfig {
             GUILD_ID = builder.comment("The snowflake ID of the guild where this bot belongs to.",
                             "If empty, the Discord integration will not be enabled.")
                     .define("guild_id", "");
-            CHAT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will and / or receive messages.",
+            CHAT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post and / or receive messages.",
                             "If empty, the Discord integration will not be enabled.")
                     .define("chat_channel_id", "");
             REPORT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post reports from in-game users.",
