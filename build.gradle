@@ -15,6 +15,7 @@ apply from: 'gradle/version.gradle'
 
 versions {
     customPrefix = mc_version
+    prev_versions.split(',').each { customPrefix it }
     incrementPositionIfSnapshot(-2) // Second to last version: #.#.(#).#
     skipIncrementForClassifiers('alpha', 'beta', 'pre', 'rc')
 }
