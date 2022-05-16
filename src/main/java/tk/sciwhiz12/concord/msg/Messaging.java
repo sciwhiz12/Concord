@@ -32,28 +32,20 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.spongepowered.asm.mixin.Mutable;
+import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ModPresenceTracker;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -133,7 +125,7 @@ public class Messaging {
 
     public static MutableComponent createContentComponent(Message message) {
         final String content = message.getContentDisplay();
-        final MutableComponent text = new TextComponent(content).withStyle(WHITE);
+        final MutableComponent text = processCustomFormatting(content);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
         for (Message.Attachment attachment : message.getAttachments()) {
@@ -247,6 +239,123 @@ public class Messaging {
                 }
             }
             channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+        }
+    }
+
+    /**
+     * Search a user-input string for legacy-style ChatFormatting.
+     * ie. the input "&5Sup?" will be sent to Minecraft as "Sup?" with a purple color.
+     * It is intentional that this only supports the default vanilla formatting.
+     *
+     * @param input the text from Discord
+     * @return a properly formatted MutableComponent to be echoed into chat.
+     * @author Curle
+     */
+    private static MutableComponent processLegacyFormatting(String input) {
+        if(!ConcordConfig.USE_LEGACY_FORMATTING.get()) {
+            // Default to white if legacy formatting is disabled.
+            return new TextComponent(input).withStyle(WHITE);
+        } else {
+            final String[] parts = input.split("(?=&)");
+            MutableComponent currentComponent = new TextComponent("");
+
+            for (String part : parts) {
+                // Ensure that we only process non-empty strings
+                if (part.isEmpty()) continue;
+
+                final boolean partHasFormatter = part.charAt(0) == '&';
+                // Short circuit for strings of only "&" to avoid a temporal paradox
+                if (partHasFormatter && part.length() == 1) {
+                    currentComponent = currentComponent.append(new TextComponent(part).withStyle(WHITE));
+                    continue;
+                }
+
+                // Parse a formatting character after the & trigger
+                final ChatFormatting formatting = ChatFormatting.getByCode(part.charAt(1));
+                // Ensure that we only process if there's a formatting code
+                if (partHasFormatter && formatting != null) {
+                    currentComponent = currentComponent.append(new TextComponent(part.substring(2)).withStyle(formatting));
+                } else {
+                    // White by default!
+                    currentComponent = currentComponent.append(new TextComponent(part).withStyle(WHITE));
+                }
+            }
+
+            return currentComponent;
+        }
+    }
+
+    /**
+     * Search a user-input string for a custom chat formatting syntax.
+     * The custom syntax follows the format of $color or $#hex.
+     * ie. "$red chat" will print "chat" in red. "$#0000FF sup" will print "sup" in blue.
+     * There is no custom formatting for italic, strikethrough, bold, etc.
+     *
+     * @param input the text from Discord
+     * @return a properly formatted MutableComponent to be echoed into chat.
+     * @author Curle
+     */
+    private static MutableComponent processCustomFormatting(String input) {
+        if(!ConcordConfig.USE_CUSTOM_FORMATTING.get()) {
+            // Default to white if custom formatting is disabled.
+            return processLegacyFormatting(input);
+        } else {
+            MutableComponent currentComponent = new TextComponent("");
+            // Regexplanation:
+            // (?= \$ #? [\w \d] + )
+            // ^   ^  ^^ ^ ^ ^   ^ ^
+            // |   |  || | | |   | |
+            // |   |  || | | |   | - End group
+            // |   |  || | | |   - Match at least one
+            // |   |  || | | - Match any digit
+            // |   |  || | - Match any word
+            // |   |  || - Look for any of the following
+            // |   |  |- Match 0 or 1 of the preceding
+            // |   |  - Look for a # character
+            // |   - Look for a $ character
+            // - Include the result in the split strings
+
+            final String[] parts = input.split("(?=\\$#?[\\w\\d]+)");
+
+
+            for (String part : parts) {
+                // Ensure that we only process non-empty strings
+                if (part.isEmpty()) continue;
+
+                final boolean partHasFormatter = part.charAt(0) == '$';
+                final int firstSpacePosition = part.indexOf(' ');
+
+                // Short circuit for strings of only "$" to avoid a temporal paradox
+                if (partHasFormatter && part.length() == 1 && firstSpacePosition == -1) {
+                    currentComponent = currentComponent.append(new TextComponent(part).withStyle(WHITE));
+                    continue;
+                }
+
+                // Make sure that formatting at the end of messages, or lone formatting, is dealt with.
+                final String formatString = firstSpacePosition == -1 ? part.substring(1) : part.substring(1, firstSpacePosition);
+                // Use TextColor's built-in parsing to do the heavy lifting.
+                final TextColor color = TextColor.parseColor(formatString);
+                // Assign the TextColor into a Style instance so that we can use it with a TextComponent.
+                final Style formatting = Style.EMPTY.withColor(color == null ? TextColor.fromLegacyFormat(WHITE) : color);
+
+                if (partHasFormatter && color != null) {
+
+                    currentComponent = currentComponent.append(
+                            // Cut the string on either the space (if there is one) or the end of the string.
+                            new TextComponent(part.substring(firstSpacePosition != -1 ? firstSpacePosition + 1 : part.length()))
+                                    .withStyle(formatting)
+                    );
+                } else {
+                    // White by default!
+                    currentComponent = currentComponent.append(
+                            new TextComponent(part).withStyle(WHITE)
+                    );
+                }
+
+            }
+
+
+            return currentComponent;
         }
     }
 }
