@@ -4,3 +4,7 @@
 # Generated files should use LF
 src/data/**/.cache/cache    text eol=lf
 src/data/**/*.json          text eol=lf
+
+# Pack metadata and JSON files should use LF
+src/**/*.mcmeta             text eol=lf
+src/**/*.json               text eol=lf
