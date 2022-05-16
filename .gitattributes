@@ -1,0 +1,6 @@
+# These are explicitly windows files and should use CRLF
+*.bat                       text eol=crlf
+
+# Generated files should use LF
+src/data/**/.cache/cache    text eol=lf
+src/data/**/*.json          text eol=lf
