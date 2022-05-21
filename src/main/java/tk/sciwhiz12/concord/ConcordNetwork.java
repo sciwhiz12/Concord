@@ -29,8 +29,12 @@ import net.minecraftforge.network.ConnectionData;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.event.EventNetworkChannel;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -42,6 +46,9 @@ import java.util.function.Predicate;
  * <p>The channel with name {@code concord:exists} communicates the existence of this mod between server and client. It
  * is mainly used for backwards compatibility with existing published Concord versions, and may be modified, replaced,
  * or removed in a future major version update.</p>
+ *
+ * <p>Each {@link FeatureVersion} has a network channel (with the name specified by {@link FeatureVersion#channelName()}),
+ * which communicates the version of that feature between server and client.</p>
  */
 public class ConcordNetwork {
     private static final Predicate<String> TRUE = str -> true;
@@ -53,13 +60,40 @@ public class ConcordNetwork {
             .clientAcceptedVersions(TRUE)
             .serverAcceptedVersions(TRUE)
             .eventNetworkChannel();
+    private static final Map<FeatureVersion, EventNetworkChannel> VERSION_CHANNEL_MAPS = new EnumMap<>(FeatureVersion.class);
 
     public static void register() {
         // Existence channel is created as part of class initialization
+        for (FeatureVersion version : FeatureVersion.values()) {
+            final EventNetworkChannel channel = NetworkRegistry.ChannelBuilder
+                    .named(version.channelName())
+                    .networkProtocolVersion(version.currentVersion()::toString)
+                    .clientAcceptedVersions(TRUE)
+                    .serverAcceptedVersions(TRUE)
+                    .eventNetworkChannel();
+            VERSION_CHANNEL_MAPS.put(version, channel);
+        }
+    }
+
+    public static EventNetworkChannel getChannel(FeatureVersion version) {
+        @Nullable final EventNetworkChannel channel = VERSION_CHANNEL_MAPS.get(version);
+        assert channel != null; // If something calls this before #register, they're doing something _very_ wrong
+        return channel;
     }
 
     public static boolean isModPresent(@Nullable ServerPlayer client) {
         return client != null && EXISTENCE_CHANNEL.isRemotePresent(client.connection.getConnection());
+    }
+
+    public static ArtifactVersion getFeatureVersion(Connection connection, FeatureVersion version) {
+        @Nullable final ArtifactVersion featureVersion = getFeatureVersionIfExists(connection, version);
+        return featureVersion != null ? featureVersion : new DefaultArtifactVersion("0.0.0");
+    }
+
+    @Nullable
+    public static ArtifactVersion getFeatureVersionIfExists(Connection connection, FeatureVersion version) {
+        @Nullable final String channelVersion = getChannelVersion(connection, version.channelName());
+        return channelVersion != null ? new DefaultArtifactVersion(channelVersion) : null;
     }
 
     @Nullable
