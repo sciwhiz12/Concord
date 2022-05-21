@@ -82,7 +82,11 @@ public class ConcordNetwork {
     }
 
     public static boolean isModPresent(@Nullable ServerPlayer client) {
-        return client != null && EXISTENCE_CHANNEL.isRemotePresent(client.connection.getConnection());
+        return client != null && isModPresent(client.connection.getConnection());
+    }
+
+    public static boolean isModPresent(Connection connection) {
+        return EXISTENCE_CHANNEL.isRemotePresent(connection);
     }
 
     public static ArtifactVersion getFeatureVersion(Connection connection, FeatureVersion version) {

@@ -22,26 +22,30 @@
 
 package tk.sciwhiz12.concord.util;
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import tk.sciwhiz12.concord.Concord;
 
 public enum Messages implements Translation {
-    BOT_START("bot.start", "_Discord integration is now active!_"),
-    BOT_STOP("bot.stop", "_Discord integration is being disabled!_"),
-    SERVER_START("server.start", "_Server is now started!_"),
-    SERVER_STOP("server.stop", "_Server is stopping!_"),
-    SAY_COMMAND("command.say", "[**%s**] %s"),
-    PLAYER_JOIN("player.join", "**%s** _joined the game._"),
-    PLAYER_LEAVE("player.leave", "**%s** _left the game._"),
-    ADVANCEMENT_TASK("player.advancement.task", "**%s** has made the advancement **%s**\n_%s_"),
-    ADVANCEMENT_CHALLENGE("player.advancement.challenge", "**%s** has completed the challenge **%s**\n_%s_"),
-    ADVANCEMENT_GOAL("player.advancement.goal", "**%s** has reached the goal **%s**\n_%s_");
+    BOT_START("bot.start", "1.0.0", "_Discord integration is now active!_"),
+    BOT_STOP("bot.stop", "1.0.0", "_Discord integration is being disabled!_"),
+    SERVER_START("server.start", "1.0.0", "_Server is now started!_"),
+    SERVER_STOP("server.stop", "1.0.0", "_Server is stopping!_"),
+    SAY_COMMAND("command.say", "1.0.0", "[**%s**] %s"),
+    PLAYER_JOIN("player.join", "1.0.0", "**%s** _joined the game._"),
+    PLAYER_LEAVE("player.leave", "1.0.0", "**%s** _left the game._"),
+    ADVANCEMENT_TASK("player.advancement.task", "1.0.0", "**%s** has made the advancement **%s**\n_%s_"),
+    ADVANCEMENT_CHALLENGE("player.advancement.challenge", "1.0.0", "**%s** has completed the challenge **%s**\n_%s_"),
+    ADVANCEMENT_GOAL("player.advancement.goal", "1.0.0", "**%s** has reached the goal **%s**\n_%s_");
 
     private final String key;
+    private final ArtifactVersion lastModifiedVersion;
     private final String englishText;
 
-    Messages(String path, String englishText) {
+    Messages(String path, String lastModifiedVersion, String englishText) {
         this.key = "message." + Concord.MODID + '.' + path;
         this.englishText = englishText;
+        this.lastModifiedVersion = new DefaultArtifactVersion(lastModifiedVersion);
     }
 
     @Override
@@ -52,5 +56,10 @@ public enum Messages implements Translation {
     @Override
     public String englishText() {
         return englishText;
+    }
+
+    @Override
+    public ArtifactVersion lastModifiedVersion() {
+        return lastModifiedVersion;
     }
 }

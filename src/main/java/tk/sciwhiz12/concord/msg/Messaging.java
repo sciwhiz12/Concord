@@ -22,30 +22,25 @@
 
 package tk.sciwhiz12.concord.msg;
 
-import com.google.common.base.Suppliers;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.locale.Language;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.*;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ConcordNetwork;
+import tk.sciwhiz12.concord.FeatureVersion;
+import tk.sciwhiz12.concord.util.IntelligentTranslator;
+import tk.sciwhiz12.concord.util.Translation;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
@@ -54,13 +49,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
-import static net.minecraft.ChatFormatting.AQUA;
-import static net.minecraft.ChatFormatting.DARK_GRAY;
-import static net.minecraft.ChatFormatting.GRAY;
-import static net.minecraft.ChatFormatting.WHITE;
+import static net.minecraft.ChatFormatting.*;
 import static tk.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
@@ -209,22 +201,27 @@ public class Messaging {
     public static void sendToAllPlayers(MinecraftServer server, Member member, Message message) {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
-        Supplier<TranslatableComponent> withIcons = Suppliers.memoize(() -> createMessage(true, crownVisibility, member, message));
-        TranslatableComponent withoutIcons = createMessage(false, crownVisibility, member, message);
+        final IntelligentTranslator<MessageContext> translator = versionCheckingTranslator(
+                ctx -> createMessage(ctx.useIcons, crownVisibility, member, message),
+                FeatureVersion.TRANSLATIONS.currentVersion());
 
-        final boolean lazyTranslate = ConcordConfig.LAZY_TRANSLATIONS.get();
-        final boolean useIcons = ConcordConfig.USE_CUSTOM_FONT.get();
+        final boolean lazyTranslateAll = ConcordConfig.LAZY_TRANSLATIONS.get();
+        final boolean useIconsAll = ConcordConfig.USE_CUSTOM_FONT.get();
 
-        server.sendMessage(withoutIcons, Util.NIL_UUID);
+        server.sendMessage(translator.resolve(new MessageContext(false, FeatureVersion.TRANSLATIONS.currentVersion())), Util.NIL_UUID);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            MutableComponent sendingText;
-            if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
-                TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
-                sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
-            } else {
-                sendingText = TranslationUtil.eagerTranslate(withoutIcons);
-            }
+            final Connection connection = player.connection.connection;
+
+            final ArtifactVersion translationsVersion = lazyTranslateAll
+                    ? getFeatureVersionWithDefault(connection, FeatureVersion.TRANSLATIONS)
+                    : ZERO_VERSION; // Eagerly translating means use the 0.0.0 version, which is never compatible
+            final ArtifactVersion iconsVersion = getFeatureVersionWithDefault(connection, FeatureVersion.ICONS);
+
+            final boolean useIcons = useIconsAll && isCompatible(FeatureVersion.ICONS.currentVersion(), iconsVersion);
+            final MessageContext ctx = new MessageContext(useIcons, translationsVersion);
+
+            final TranslatableComponent sendingText = translator.resolve(ctx);
             player.connection.send(new ClientboundChatPacket(sendingText, ChatType.SYSTEM, Util.NIL_UUID));
         }
     }
@@ -248,5 +245,42 @@ public class Messaging {
             }
             channel.sendMessage(text).allowedMentions(allowedMentions).queue();
         }
+    }
+
+    private static final DefaultArtifactVersion ZERO_VERSION = new DefaultArtifactVersion("0.0.0");
+    private static final DefaultArtifactVersion ONE_VERSION = new DefaultArtifactVersion("1.0.0");
+
+    static ArtifactVersion getFeatureVersionWithDefault(Connection connection, FeatureVersion feature) {
+        @Nullable ArtifactVersion featureVersion = ConcordNetwork.getFeatureVersionIfExists(connection, feature);
+        // If no remote version, but mod exists on remote, then default to 1.0.0
+        // This should be removed when we switch to 2.0.0
+        if (featureVersion != null) return featureVersion;
+        return ConcordNetwork.isModPresent(connection) ? ONE_VERSION : ZERO_VERSION;
+    }
+
+    public static boolean isCompatible(ArtifactVersion first, ArtifactVersion second) {
+        return first.getMajorVersion() == second.getMajorVersion()
+                && first.getMinorVersion() == second.getMinorVersion();
+    }
+
+    public static IntelligentTranslator<MessageContext> versionCheckingTranslator(
+            final Function<MessageContext, TranslatableComponent> componentCreator,
+            final ArtifactVersion baseVersion) {
+        return new IntelligentTranslator<>(componentCreator, ((originalKey, remoteContext) -> {
+            @Nullable final Translation translation = TranslationUtil.findTranslation(originalKey);
+            if (translation == null) return originalKey; // Non-Concord translation, so skip
+
+            final ArtifactVersion translationVersion = translation.lastModifiedVersion();
+            if (isCompatible(baseVersion, translationVersion)) {
+                // Major and minor match up, so do not eagerly translate
+                return originalKey;
+            }
+
+            // Major and/or minor do not match up, so eagerly translate
+            return Language.getInstance().getOrDefault(translation.key());
+        }));
+    }
+
+    private record MessageContext(boolean useIcons, ArtifactVersion version) {
     }
 }
