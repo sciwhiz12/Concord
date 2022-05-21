@@ -15,6 +15,7 @@
   "chat.concord.status.online": "Online",
   "chat.concord.status.streaming": "Streaming",
   "chat.concord.status.unknown": "UNKNOWN!",
+  "chat.concord.sticker": "sticker:%s",
   "command.concord.disable": "Disabling discord integration...",
   "command.concord.disable.already_disabled": "Discord integration is already disabled!",
   "command.concord.enable": "Enabling discord integration...",

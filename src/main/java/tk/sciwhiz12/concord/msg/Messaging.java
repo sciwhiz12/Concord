@@ -128,6 +128,21 @@ public class Messaging {
         final MutableComponent text = new TextComponent(content).withStyle(WHITE);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
+        for (MessageSticker sticker : message.getStickers()) {
+            // Ensures a space between stickers, and a space between message and first sticker (whether added by
+            // us or from the message)
+            if (!skipSpace) {
+                text.append(" ");
+            }
+            skipSpace = false;
+
+            MutableComponent stickerComponent = Translations.CHAT_STICKER.component(sticker.getName());
+            stickerComponent = ComponentUtils.wrapInSquareBrackets(stickerComponent);
+            stickerComponent.withStyle(ChatFormatting.LIGHT_PURPLE);
+
+            text.append(stickerComponent);
+        }
+
         for (Message.Attachment attachment : message.getAttachments()) {
             // Ensures a space between attachments, and a space between message and first attachment (whether added by
             // us or from the message)

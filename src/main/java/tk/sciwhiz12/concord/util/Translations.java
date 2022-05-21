@@ -43,6 +43,7 @@ public enum Translations implements Translation {
     CHAT_REPLY_UNKNOWN("chat", "reply.unknown", "1.1.0", "an unknown user"),
     CHAT_ATTACHMENT_WITH_EXTENSION("chat", "attachment", "1.1.0", "attachment:%s"),
     CHAT_ATTACHMENT_NO_EXTENSION("chat", "attachment.no_extension", "1.1.0", "attachment"),
+    CHAT_STICKER("chat", "sticker", "1.1.0", "sticker:%s"),
 
     // Hover text
 
