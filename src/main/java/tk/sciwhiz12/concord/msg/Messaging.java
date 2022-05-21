@@ -202,8 +202,7 @@ public class Messaging {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
         final IntelligentTranslator<MessageContext> translator = versionCheckingTranslator(
-                ctx -> createMessage(ctx.useIcons, crownVisibility, member, message),
-                FeatureVersion.TRANSLATIONS.currentVersion());
+                ctx -> createMessage(ctx.useIcons, crownVisibility, member, message));
 
         final boolean lazyTranslateAll = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIconsAll = ConcordConfig.USE_CUSTOM_FONT.get();
@@ -264,14 +263,13 @@ public class Messaging {
     }
 
     public static IntelligentTranslator<MessageContext> versionCheckingTranslator(
-            final Function<MessageContext, TranslatableComponent> componentCreator,
-            final ArtifactVersion baseVersion) {
+            final Function<MessageContext, TranslatableComponent> componentCreator) {
         return new IntelligentTranslator<>(componentCreator, ((originalKey, remoteContext) -> {
             @Nullable final Translation translation = TranslationUtil.findTranslation(originalKey);
             if (translation == null) return originalKey; // Non-Concord translation, so skip
 
             final ArtifactVersion translationVersion = translation.lastModifiedVersion();
-            if (isCompatible(baseVersion, translationVersion)) {
+            if (isCompatible(remoteContext.version, translationVersion)) {
                 // Major and minor match up, so do not eagerly translate
                 return originalKey;
             }
