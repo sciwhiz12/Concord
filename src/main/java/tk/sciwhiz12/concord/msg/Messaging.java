@@ -45,7 +45,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.ConcordNetwork;
 import tk.sciwhiz12.concord.util.TranslationUtil;
 import tk.sciwhiz12.concord.util.Translations;
 
@@ -219,7 +219,7 @@ public class Messaging {
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             MutableComponent sendingText;
-            if ((lazyTranslate || useIcons) && ModPresenceTracker.isModPresent(player)) {
+            if ((lazyTranslate || useIcons) && ConcordNetwork.isModPresent(player)) {
                 TranslatableComponent translate = useIcons ? withIcons.get() : withoutIcons;
                 sendingText = lazyTranslate ? translate : TranslationUtil.eagerTranslate(translate);
             } else {

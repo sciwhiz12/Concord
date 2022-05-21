@@ -63,7 +63,7 @@ public class Concord {
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
                 () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
-        ModPresenceTracker.register();
+        ConcordNetwork.register();
 
         ConcordConfig.register();
 

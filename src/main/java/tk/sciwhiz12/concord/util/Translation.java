@@ -29,7 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ModPresenceTracker;
+import tk.sciwhiz12.concord.ConcordNetwork;
 
 /**
  * A message with a translation key and its corresponding default text in English ({@code en_us}).
@@ -50,7 +50,7 @@ import tk.sciwhiz12.concord.ModPresenceTracker;
  * avoid any conflict with Brigadier's {@link com.mojang.brigadier.Message} class.</p>
  *
  * @see ConcordConfig#LAZY_TRANSLATIONS
- * @see ModPresenceTracker
+ * @see ConcordNetwork
  */
 public interface Translation {
     /**
@@ -107,12 +107,12 @@ public interface Translation {
 
     private boolean translateEagerly(CommandSourceStack source) {
         return !ConcordConfig.LAZY_TRANSLATIONS.get()
-                || (source.getEntity() instanceof ServerPlayer player && ModPresenceTracker.isModPresent(player));
+                || (source.getEntity() instanceof ServerPlayer player && ConcordNetwork.isModPresent(player));
     }
 
     private boolean translateEagerly(@Nullable Entity sourceEntity) {
         return !ConcordConfig.LAZY_TRANSLATIONS.get()
-                || (sourceEntity instanceof ServerPlayer player && ModPresenceTracker.isModPresent(player));
+                || (sourceEntity instanceof ServerPlayer player && ConcordNetwork.isModPresent(player));
     }
 
     /**

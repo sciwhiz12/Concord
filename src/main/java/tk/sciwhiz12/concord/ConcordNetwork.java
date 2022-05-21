@@ -22,32 +22,50 @@
 
 package tk.sciwhiz12.concord;
 
+import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.ConnectionData;
+import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.event.EventNetworkChannel;
 
 import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 /**
- * Tracks if a client has this mod installed.
+ * Networking for Concord.
  *
- * @author SciWhiz12
+ * <p>None of Concord's channels are required to be present on either server or client. This is to allow connections
+ * between servers and clients which do not have the mod installed.</p>
+ *
+ * <p>The channel with name {@code concord:exists} communicates the existence of this mod between server and client. It
+ * is mainly used for backwards compatibility with existing published Concord versions, and may be modified, replaced,
+ * or removed in a future major version update.</p>
  */
-public class ModPresenceTracker {
-    public static final ResourceLocation CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
-    public static final EventNetworkChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(CHANNEL_NAME)
+public class ConcordNetwork {
+    private static final Predicate<String> TRUE = str -> true;
+
+    public static final ResourceLocation EXISTENCE_CHANNEL_NAME = new ResourceLocation(Concord.MODID, "exists");
+    public static final EventNetworkChannel EXISTENCE_CHANNEL = NetworkRegistry.ChannelBuilder
+            .named(EXISTENCE_CHANNEL_NAME)
             .networkProtocolVersion(() -> "yes")
-            .clientAcceptedVersions(version -> true)
-            .serverAcceptedVersions(version -> true)
+            .clientAcceptedVersions(TRUE)
+            .serverAcceptedVersions(TRUE)
             .eventNetworkChannel();
 
     public static void register() {
-        // Channel is created as part of class initialization
+        // Existence channel is created as part of class initialization
     }
 
     public static boolean isModPresent(@Nullable ServerPlayer client) {
-        return client != null && CHANNEL.isRemotePresent(client.connection.getConnection());
+        return client != null && EXISTENCE_CHANNEL.isRemotePresent(client.connection.getConnection());
+    }
+
+    @Nullable
+    public static String getChannelVersion(Connection connection, ResourceLocation channelName) {
+        @Nullable final ConnectionData connectionData = NetworkHooks.getConnectionData(connection);
+        if (connectionData == null) return null;
+        return connectionData.getChannels().get(channelName);
     }
 }
