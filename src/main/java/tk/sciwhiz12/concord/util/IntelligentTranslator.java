@@ -73,12 +73,12 @@ public class IntelligentTranslator<C> {
             result = original.plainCopy();
         }
         result.setStyle(checkHover(original.getStyle(), resolver));
-        checkSiblings(result, resolver).forEach(result::append);
+        checkSiblings(original, resolver).forEach(result::append);
         return result;
     }
 
     // Does not modify the original component
-    private List<Component> checkSiblings(MutableComponent original, UnaryOperator<String> resolver) {
+    private List<Component> checkSiblings(Component original, UnaryOperator<String> resolver) {
         final ArrayList<Component> result = new ArrayList<>();
         for (Component sibling : original.getSiblings()) {
             // The new siblings are copies (see checkComponent)
