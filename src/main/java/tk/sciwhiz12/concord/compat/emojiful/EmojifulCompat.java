@@ -30,6 +30,7 @@ import java.util.List;
 
 import com.hrznstudio.emojiful.ClientProxy;
 import com.hrznstudio.emojiful.Emojiful;
+import com.hrznstudio.emojiful.api.Emoji;
 import com.hrznstudio.emojiful.api.EmojiCategory;
 
 import tk.sciwhiz12.concord.Concord;
@@ -40,12 +41,12 @@ public class EmojifulCompat {
     private static List<String> registeredGuildCategories = new ArrayList<>();
 
     public static void loadDiscordEmoji(String guildName, long emojiId, String emojiName, boolean animated) {
-        final var emojifulEmoji = new EmojiFromDiscord(emojiId, emojiName, animated);
+        final Emoji emojifulEmoji = new EmojiFromDiscord(emojiId, emojiName, animated);
         Emojiful.EMOJI_MAP.computeIfAbsent(guildName, n -> new ArrayList<>()).add(emojifulEmoji);
         Emojiful.EMOJI_LIST.add(emojifulEmoji);
         if (!registeredGuildCategories.contains(guildName)) {
             registeredGuildCategories.add(guildName);
-            final var cat = new EmojiCategory(guildName, false);
+            final EmojiCategory cat = new EmojiCategory(guildName, false);
             ClientProxy.CATEGORIES.add(cat);
         }
     }
@@ -69,7 +70,7 @@ public class EmojifulCompat {
     }
 
     public static void lookupIndexEmojisMethod() throws NoSuchMethodException, IllegalAccessException {
-        final var type = MethodType.methodType(void.class);
+        final MethodType type = MethodType.methodType(void.class);
         indexEmojisMethod = MethodHandles.privateLookupIn(ClientProxy.class, MethodHandles.lookup())
             .findVirtual(ClientProxy.class, "indexEmojis", type);
     }
