@@ -76,6 +76,7 @@ public class Concord {
         MinecraftForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
     }
 
+    
     public void onServerStarting(ServerStartingEvent event) {
         if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");

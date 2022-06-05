@@ -31,6 +31,7 @@ public class ConcordConfig {
     static final ForgeConfigSpec CONFIG_SPEC;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
+
     public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
     public static final ForgeConfigSpec.BooleanValue EMOTE_COMMAND_HOOK;
 
@@ -76,15 +77,21 @@ public class ConcordConfig {
                         "You can use the concord commands to force-enable discord integration for a session, if needed.")
                 .define("enable_integrated", false);
 
-        SAY_COMMAND_HOOK = builder
-                .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
-                        "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
-                .define("say_command_hook", true);
+        {
+            builder.comment("Hooks settings").push("hooks");
 
-        EMOTE_COMMAND_HOOK = builder
-                .comment("Hook into the /me command by overriding the command node, to intercept messages from this.",
-                        "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
-                .define("emote_command_hook", true);
+            SAY_COMMAND_HOOK = builder
+                    .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
+                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .define("say_command", true);
+
+            EMOTE_COMMAND_HOOK = builder
+                    .comment("Hook into the /me command by overriding the command node, to intercept messages from this.",
+                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .define("emote_command", true);
+
+            builder.pop();
+        }
 
         {
             builder.comment("Discord connection settings").push("discord");
