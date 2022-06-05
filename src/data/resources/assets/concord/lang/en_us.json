@@ -28,7 +28,7 @@
   "command.concord.status.enabled": "ENABLED",
   "message.concord.bot.start": "_Discord integration is now active!_",
   "message.concord.bot.stop": "_Discord integration is being disabled!_",
-  "message.concord.command.emote": "* _%s %s_",
+  "message.concord.command.emote": "* _**%s** %s_",
   "message.concord.command.say": "[**%s**] %s",
   "message.concord.player.advancement.challenge": "**%s** has completed the challenge **%s**\n_%s_",
   "message.concord.player.advancement.goal": "**%s** has reached the goal **%s**\n_%s_",
