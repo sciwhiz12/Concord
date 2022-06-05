@@ -32,6 +32,7 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
     public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
+    public static final ForgeConfigSpec.BooleanValue EMOTE_COMMAND_HOOK;
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
@@ -61,6 +62,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GOAL;
 
     public static final ForgeConfigSpec.BooleanValue COMMAND_SAY;
+    public static final ForgeConfigSpec.BooleanValue COMMAND_EMOTE;
 
     public static void register() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC);
@@ -78,6 +80,11 @@ public class ConcordConfig {
                 .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
                         "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
                 .define("say_command_hook", true);
+
+        EMOTE_COMMAND_HOOK = builder
+                .comment("Hook into the /me command by overriding the command node, to intercept messages from this.",
+                        "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                .define("emote_command_hook", true);
 
         {
             builder.comment("Discord connection settings").push("discord");
@@ -189,6 +196,10 @@ public class ConcordConfig {
             COMMAND_SAY = builder.comment("Message from /say command",
                             "Translation key: " + Messages.SAY_COMMAND.key())
                     .define("command.say", true);
+
+            COMMAND_EMOTE = builder.comment("Message from /me command",
+                            "Translation key: " + Messages.EMOTE_COMMAND.key())
+                    .define("command.emote", true);
 
             builder.pop();
         }

@@ -43,6 +43,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkConstants;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
+import tk.sciwhiz12.concord.command.EmoteCommandHook;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
@@ -72,6 +73,7 @@ public class Concord {
         MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
+        MinecraftForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
     }
 
     public void onServerStarting(ServerStartingEvent event) {

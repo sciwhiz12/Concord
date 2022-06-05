@@ -32,6 +32,7 @@ public enum Messages implements Translation {
     SERVER_START("server.start", "1.0.0", "_Server is now started!_"),
     SERVER_STOP("server.stop", "1.0.0", "_Server is stopping!_"),
     SAY_COMMAND("command.say", "1.0.0", "[**%s**] %s"),
+    EMOTE_COMMAND("command.emote", "1.1.0", "* _%s %s_"),
     PLAYER_JOIN("player.join", "1.0.0", "**%s** _joined the game._"),
     PLAYER_LEAVE("player.leave", "1.0.0", "**%s** _left the game._"),
     ADVANCEMENT_TASK("player.advancement.task", "1.0.0", "**%s** has made the advancement **%s**\n_%s_"),
