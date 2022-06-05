@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord.network;
+package tk.sciwhiz12.concord.network.packet;
 
 import java.util.List;
 
@@ -31,9 +31,9 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.compat.emojiful.EmojifulCompat;
-import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
+import tk.sciwhiz12.concord.network.packet.RegisterEmotePacket.EmoteData;
 
-public final class RemoveEmotePacket {
+public final class RemoveEmotePacket implements Packet {
 
     private final String guildName;
     private final List<EmoteData> emotes;
@@ -43,11 +43,13 @@ public final class RemoveEmotePacket {
         this.emotes = emotes;
     }
 
+    @Override
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeUtf(guildName);
         buffer.writeCollection(emotes, (buf2, d) -> d.write(buf2));
     }
 
+    @Override
     public void handle(NetworkEvent.Context context) {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             if (Concord.emojifulLoaded(false)) {

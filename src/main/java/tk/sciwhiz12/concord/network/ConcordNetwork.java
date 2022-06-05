@@ -20,15 +20,20 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord;
+package tk.sciwhiz12.concord.network;
 
 import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+
 import net.minecraftforge.network.ConnectionData;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.event.EventNetworkChannel;
+import net.minecraftforge.network.simple.SimpleChannel;
+import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.network.FeatureVersion.PacketData;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
@@ -60,23 +65,27 @@ public class ConcordNetwork {
             .clientAcceptedVersions(TRUE)
             .serverAcceptedVersions(TRUE)
             .eventNetworkChannel();
-    private static final Map<FeatureVersion, EventNetworkChannel> VERSION_CHANNEL_MAPS = new EnumMap<>(FeatureVersion.class);
+    private static final Map<FeatureVersion, SimpleChannel> VERSION_CHANNEL_MAPS = new EnumMap<>(FeatureVersion.class);
 
     public static void register() {
         // Existence channel is created as part of class initialization
         for (FeatureVersion version : FeatureVersion.values()) {
-            final EventNetworkChannel channel = NetworkRegistry.ChannelBuilder
+            final SimpleChannel channel = NetworkRegistry.ChannelBuilder
                     .named(version.channelName())
                     .networkProtocolVersion(version.currentVersion()::toString)
                     .clientAcceptedVersions(TRUE)
                     .serverAcceptedVersions(TRUE)
-                    .eventNetworkChannel();
+                    .simpleChannel();
+            int id = 0;
+            for (final PacketData<?> data : version.packets()) {
+                data.build(channel, id++);
+            }
             VERSION_CHANNEL_MAPS.put(version, channel);
         }
     }
 
-    public static EventNetworkChannel getChannel(FeatureVersion version) {
-        @Nullable final EventNetworkChannel channel = VERSION_CHANNEL_MAPS.get(version);
+    public static SimpleChannel getChannel(FeatureVersion version) {
+        @Nullable final SimpleChannel channel = VERSION_CHANNEL_MAPS.get(version);
         assert channel != null; // If something calls this before #register, they're doing something _very_ wrong
         return channel;
     }

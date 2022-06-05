@@ -27,7 +27,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ConcordNetwork;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

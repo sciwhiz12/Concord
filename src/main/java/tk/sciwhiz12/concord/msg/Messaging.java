@@ -39,8 +39,8 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ConcordNetwork;
-import tk.sciwhiz12.concord.FeatureVersion;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.network.FeatureVersion;
 import tk.sciwhiz12.concord.util.IntelligentTranslator;
 import tk.sciwhiz12.concord.util.StringReplacer;
 import tk.sciwhiz12.concord.util.Translation;

@@ -27,7 +27,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
@@ -38,10 +37,11 @@ import net.minecraftforge.network.NetworkDirection;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.network.packet.RegisterEmotePacket;
+import tk.sciwhiz12.concord.network.packet.RegisterEmotePacket.EmoteData;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
-import tk.sciwhiz12.concord.network.RegisterEmotePacket;
-import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
-import tk.sciwhiz12.concord.network.RemoveEmotePacket;
+import tk.sciwhiz12.concord.network.FeatureVersion;
+import tk.sciwhiz12.concord.network.packet.RemoveEmotePacket;
 import tk.sciwhiz12.concord.util.Messages;
 import tk.sciwhiz12.concord.util.Translation;
 
@@ -57,10 +57,10 @@ public class PlayerListener {
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (event.getPlayer() instanceof ServerPlayer serverPlayer && Concord.emojifulLoaded(true)
-            && ConcordNetwork.isModPresent(serverPlayer)) {
+            && ConcordNetwork.isModPresent(serverPlayer) && emojifulPresent(serverPlayer)) {
             bot.getDiscord().getGuilds().forEach(guild -> {
                 // Split the guilds, just so the packet isn't giant
-                ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(
+                ConcordNetwork.getChannel(FeatureVersion.EMOJIFUL_COMPAT).sendTo(
                     new RegisterEmotePacket(
                         guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList()),
                     serverPlayer.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
@@ -79,10 +79,10 @@ public class PlayerListener {
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (event.getPlayer() instanceof ServerPlayer serverPlayer && Concord.emojifulLoaded(true)
-            && ConcordNetwork.isModPresent(serverPlayer)) {
+            && ConcordNetwork.isModPresent(serverPlayer) && emojifulPresent(serverPlayer)) {
             bot.getDiscord().getGuilds().forEach(guild -> {
                 // Split the guilds, just so the packet isn't giant
-                ConcordNetwork.EMOJIFUL_CHANNEL.sendTo(
+                ConcordNetwork.getChannel(FeatureVersion.EMOJIFUL_COMPAT).sendTo(
                     new RemoveEmotePacket(guild.getName(), guild.getEmotes().stream().map(EmoteData::new).toList()),
                     serverPlayer.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
             });
@@ -134,5 +134,9 @@ public class PlayerListener {
 
             Messaging.sendToChannel(bot.getDiscord(), text.getString());
         }
+    }
+    
+    private boolean emojifulPresent(ServerPlayer player) {
+        return ConcordNetwork.getFeatureVersionIfExists(player.connection.connection, FeatureVersion.EMOJIFUL_COMPAT) != null;
     }
 }

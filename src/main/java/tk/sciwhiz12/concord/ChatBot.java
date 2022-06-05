@@ -32,6 +32,7 @@ import org.slf4j.MarkerFactory;
 import com.google.common.collect.Sets;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -48,14 +49,17 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
-import tk.sciwhiz12.concord.network.RegisterEmotePacket;
-import tk.sciwhiz12.concord.network.RegisterEmotePacket.EmoteData;
-import tk.sciwhiz12.concord.network.RemoveEmotePacket;
+import tk.sciwhiz12.concord.network.FeatureVersion;
+import tk.sciwhiz12.concord.network.packet.RegisterEmotePacket;
+import tk.sciwhiz12.concord.network.packet.RemoveEmotePacket;
+import tk.sciwhiz12.concord.network.packet.RegisterEmotePacket.EmoteData;
 import tk.sciwhiz12.concord.util.Messages;
 
 public class ChatBot extends ListenerAdapter {
@@ -117,8 +121,7 @@ public class ChatBot extends ListenerAdapter {
         Messaging.addEmojiReplacement(event.getEmote());
 
         if (Concord.emojifulLoaded(true))
-            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-                new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+            sendEmoteUpdate(new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
     }
 
     @Override
@@ -126,8 +129,7 @@ public class ChatBot extends ListenerAdapter {
         Messaging.removeEmojiReplacement(event.getEmote());
 
         if (Concord.emojifulLoaded(true))
-            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-                new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+            sendEmoteUpdate(new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
     }
 
     @Override
@@ -136,12 +138,19 @@ public class ChatBot extends ListenerAdapter {
         Messaging.addEmojiReplacement(event.getEmote());
 
         if (Concord.emojifulLoaded(true)) {
-            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-                new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+            sendEmoteUpdate(new RemoveEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
 
-            ConcordNetwork.sendToAllInServer(ConcordNetwork.EMOJIFUL_CHANNEL, server,
-                new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
+            sendEmoteUpdate(new RegisterEmotePacket(event.getGuild().getName(), List.of(new EmoteData(event.getEmote()))));
         }
+    }
+    
+    private void sendEmoteUpdate(final Object packet) {
+        final SimpleChannel emojifulChannel = ConcordNetwork.getChannel(FeatureVersion.EMOJIFUL_COMPAT);
+        server.getPlayerList().getPlayers().forEach((final ServerPlayer player) -> {
+            if (ConcordNetwork.getFeatureVersionIfExists(player.connection.connection, FeatureVersion.EMOJIFUL_COMPAT) != null) {
+                emojifulChannel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+            }
+        });
     }
 
     void shutdown() {
