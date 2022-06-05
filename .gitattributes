@@ -1,0 +1,13 @@
+# These are explicitly windows files and should use CRLF
+*.bat                       text eol=crlf
+
+# Java source files should use LF
+src/**/*.java               text eol=lf
+
+# Generated files should use LF
+src/data/**/.cache/cache    text eol=lf
+src/data/**/*.json          text eol=lf
+
+# Pack metadata and JSON files should use LF
+src/**/*.mcmeta             text eol=lf
+src/**/*.json               text eol=lf

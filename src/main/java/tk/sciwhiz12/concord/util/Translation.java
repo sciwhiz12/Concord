@@ -27,9 +27,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.ConcordNetwork;
+import tk.sciwhiz12.concord.FeatureVersion;
 
 /**
  * A message with a translation key and its corresponding default text in English ({@code en_us}).
@@ -64,6 +66,25 @@ public interface Translation {
      * files.
      */
     String englishText();
+
+    /**
+     * {@return the version this was last modified in a compatibility-breaking way} This is used by the messaging
+     * subsystem alongside {@link IntelligentTranslator} to intelligently translate components.
+     *
+     * <p>For the purposes of compatibility checking, only the {@linkplain ArtifactVersion#getMajorVersion() major version}
+     * and the {@linkplain ArtifactVersion#getMinorVersion() minor version} are considered. A version is considered
+     * <em>incompatible</em> if it differs in major version or minor version.</p>
+     *
+     * <p>The last modified version only needs to track <em>compatibility-breaking</em> modifications, which are
+     * changes that prevent previously working translations from working. For example, removing arguments breaks
+     * compatibility with older versions which accept it.</p>
+     *
+     * <p>While the {@linkplain ArtifactVersion#getIncrementalVersion() incremental version} is unused by compatibility
+     * logic, it may still be used for communicating fully-compatible changes if desired, though this is not required.</p>
+     *
+     * @see FeatureVersion#TRANSLATIONS
+     */
+    ArtifactVersion lastModifiedVersion();
 
     /**
      * {@return a lazily resolved component with no arguments} The translation key of this component will be resolved

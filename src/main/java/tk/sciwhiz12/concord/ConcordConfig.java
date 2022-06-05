@@ -27,11 +27,15 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import tk.sciwhiz12.concord.util.Messages;
 
+import javax.annotation.Nullable;
+
 public class ConcordConfig {
     static final ForgeConfigSpec CONFIG_SPEC;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
+
     public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
+    public static final ForgeConfigSpec.BooleanValue EMOTE_COMMAND_HOOK;
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
@@ -61,6 +65,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GOAL;
 
     public static final ForgeConfigSpec.BooleanValue COMMAND_SAY;
+    public static final ForgeConfigSpec.BooleanValue COMMAND_EMOTE;
 
     // Integrations
     public static final ForgeConfigSpec.BooleanValue EMOJIFUL_INTEGRATION;
@@ -70,17 +75,28 @@ public class ConcordConfig {
     }
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ForgeConfigSpec.Builder builder = new CommentFriendlyConfigSpecBuilder();
 
         ENABLE_INTEGRATED = builder
                 .comment("Whether the Discord integration is default enabled for integrated servers (i.e. singleplayer).",
                         "You can use the concord commands to force-enable discord integration for a session, if needed.")
                 .define("enable_integrated", false);
 
-        SAY_COMMAND_HOOK = builder
-                .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
-                        "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
-                .define("say_command_hook", true);
+        {
+            builder.comment("Hooks settings").push("hooks");
+
+            SAY_COMMAND_HOOK = builder
+                    .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
+                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .define("say_command", true);
+
+            EMOTE_COMMAND_HOOK = builder
+                    .comment("Hook into the /me command by overriding the command node, to intercept messages from this.",
+                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .define("emote_command", true);
+
+            builder.pop();
+        }
 
         {
             builder.comment("Discord connection settings").push("discord");
@@ -193,6 +209,10 @@ public class ConcordConfig {
                             "Translation key: " + Messages.SAY_COMMAND.key())
                     .define("command.say", true);
 
+            COMMAND_EMOTE = builder.comment("Message from /me command",
+                            "Translation key: " + Messages.EMOTE_COMMAND.key())
+                    .define("command.emote", true);
+
             builder.pop();
         }
 
@@ -226,5 +246,42 @@ public class ConcordConfig {
          * The crown is never visible.
          */
         NEVER
+    }
+
+    /**
+     * A comment-friendly version of {@link ForgeConfigSpec.Builder} which adds a space before the comment text, for
+     * easier readability.
+     *
+     * <p>Due to complications with modifying the comment, the "Allowed Values" comment added by {@link
+     * ForgeConfigSpec.Builder#defineEnum(java.util.List, java.util.function.Supplier,
+     * com.electronwill.nightconfig.core.EnumGetMethod, java.util.function.Predicate, Class)} and its overloads will not
+     * have the additional space.</p>
+     */
+    private static class CommentFriendlyConfigSpecBuilder extends ForgeConfigSpec.Builder {
+        @Override
+        public ForgeConfigSpec.Builder comment(@Nullable String comment) {
+            if (comment != null && !comment.isEmpty()) {
+                comment = ' ' + comment;
+            }
+            return super.comment(comment);
+        }
+
+        @Override
+        public ForgeConfigSpec.Builder comment(@Nullable String... comment) {
+            if (comment != null && (comment.length > 1 || !comment[0].isEmpty())) {
+                final String[] copy = new String[comment.length];
+
+                for (int i = 0; i < comment.length; i++) {
+                    String text = comment[i];
+                    if (text != null && !text.isEmpty()) {
+                        text = ' ' + text;
+                    }
+                    copy[i] = text;
+                }
+
+                comment = copy;
+            }
+            return super.comment(comment);
+        }
     }
 }

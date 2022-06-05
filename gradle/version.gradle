@@ -114,7 +114,7 @@ class VersionExtension {
                     snapshot = dirty
                     classifiers = ''
                 } else if (dirty && useDirty) {
-                    classifiers = '.dirty'
+                    classifiers += '.dirty'
                 }
             }
 

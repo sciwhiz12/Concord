@@ -22,23 +22,35 @@
 
 package tk.sciwhiz12.concord.util;
 
+import com.google.common.collect.Streams;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.ConcordNetwork;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class TranslationUtil {
+    static final Map<String, Translation> KEY_TO_INSTANCE = new HashMap<>();
+
     private TranslationUtil() {
     } // Prevent instantiation
+
+    @Nullable
+    public static Translation findTranslation(String key) {
+        if (KEY_TO_INSTANCE.isEmpty()) {
+            Streams.concat(
+                    Arrays.stream(Messages.values()),
+                    Arrays.stream(Translations.values())
+            ).forEach(t -> KEY_TO_INSTANCE.put(t.key(), t));
+        }
+        return KEY_TO_INSTANCE.get(key);
+    }
 
     /* Copied from net.minecraftforge.server.command.TextComponentHelper, and modified to suit our purpose */
 

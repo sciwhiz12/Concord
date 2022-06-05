@@ -51,11 +51,10 @@ import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.NetworkConstants;
 import tk.sciwhiz12.concord.command.ConcordCommand;
+import tk.sciwhiz12.concord.command.EmoteCommandHook;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.msg.Messaging;
@@ -75,7 +74,8 @@ public class Concord {
 
     public Concord() {
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-            () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+        ConcordNetwork.register();
 
         ConcordConfig.register();
 
@@ -83,13 +83,12 @@ public class Concord {
             ConcordClient.setup();
         }
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(Concord::commonSetup);
-
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
         MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
+        MinecraftForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
 
         if (emojifulLoaded(false)) {
             EmojifulToDiscordConverter.load();
@@ -97,10 +96,7 @@ public class Concord {
         }
     }
 
-    static void commonSetup(final FMLCommonSetupEvent event) {
-        ConcordNetwork.register();
-    }
-
+    
     public void onServerStarting(ServerStartingEvent event) {
         if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
