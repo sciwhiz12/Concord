@@ -40,8 +40,6 @@ import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.util.Messages;
 
-import java.util.function.Supplier;
-
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -65,20 +63,20 @@ public class SayCommandHook {
         TranslatableComponent text = new TranslatableComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
         Entity entity = ctx.getSource().getEntity();
         if (entity != null) {
-            sendMessage(text::getString);
             ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.CHAT, entity.getUUID());
         } else {
-            sendMessage(() -> Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
             ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.SYSTEM, Util.NIL_UUID);
         }
+        sendMessage(ctx, message);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void sendMessage(Supplier<String> message) {
+    private static void sendMessage(CommandContext<CommandSourceStack> ctx, Component message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                Messaging.sendToChannel(Concord.getBot().getDiscord(), message.get());
+                Messaging.sendToChannel(Concord.getBot().getDiscord(), 
+                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
