@@ -9,6 +9,10 @@ pluginManagement {
             name 'ParchmentMC'
             url 'https://maven.parchmentmc.org'
         }
+        maven {
+            name 'ModdingInquisition'
+            url 'https://maven.moddinginquisition.org/releases'
+        }
     }
     resolutionStrategy {
         eachPlugin {
