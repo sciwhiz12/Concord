@@ -15,8 +15,6 @@ plugins {
 
 versions {
     stripPattern = /^\d+\.\d+\.[\dx]+-/
-    incrementPositionIfSnapshot(-2) // Second to last version: #.#.(#).#
-    skipIncrementForClassifiers('alpha', 'beta', 'pre', 'rc')
 }
 version = versions.version
 println "Mod version: $version"
