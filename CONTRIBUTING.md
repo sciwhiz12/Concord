@@ -86,10 +86,6 @@ from the tag before being used as the version. For example, if building on a bra
 the tag `1.18.1-v1.2.0` will be parsed as `1.2.0`. Other examples which parse to the same output include `1.2.0`
 (itself), `v1.2.0` (itself with the `v` prefix), and `1.18.1-1.2.0` (MC version, without `v` prefix).
 
-When updating the Minecraft version, append the old Minecraft version to the `prev_versions` property in the
-`gradle.properties` file, to maintain the prefix stripping for the previous tag. Occasionally, this property should
-be pruned of its values except the very last one.
-
 ### Version calculation
 
 - For tagged commits, the version is exactly as defined by the tag.
