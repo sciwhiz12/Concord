@@ -73,6 +73,8 @@ The code style of the project is simple, and usually follows the defaults of Int
 
 ## Versioning
 
+Versioning is done by the [simplversion](https://github.com/sciwhiz12/simplversion) plugin.
+
 The current version calculated for the workspace is printed to console during each invocation of Gradle. Unless the
 workspace is on a commit for a release version tag, the simple version (without classifiers and such) is the next
 version to be released in the future.
