@@ -23,7 +23,7 @@
 package tk.sciwhiz12.concord.msg;
 
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -51,7 +51,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
-        TranslatableComponent text = Messages.PLAYER_JOIN.component(event.getPlayer().getDisplayName());
+        Component text = Messages.PLAYER_JOIN.component(event.getEntity().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
     }
@@ -61,7 +61,7 @@ public class PlayerListener {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
 
-        TranslatableComponent text = Messages.PLAYER_LEAVE.component(event.getPlayer().getDisplayName());
+        Component text = Messages.PLAYER_LEAVE.component(event.getEntity().getDisplayName());
 
         Messaging.sendToChannel(bot.getDiscord(), text.getString());
     }
@@ -97,8 +97,8 @@ public class PlayerListener {
                 case GOAL -> Messages.ADVANCEMENT_GOAL;
             };
             if (!enabled) return;
-            TranslatableComponent text = translation.component(
-                    event.getPlayer().getDisplayName(),
+            Component text = translation.component(
+                    event.getEntity().getDisplayName(),
                     info.getTitle(),
                     info.getDescription());
 

@@ -26,13 +26,12 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.Concord;
@@ -51,7 +50,7 @@ public class SayCommandHook {
 
         LOGGER.debug("Hooking into /say command");
         event.getDispatcher().register(literal("say")
-                .requires((ctx) -> ctx.hasPermission(2))
+                .requires((ctx) -> ctx.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(argument("message", MessageArgument.message())
                         .executes(SayCommandHook::execute)
                 )
@@ -59,24 +58,22 @@ public class SayCommandHook {
     }
 
     private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Component message = MessageArgument.getMessage(ctx, "message");
-        TranslatableComponent text = new TranslatableComponent("chat.type.announcement", ctx.getSource().getDisplayName(), message);
-        Entity entity = ctx.getSource().getEntity();
-        if (entity != null) {
-            ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.CHAT, entity.getUUID());
-        } else {
-            ctx.getSource().getServer().getPlayerList().broadcastMessage(text, ChatType.SYSTEM, Util.NIL_UUID);
-        }
-        sendMessage(ctx, message);
+        MessageArgument.ChatMessage message = MessageArgument.getChatMessage(ctx, "message");
+        CommandSourceStack source = ctx.getSource();
+        PlayerList playerList = source.getServer().getPlayerList();
+        message.resolve(source, chatMessage -> {
+            playerList.broadcastChatMessage(chatMessage, source, ChatType.bind(ChatType.SAY_COMMAND, source));
+            sendMessage(ctx, chatMessage);
+        });
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void sendMessage(CommandContext<CommandSourceStack> ctx, Component message) {
+    private static void sendMessage(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                Messaging.sendToChannel(Concord.getBot().getDiscord(), 
-                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
+                Messaging.sendToChannel(Concord.getBot().getDiscord(),
+                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.serverContent()).getString());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

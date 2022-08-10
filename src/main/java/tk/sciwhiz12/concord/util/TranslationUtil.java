@@ -24,7 +24,11 @@ package tk.sciwhiz12.concord.util;
 
 import com.google.common.collect.Streams;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.ConcordNetwork;
@@ -57,11 +61,11 @@ public final class TranslationUtil {
     /**
      * Creates a {@link MutableComponent} from the given translation key, depending on the {@code lazyTranslate} parameter.
      * <p>
-     * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link TextComponent} with the message
+     * If {@code lazyTranslate} is {@code false}, then the returned value is a {@link MutableComponent} with the message
      * specified by the translation key being eagerly evaluated now. This text component is safe to send to clients, as it does
      * not use a translation key.
      * <p>
-     * If {@code lazyTranslate} is {@code true}, then the returned value is a {@link TranslatableComponent} with the
+     * If {@code lazyTranslate} is {@code true}, then the returned value is a {@link MutableComponent} with the
      * translation key and given arguments passed into it, and the contents of the text component is lazily evaluated (on first
      * use of the text component).
      *
@@ -71,7 +75,7 @@ public final class TranslationUtil {
      * @return a {@link MutableComponent} with the specified message
      */
     public static MutableComponent createTranslation(boolean lazyTranslate, final String translation, final Object... args) {
-        TranslatableComponent text = new TranslatableComponent(translation, args);
+        MutableComponent text = Component.translatable(translation, args);
         return lazyTranslate ? text : eagerTranslate(text);
     }
 
@@ -80,8 +84,8 @@ public final class TranslationUtil {
                 translationKey, args);
     }
 
-    public static TranslatableComponent eagerTranslate(final TranslatableComponent component) {
-        return (TranslatableComponent) checkComponent(component);
+    public static MutableComponent eagerTranslate(final Component component) {
+        return checkComponent(component);
     }
 
     public static MutableComponent checkComponent(Component component) {
@@ -93,8 +97,8 @@ public final class TranslationUtil {
 
     // Use the above instead
     private static MutableComponent checkComponent(MutableComponent component) {
-        if (component instanceof TranslatableComponent translatable) {
-            component = translateEagerly(translatable);
+        if (component.getContents() instanceof TranslatableContents translatable) {
+            component = translateEagerly(component, translatable);
         }
         component.withStyle(TranslationUtil::checkHover);
         checkSiblings(component);
@@ -105,16 +109,16 @@ public final class TranslationUtil {
         final ArrayList<Component> originalSiblings = new ArrayList<>(component.getSiblings());
         component.getSiblings().clear();
         for (Component sibling : originalSiblings) {
-            if (sibling instanceof TranslatableComponent translatable) {
-                component.append(eagerTranslate(translatable));
+            if (sibling.getContents() instanceof TranslatableContents) {
+                component.append(eagerTranslate(sibling));
             } else {
                 component.append(checkComponent(sibling));
             }
         }
     }
 
-    private static TranslatableComponent translateEagerly(TranslatableComponent component) {
-        Object[] oldArgs = component.getArgs();
+    private static MutableComponent translateEagerly(MutableComponent component, TranslatableContents contents) {
+        Object[] oldArgs = contents.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
         for (int i = 0; i < oldArgs.length; i++) {
@@ -125,7 +129,7 @@ public final class TranslationUtil {
             newArgs[i] = obj;
         }
 
-        TranslatableComponent result = new TranslatableComponent(Language.getInstance().getOrDefault(component.getKey()), newArgs);
+        MutableComponent result = Component.translatable(Language.getInstance().getOrDefault(contents.getKey()), newArgs);
         result.setStyle(component.getStyle());
         component.getSiblings().forEach(result::append);
         return result;

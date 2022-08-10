@@ -23,17 +23,14 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.Concord;
@@ -59,43 +56,23 @@ public class EmoteCommandHook {
         );
     }
 
-    private static int execute(CommandContext<CommandSourceStack> ctx) {
-        String action = StringArgumentType.getString(ctx, "action");
-        Entity entity = ctx.getSource().getEntity();
-        MinecraftServer server = ctx.getSource().getServer();
-        if (entity != null) {
-            if (entity instanceof ServerPlayer player) {
-                player.getTextFilter().processStreamMessage(action).thenAcceptAsync((filteredText) -> {
-                    String text = filteredText.getFiltered();
-                    Component filteredMessage = text.isEmpty() ? null : createMessage(ctx, text);
-                    Component rawMessage = createMessage(ctx, filteredText.getRaw());
-                    server.getPlayerList().broadcastMessage(rawMessage,
-                            (target) -> player.shouldFilterMessageTo(target) ? filteredMessage : rawMessage,
-                            ChatType.CHAT, entity.getUUID());
-
-                    sendMessage(ctx, filteredText.getRaw());
-                }, server);
-                return Command.SINGLE_SUCCESS;
-            }
-
-            server.getPlayerList().broadcastMessage(createMessage(ctx, action), ChatType.CHAT, entity.getUUID());
-        } else {
-            server.getPlayerList().broadcastMessage(createMessage(ctx, action), ChatType.SYSTEM, Util.NIL_UUID);
-        }
-        sendMessage(ctx, action);
+    private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        MessageArgument.ChatMessage message = MessageArgument.getChatMessage(ctx, "action");
+        CommandSourceStack source = ctx.getSource();
+        PlayerList playerList = source.getServer().getPlayerList();
+        message.resolve(source, chatMessage -> {
+            playerList.broadcastChatMessage(chatMessage, source, ChatType.bind(ChatType.EMOTE_COMMAND, source));
+            sendMessage(ctx, chatMessage);
+        });
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static Component createMessage(CommandContext<CommandSourceStack> ctx, String action) {
-        return new TranslatableComponent("chat.type.emote", ctx.getSource().getDisplayName(), action);
-    }
-
-    private static void sendMessage(CommandContext<CommandSourceStack> ctx, String message) {
+    private static void sendMessage(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_EMOTE.get()) {
                 Messaging.sendToChannel(Concord.getBot().getDiscord(),
-                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message).getString());
+                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.serverContent()).getString());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

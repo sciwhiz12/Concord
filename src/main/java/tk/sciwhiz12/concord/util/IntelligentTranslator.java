@@ -24,6 +24,7 @@ package tk.sciwhiz12.concord.util;
 
 import com.google.common.collect.Maps;
 import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.contents.TranslatableContents;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -32,21 +33,21 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class IntelligentTranslator<C> {
-    private final Map<C, TranslatableComponent> cache = new HashMap<>();
-    private final Function<C, TranslatableComponent> componentCreator;
+    private final Map<C, MutableComponent> cache = new HashMap<>();
+    private final Function<C, MutableComponent> componentCreator;
     private final KeyTranslator<C> keyFunction;
 
-    public IntelligentTranslator(Function<C, TranslatableComponent> componentCreator, KeyTranslator<C> keyFunction) {
+    public IntelligentTranslator(Function<C, MutableComponent> componentCreator, KeyTranslator<C> keyFunction) {
         this.componentCreator = componentCreator;
         this.keyFunction = keyFunction;
     }
 
-    public TranslatableComponent resolve(C context) {
+    public MutableComponent resolve(C context) {
         return cache.computeIfAbsent(context, this::doResolve);
     }
 
-    private TranslatableComponent doResolve(C context) {
-        final TranslatableComponent component = componentCreator.apply(context);
+    private MutableComponent doResolve(C context) {
+        final MutableComponent component = componentCreator.apply(context);
         final Set<String> componentKeys = collectKeys(component);
 
         // Resolve all the keys once ahead of time
@@ -61,13 +62,13 @@ public class IntelligentTranslator<C> {
             return component;
         }
 
-        return (TranslatableComponent) checkComponent(component, key -> newKeys.getOrDefault(key, key));
+        return checkComponent(component, key -> newKeys.getOrDefault(key, key));
     }
 
     // This returns a new component
     private MutableComponent checkComponent(Component original, UnaryOperator<String> resolver) {
         MutableComponent result;
-        if (original instanceof TranslatableComponent translatable) {
+        if (original.getContents() instanceof TranslatableContents translatable) {
             result = translateEagerly(translatable, resolver);
         } else {
             result = original.plainCopy();
@@ -82,18 +83,14 @@ public class IntelligentTranslator<C> {
         final ArrayList<Component> result = new ArrayList<>();
         for (Component sibling : original.getSiblings()) {
             // The new siblings are copies (see checkComponent)
-            if (sibling instanceof TranslatableComponent translatable) {
-                result.add(checkComponent(translatable, resolver));
-            } else {
-                result.add(checkComponent(sibling, resolver));
-            }
+            result.add(checkComponent(sibling, resolver));
         }
         return result;
     }
 
     // The returned (newly created) component does not have the original's style or siblings
-    private TranslatableComponent translateEagerly(TranslatableComponent component, UnaryOperator<String> resolver) {
-        Object[] oldArgs = component.getArgs();
+    private MutableComponent translateEagerly(TranslatableContents contents, UnaryOperator<String> resolver) {
+        Object[] oldArgs = contents.getArgs();
         Object[] newArgs = new Object[oldArgs.length];
 
         for (int i = 0; i < oldArgs.length; i++) {
@@ -104,7 +101,7 @@ public class IntelligentTranslator<C> {
             newArgs[i] = obj;
         }
 
-        return new TranslatableComponent(resolver.apply(component.getKey()), newArgs);
+        return Component.translatable(resolver.apply(contents.getKey()), newArgs);
     }
 
     // Returns a new style
@@ -120,14 +117,14 @@ public class IntelligentTranslator<C> {
         return style;
     }
 
-    private Set<String> collectKeys(TranslatableComponent component) {
+    private Set<String> collectKeys(Component component) {
         final HashSet<String> keys = new HashSet<>();
         final Deque<Component> components = new ArrayDeque<>();
         components.add(component);
 
         @Nullable Component current;
         while ((current = components.poll()) != null) {
-            if (current instanceof TranslatableComponent translatable) {
+            if (current.getContents() instanceof TranslatableContents translatable) {
                 keys.add(translatable.getKey());
 
                 // Add components in the TranslatableComponent's args for checking

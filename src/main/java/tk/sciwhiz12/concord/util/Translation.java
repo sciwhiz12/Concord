@@ -23,8 +23,8 @@
 package tk.sciwhiz12.concord.util;
 
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -36,13 +36,13 @@ import tk.sciwhiz12.concord.FeatureVersion;
 /**
  * A message with a translation key and its corresponding default text in English ({@code en_us}).
  *
- * <p>This interface contains various utility methods for creating {@link TranslatableComponent} for ease of reference.
+ * <p>This interface contains various utility methods for creating {@link Component} for ease of reference.
  * There are three kinds of these utility methods, with each kind having a no-arguments and a arguments-accepting
  * counterpart.</p>
  * <ul>
  *     <li>{@link #component()} for lazily translated components, whose translation key will be resolved on the client.</li>
  *     <li>{@link #eagerComponent()} for eagerly translated components, whose translation key (and those of all contained
- *     {@link TranslatableComponent}s) are resolved on the server.</li>
+ *     {@link Component}s) are resolved on the server.</li>
  *     <li>{@link #resolvedComponent(Entity)} and {@link #resolvedComponent(CommandSourceStack)} for components which
  *     will be either lazily or eagerly translated, depending on local configuration settings and remote mod presence.</li>
  * </ul>
@@ -62,7 +62,7 @@ public interface Translation {
 
     /**
      * {@return the default text of the message in English ({@code en_us})} This may contain argument specifiers as used
-     * by {@link TranslatableComponent}. This is used by the data generation code for generating the English translation
+     * by {@link Component}. This is used by the data generation code for generating the English translation
      * files.
      */
     String englishText();
@@ -92,8 +92,8 @@ public interface Translation {
      *
      * @see #component(Object...)
      */
-    default TranslatableComponent component() {
-        return new TranslatableComponent(key());
+    default MutableComponent component() {
+        return Component.translatable(key());
     }
 
     /**
@@ -102,8 +102,8 @@ public interface Translation {
      * @param formatArgs the formatting arguments for the message
      * @see #component()
      */
-    default TranslatableComponent component(Object... formatArgs) {
-        return new TranslatableComponent(key(), formatArgs);
+    default MutableComponent component(Object... formatArgs) {
+        return Component.translatable(key(), formatArgs);
     }
 
     /**
@@ -112,7 +112,7 @@ public interface Translation {
      *
      * @see #eagerComponent(Object...)
      */
-    default TranslatableComponent eagerComponent() {
+    default MutableComponent eagerComponent() {
         return TranslationUtil.eagerTranslate(component());
     }
 
@@ -122,7 +122,7 @@ public interface Translation {
      * @param formatArgs the formatting arguments for the message
      * @see #eagerComponent()
      */
-    default TranslatableComponent eagerComponent(Object... formatArgs) {
+    default MutableComponent eagerComponent(Object... formatArgs) {
         return TranslationUtil.eagerTranslate(component(formatArgs));
     }
 
