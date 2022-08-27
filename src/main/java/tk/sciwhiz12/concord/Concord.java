@@ -138,7 +138,7 @@ public class Concord {
         JDABuilder jdaBuilder = JDABuilder.createDefault(token)
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ONLINE)
-                .enableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
+                .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
                 .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
                 .setAutoReconnect(true)
                 .setActivity(Activity.playing("the readying game..."))

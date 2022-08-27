@@ -32,7 +32,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.utils.messages.MessageRequest;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Marker;
@@ -49,7 +49,7 @@ import java.util.EnumSet;
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
     public static final EnumSet<Permission> REQUIRED_PERMISSIONS =
-            EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE);
+            EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND);
 
     private final JDA discord;
     private final MinecraftServer server;
@@ -66,7 +66,7 @@ public class ChatBot extends ListenerAdapter {
         statusListener = new StatusListener(this);
 
         // Prevent any mentions not explicitly specified
-        MessageAction.setDefaultMentions(Collections.emptySet());
+        MessageRequest.setDefaultMentions(Collections.emptySet());
     }
 
     public JDA getDiscord() {

@@ -25,6 +25,7 @@ package tk.sciwhiz12.concord.msg;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.Connection;
@@ -127,7 +128,7 @@ public class Messaging {
         final MutableComponent text = Component.literal(content).withStyle(WHITE);
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
-        for (MessageSticker sticker : message.getStickers()) {
+        for (StickerItem sticker : message.getStickers()) {
             // Ensures a space between stickers, and a space between message and first sticker (whether added by
             // us or from the message)
             if (!skipSpace) {
@@ -258,7 +259,7 @@ public class Messaging {
                     allowedMentions.add(Message.MentionType.ROLE);
                 }
             }
-            channel.sendMessage(text).allowedMentions(allowedMentions).queue();
+            channel.sendMessage(text).setAllowedMentions(allowedMentions).queue();
         }
     }
 
