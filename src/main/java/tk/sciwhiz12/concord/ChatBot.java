@@ -86,6 +86,8 @@ public class ChatBot extends ListenerAdapter {
         return server;
     }
 
+    public CommandDispatcher getDispatcher() { return dispatcher; }
+
     @Override
     public void onReady(ReadyEvent event) {
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));

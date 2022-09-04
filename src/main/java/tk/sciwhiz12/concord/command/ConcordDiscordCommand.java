@@ -38,7 +38,7 @@ public class ConcordDiscordCommand {
     private static MinecraftServer server;
 
     private static void tpsCommand(SlashCommandEvent tpsEvent) {
-        double meanTickTime = Mth.average(server.tickTimes) * 1.0E-6D;;
+        double meanTickTime = Mth.average(server.tickTimes) * 1.0E-6D;
         double meanTPS = Math.min(1000.0/meanTickTime, 20);
 
         StringBuilder builder = new StringBuilder();
@@ -49,7 +49,7 @@ public class ConcordDiscordCommand {
             if (times == null)
                 times = new long[]{0};
 
-            double worldTickTime = Mth.average(times) * 1.0E-6D;;
+            double worldTickTime = Mth.average(times) * 1.0E-6D;
             double worldTPS = Math.min(1000.0 / worldTickTime, 20);
 
             builder.append(dim.dimension().location()).append(": Mean tick time: ").append(worldTickTime).append(" ms. Mean TPS: ").append(worldTPS).append("\n");
@@ -67,8 +67,17 @@ public class ConcordDiscordCommand {
     }
 
     private static void helpCommand(SlashCommandEvent helpEvent) {
-        helpEvent.reply("TODO").queue();
-        // TODO
+        var dispatcher = Concord.BOT.getDispatcher();
+        var commands = dispatcher.getCommands();
+
+        var builder = new EmbedBuilder().setTitle("Concord Commands")
+                .setDescription("There are " + commands.size() + " registered commands.");
+
+        for (var command : commands) {
+            builder.addField(command.getName(), command.getHelpString(), true);
+        }
+
+        helpEvent.replyEmbeds(builder.setTimestamp(Instant.now()).setColor(Color.GREEN).build()).setEphemeral(false).queue();
     }
 
     public static void initialize(CommandDispatcher dispatcher) {

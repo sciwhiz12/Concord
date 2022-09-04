@@ -30,10 +30,10 @@ import java.util.function.Consumer;
 public class CommandDispatcher extends ListenerAdapter {
 
     // The list of valid commands, to be upserted and listened for.
-    private List<SlashCommand> commands;
+    private final List<SlashCommand> commands;
 
     // The Map that powers the command listener
-    private Map<String, SlashCommand> commandsByName;
+    private final Map<String, SlashCommand> commandsByName;
 
     // Whether this Dispatcher should only listen on a single guild, in a testing configuration.
     private boolean testMode;
@@ -69,6 +69,14 @@ public class CommandDispatcher extends ListenerAdapter {
         this.commandsByName = new HashMap<>();
         this.testMode = false;
         this.testGuild = null;
+    }
+
+    /**
+     * Get a list of all registered commands.
+     * Exposed primarily for the help command to be able to read details on all other commands.
+     */
+    public List<SlashCommand> getCommands() {
+        return commands;
     }
 
     /**

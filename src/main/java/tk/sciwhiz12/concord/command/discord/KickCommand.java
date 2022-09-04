@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLLoader;
 import tk.sciwhiz12.concord.Concord;
@@ -76,7 +76,7 @@ public class KickCommand extends SlashCommand {
         if (List.of(server.getPlayerNames()).contains(user)) {
             var player = server.getPlayerList().getPlayerByName(user);
             // If they are, kick them with the message.
-            player.connection.disconnect(new TextComponent(reason));
+            player.connection.disconnect(Component.literal(reason));
 
             // Reply to the user.
             event.reply("User " + user + " kicked successfully.").queue();

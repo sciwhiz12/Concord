@@ -39,7 +39,6 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
-    public static final ForgeConfigSpec.ConfigValue<String> CHANNEL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> MODERATOR_ROLE_ID;
     public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;

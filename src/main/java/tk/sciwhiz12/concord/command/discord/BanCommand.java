@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.players.UserBanListEntry;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -86,7 +86,7 @@ public class BanCommand extends SlashCommand {
                 UserBanListEntry userbanlistentry = new UserBanListEntry(profile, (Date) null, "Discord User " + event.getMember().getEffectiveName(), (Date) null, reason);
                 server.getPlayerList().getBans().add(userbanlistentry);
                 // Kick them
-                player.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.banned"));
+                player.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
 
                 event.reply("User " + user + " banned successfully.").queue();
                 return;
