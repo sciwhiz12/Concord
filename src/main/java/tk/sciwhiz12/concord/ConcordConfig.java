@@ -39,6 +39,7 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> MODERATOR_ROLE_ID;
     public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
 
@@ -110,6 +111,10 @@ public class ConcordConfig {
             REPORT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post reports from in-game users.",
                             "If empty, reports will be disabled.")
                     .define("report_channel_id", "");
+            MODERATOR_ROLE_ID = builder.comment("The snowflake ID of the role that will be treated as a moderator role.",
+                            "This role will be able to use Concord's Moderation slash commands on Discord - /kick, /ban, etc.",
+                            "This should not be treated as an alternative to proper Discord permissions configuration, but exists as a safeguard so that random users may not ban you while you're setting up.")
+                    .define("moderator_role_id", "");
 
             builder.pop();
         }

@@ -37,6 +37,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import tk.sciwhiz12.concord.command.ConcordDiscordCommand;
+import tk.sciwhiz12.concord.command.discord.CommandDispatcher;
 import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
@@ -56,6 +58,7 @@ public class ChatBot extends ListenerAdapter {
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+    private final CommandDispatcher dispatcher;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -64,6 +67,12 @@ public class ChatBot extends ListenerAdapter {
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+
+        // Initialize Discord-side commands
+        dispatcher = new CommandDispatcher();
+        discord.addEventListener(dispatcher);
+
+        ConcordDiscordCommand.initialize(dispatcher);
 
         // Prevent any mentions not explicitly specified
         MessageRequest.setDefaultMentions(Collections.emptySet());
@@ -76,6 +85,8 @@ public class ChatBot extends ListenerAdapter {
     public MinecraftServer getServer() {
         return server;
     }
+
+    public CommandDispatcher getDispatcher() { return dispatcher; }
 
     @Override
     public void onReady(ReadyEvent event) {
