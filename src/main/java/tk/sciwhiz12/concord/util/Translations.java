@@ -63,6 +63,9 @@ public enum Translations implements Translation {
     COMMAND_RELOADING("command", "reload", "1.0.0", "Reloading discord integration..."),
     COMMAND_REPORT_STATUS("command", "report.status", "1.1.0", "Reporting users is currently %s"),
     COMMAND_REPORT_SUCCESS("command", "report.success", "1.1.0", "Submitted report for %s for reason: %s"),
+
+    COMMAND_SUPPORT_DISABLED("command", "support.disabled", "1.1.0", "Sorry, but Concord is currently disabled, you may not send a support ticket at this time."),
+    COMMAND_SUPPORT_SUCCESS("command", "support.success", "1.1.0", "Support Ticket sent successfully."),
     COMMAND_STATUS_PREFIX("command", "status", "1.0.0", "Discord integration status: %s"),
     COMMAND_STATUS_ENABLED("command", "status.enabled", "1.0.0", "ENABLED"),
     COMMAND_STATUS_DISABLED("command", "status.disabled", "1.0.0", "DISABLED");

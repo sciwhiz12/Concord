@@ -26,10 +26,7 @@ import com.google.common.collect.Sets;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
@@ -141,4 +138,17 @@ public class ChatBot extends ListenerAdapter {
         // Required permissions are there. All checks satisfied.
         return true;
     }
+
+    public TextChannel getChatChannel() {
+        checkSatisfaction();
+        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID.get());
+        return (TextChannel) guild.getGuildChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
+    }
+
+    public TextChannel getReportChannel() {
+        checkSatisfaction();
+        final Guild guild = discord.getGuildById(ConcordConfig.GUILD_ID.get());
+        return (TextChannel) guild.getGuildChannelById(ConcordConfig.REPORT_CHANNEL_ID.get());
+    }
+
 }
