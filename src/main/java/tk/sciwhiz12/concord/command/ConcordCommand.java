@@ -119,14 +119,10 @@ public class ConcordCommand {
             // We need to ping the moderators, and we can't do it from an embed, and we can't ping anyone unless it's explicitly told to, so..
             // Send the message with the mention
             Concord.BOT.getReportChannel().sendMessage("<@&" + ConcordConfig.MODERATOR_ROLE_ID.get() + ">")
-                    // Enable role mentions for just this message
-                    .allowedMentions(
+                    .setAllowedMentions(
                             Collections.singleton(Message.MentionType.ROLE)
                     )
-                    // Allow the moderator role to be the one mentioned, for just this message
-                    .mentionRoles(
-                            ConcordConfig.MODERATOR_ROLE_ID.get()
-                    )
+                    .mentionRoles(ConcordConfig.MODERATOR_ROLE_ID.get())
                     // And set context too.
                     .setEmbeds(new EmbedBuilder()
                             .setTitle("Support Requst")
