@@ -65,18 +65,15 @@ public class KickCommand extends SlashCommand {
 
         var reasonMapping = event.getOption(REASON_OPTION.getName());
 
-        // The Reason Option is optional, so default to "Reason Not Specified" if it isn't.
-        var reason = "";
-        if (reasonMapping == null)
-            reason = "Reason Not Specified";
-        else
-            reason = reasonMapping.getAsString();
-
         // Check whether the user is online
         if (List.of(server.getPlayerNames()).contains(user)) {
             var player = server.getPlayerList().getPlayerByName(user);
             // If they are, kick them with the message.
-            player.connection.disconnect(Component.literal(reason));
+            player.connection.disconnect(
+                    reasonMapping == null ?
+                            Component.translatable("multiplayer.disconnect.kicked") :
+                            Component.literal(reasonMapping.getAsString())
+            );
 
             // Reply to the user.
             event.reply("User " + user + " kicked successfully.").queue();

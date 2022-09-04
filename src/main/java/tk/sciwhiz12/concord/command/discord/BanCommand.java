@@ -86,7 +86,11 @@ public class BanCommand extends SlashCommand {
                 UserBanListEntry userbanlistentry = new UserBanListEntry(profile, (Date) null, "Discord User " + event.getMember().getEffectiveName(), (Date) null, reason);
                 server.getPlayerList().getBans().add(userbanlistentry);
                 // Kick them
-                player.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
+                player.connection.disconnect(
+                        reasonMapping == null ?
+                                Component.translatable("multiplayer.disconnect.banned") :
+                                Component.literal(reasonMapping.getAsString())
+                );
 
                 event.reply("User " + user + " banned successfully.").queue();
                 return;
