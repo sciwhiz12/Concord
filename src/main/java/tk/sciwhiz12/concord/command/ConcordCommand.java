@@ -23,13 +23,24 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.sun.jdi.connect.Connector;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.Translations;
+
+import java.awt.*;
+import java.time.Instant;
+import java.util.Collections;
 
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
@@ -55,6 +66,11 @@ public class ConcordCommand {
                         .then(literal("status")
                                 .executes(ConcordCommand::status)
                         )
+                        .then(literal("support")
+                                .executes((ctx) -> ConcordCommand.support(ctx, Translations.COMMAND_SUPPORT_NO_REASON.resolvedComponent(ctx.getSource())))
+                                .then(Commands.argument("reason", MessageArgument.message())
+                                        .executes((ctx) -> ConcordCommand.support(ctx, MessageArgument.getMessage(ctx, "reason")))
+                        ))
         );
     }
 
@@ -99,6 +115,35 @@ public class ConcordCommand {
             result = Translations.COMMAND_STATUS_DISABLED.resolvedComponent(source).withStyle(RED);
         }
         ctx.getSource().sendSuccess(Translations.COMMAND_STATUS_PREFIX.resolvedComponent(source, result), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int support(CommandContext<CommandSourceStack> ctx, Component reason) {
+        CommandSourceStack source = ctx.getSource();
+
+        if (Concord.isEnabled() && !ConcordConfig.MODERATOR_ROLE_ID.get().isEmpty()) {
+            // We need to ping the moderators, and we can't do it from an embed, and we can't ping anyone unless it's explicitly told to, so..
+            // Send the message with the mention
+            Concord.BOT.getReportChannel().sendMessage("<@&" + ConcordConfig.MODERATOR_ROLE_ID.get() + ">")
+                    .setAllowedMentions(
+                            Collections.singleton(Message.MentionType.ROLE)
+                    )
+                    .mentionRoles(ConcordConfig.MODERATOR_ROLE_ID.get())
+                    // And set context too.
+                    .setEmbeds(new EmbedBuilder()
+                            .setTitle("Support Request")
+                            .setDescription("A user has requested the support of a Server Administrator!")
+                            .addField("User", source.getTextName(), false)
+                            .addField("Reason", reason.getString(), false)
+                            .setTimestamp(Instant.now())
+                            .setColor(Color.ORANGE)
+                            .build()).queue();
+
+            ctx.getSource().sendSuccess(Translations.COMMAND_SUPPORT_SUCCESS.resolvedComponent(source), false);
+        } else {
+            ctx.getSource().sendSuccess(Translations.COMMAND_SUPPORT_DISABLED.resolvedComponent(source), false);
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 }
