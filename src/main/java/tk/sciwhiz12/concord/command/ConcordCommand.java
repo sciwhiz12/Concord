@@ -126,17 +126,15 @@ public class ConcordCommand {
                     // Allow the moderator role to be the one mentioned, for just this message
                     .mentionRoles(
                             ConcordConfig.MODERATOR_ROLE_ID.get()
-                    ).queue();
-            // Send the embed too
-            Concord.BOT.getReportChannel().sendMessageEmbeds(
-                    new EmbedBuilder()
+                    )
+                    // And set context too.
+                    .setEmbeds(new EmbedBuilder()
                             .setTitle("Support Requst")
                             .setDescription("A user has requested the support of a Server Administrator!")
                             .addField("User", source.getTextName(), false)
                             .setTimestamp(Instant.now())
                             .setColor(Color.ORANGE)
-                            .build()
-            ).queue();
+                            .build()).queue();
 
             ctx.getSource().sendSuccess(Translations.COMMAND_SUPPORT_SUCCESS.resolvedComponent(source), false);
         } else {
