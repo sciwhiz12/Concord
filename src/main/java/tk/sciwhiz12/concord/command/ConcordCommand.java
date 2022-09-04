@@ -23,11 +23,15 @@
 package tk.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.sun.jdi.connect.Connector;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.Concord;
@@ -63,8 +67,10 @@ public class ConcordCommand {
                                 .executes(ConcordCommand::status)
                         )
                         .then(literal("support")
-                                .executes(ConcordCommand::support)
-                        )
+                                .executes((ctx) -> ConcordCommand.support(ctx, Translations.COMMAND_SUPPORT_NO_REASON.resolvedComponent(ctx.getSource())))
+                                .then(Commands.argument("reason", MessageArgument.message())
+                                        .executes((ctx) -> ConcordCommand.support(ctx, MessageArgument.getMessage(ctx, "reason")))
+                        ))
         );
     }
 
@@ -112,7 +118,7 @@ public class ConcordCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int support(CommandContext<CommandSourceStack> ctx) {
+    private static int support(CommandContext<CommandSourceStack> ctx, Component reason) {
         CommandSourceStack source = ctx.getSource();
 
         if (Concord.isEnabled() && !ConcordConfig.MODERATOR_ROLE_ID.get().isEmpty()) {
@@ -125,9 +131,10 @@ public class ConcordCommand {
                     .mentionRoles(ConcordConfig.MODERATOR_ROLE_ID.get())
                     // And set context too.
                     .setEmbeds(new EmbedBuilder()
-                            .setTitle("Support Requst")
+                            .setTitle("Support Request")
                             .setDescription("A user has requested the support of a Server Administrator!")
                             .addField("User", source.getTextName(), false)
+                            .addField("Reason", reason.getString(), false)
                             .setTimestamp(Instant.now())
                             .setColor(Color.ORANGE)
                             .build()).queue();
