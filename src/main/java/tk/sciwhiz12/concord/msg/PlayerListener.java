@@ -76,8 +76,9 @@ public class PlayerListener {
         }
     }
 
+    @SuppressWarnings("deprecation") // AdvancementEvent is deprecated but not for removal
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    void onAdvancement(AdvancementEvent event) {
+    void onAdvancementEarn(AdvancementEvent.AdvancementEarnEvent event) {
         Level world = event.getEntity().getCommandSenderWorld();
         if (world.isClientSide()) return;
 
