@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -50,7 +51,6 @@ import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.util.Messages;
 
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
 
 @Mod(Concord.MODID)
@@ -146,7 +146,7 @@ public class Concord {
         try {
             final JDA jda = jdaBuilder.build();
             BOT = new ChatBot(jda, server);
-        } catch (LoginException e) {
+        } catch (InvalidTokenException e) {
             LOGGER.error("Error while trying to login to Discord; integration will not be enabled.", e);
         }
     }

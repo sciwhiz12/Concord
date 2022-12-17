@@ -25,6 +25,7 @@ package tk.sciwhiz12.concord.msg;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
