@@ -25,7 +25,7 @@ package tk.sciwhiz12.concord.msg;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
@@ -244,7 +244,8 @@ public class Messaging {
     }
 
     public static void sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
+        final GuildMessageChannel channel = discord.getChannelById(GuildMessageChannel.class,
+                                                                   ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
             Collection<Message.MentionType> allowedMentions = Collections.emptySet();
             if (ConcordConfig.ALLOW_MENTIONS.get()) {

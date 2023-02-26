@@ -120,13 +120,19 @@ public class ChatBot extends ListenerAdapter {
             return false;
         }
 
-        if (channel.getType() != ChannelType.TEXT) {
-            Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel, it was of type {}.",
+        if (channel.getType() != ChannelType.TEXT && channel.getType() != ChannelType.GUILD_PUBLIC_THREAD) {
+            Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel or public thread, it was of type {}.",
                     ConcordConfig.CHAT_CHANNEL_ID.get(), channel.getType());
             return false;
         }
 
         // Guild and channel IDs are correct, now to check permissions
+
+        // If the channel is a thread, also require thread message send permissions
+        if (channel.getType() == ChannelType.GUILD_PUBLIC_THREAD) {
+            REQUIRED_PERMISSIONS.add(Permission.MESSAGE_SEND_IN_THREADS);
+        }
+
         final Sets.SetView<Permission> missingPermissions = Sets
                 .difference(REQUIRED_PERMISSIONS, guild.getSelfMember().getPermissions(channel));
 
