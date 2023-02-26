@@ -245,7 +245,7 @@ public class Messaging {
 
     public static void sendToChannel(JDA discord, CharSequence text) {
         final GuildMessageChannel channel = discord.getChannelById(GuildMessageChannel.class,
-                                                                   ConcordConfig.CHAT_CHANNEL_ID.get());
+                ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
             Collection<Message.MentionType> allowedMentions = Collections.emptySet();
             if (ConcordConfig.ALLOW_MENTIONS.get()) {

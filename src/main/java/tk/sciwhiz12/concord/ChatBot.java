@@ -121,8 +121,9 @@ public class ChatBot extends ListenerAdapter {
         }
 
         if (channel.getType() != ChannelType.TEXT && channel.getType() != ChannelType.GUILD_PUBLIC_THREAD &&
-            channel.getType() != ChannelType.GUILD_PRIVATE_THREAD) {
-            Concord.LOGGER.error(BOT, "The channel with ID {} is not a TEXT channel or non-announcement thread, it was of type {}.",
+                channel.getType() != ChannelType.GUILD_PRIVATE_THREAD) {
+            Concord.LOGGER.error(BOT,
+                    "The channel with ID {} is not a TEXT channel or non-announcement thread, it was of type {}.",
                     ConcordConfig.CHAT_CHANNEL_ID.get(), channel.getType());
             return false;
         }

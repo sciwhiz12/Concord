@@ -81,12 +81,15 @@ public class ReportCommand {
 
         final ChatBot bot = Concord.getBot();
         final String channelID = ConcordConfig.REPORT_CHANNEL_ID.get();
-        final GuildMessageChannel channel = channelID.isBlank() ? null : bot.getDiscord().getChannelById(GuildMessageChannel.class, channelID);
+        final GuildMessageChannel channel = channelID.isBlank() ? null :
+                bot.getDiscord().getChannelById(GuildMessageChannel.class, channelID);
 
+        // Check permissions and channel type to see if sending is allowed
         boolean sendingAllowed = false;
         if (channel != null && (channel.getType() == ChannelType.TEXT || channel.getType() == ChannelType.GUILD_PUBLIC_THREAD ||
-                                channel.getType() == ChannelType.GUILD_PRIVATE_THREAD)) {
-            sendingAllowed = channel.canTalk() && channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_EMBED_LINKS);
+                channel.getType() == ChannelType.GUILD_PRIVATE_THREAD)) {
+            sendingAllowed = channel.canTalk() && channel.getGuild().getSelfMember()
+                    .hasPermission(channel, Permission.MESSAGE_EMBED_LINKS);
         }
 
         // If reporting is disabled or not possible, also tell the user
