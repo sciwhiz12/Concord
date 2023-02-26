@@ -82,7 +82,7 @@ public class MessageListener extends ListenerAdapter {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    void onSubmittedServerChat(ServerChatEvent.Submitted event) {
+    void onSubmittedServerChat(ServerChatEvent event) {
         Messaging.sendToChannel(bot.getDiscord(), Component.translatable("chat.type.text", 
                 event.getPlayer().getDisplayName(), event.getMessage()).getString());
     }

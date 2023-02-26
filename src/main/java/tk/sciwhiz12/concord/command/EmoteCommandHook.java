@@ -57,12 +57,12 @@ public class EmoteCommandHook {
     }
 
     private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        MessageArgument.ChatMessage message = MessageArgument.getChatMessage(ctx, "action");
-        CommandSourceStack source = ctx.getSource();
-        PlayerList playerList = source.getServer().getPlayerList();
-        message.resolve(source, chatMessage -> {
-            playerList.broadcastChatMessage(chatMessage, source, ChatType.bind(ChatType.EMOTE_COMMAND, source));
-            sendMessage(ctx, chatMessage);
+        final CommandSourceStack source = ctx.getSource();
+        final PlayerList playerList = source.getServer().getPlayerList();
+
+        MessageArgument.resolveChatMessage(ctx, "action", (message) -> {
+            playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.EMOTE_COMMAND, source));
+            sendMessage(ctx, message);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -72,7 +72,7 @@ public class EmoteCommandHook {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_EMOTE.get()) {
                 Messaging.sendToChannel(Concord.getBot().getDiscord(),
-                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.serverContent()).getString());
+                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()).getString());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

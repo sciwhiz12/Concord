@@ -58,12 +58,11 @@ public class SayCommandHook {
     }
 
     private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        MessageArgument.ChatMessage message = MessageArgument.getChatMessage(ctx, "message");
-        CommandSourceStack source = ctx.getSource();
-        PlayerList playerList = source.getServer().getPlayerList();
-        message.resolve(source, chatMessage -> {
-            playerList.broadcastChatMessage(chatMessage, source, ChatType.bind(ChatType.SAY_COMMAND, source));
-            sendMessage(ctx, chatMessage);
+        final CommandSourceStack source = ctx.getSource();
+        final PlayerList playerList = source.getServer().getPlayerList();
+        MessageArgument.resolveChatMessage(ctx, "message", (message) -> {
+            playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.SAY_COMMAND, source));
+            sendMessage(ctx, message);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -73,7 +72,7 @@ public class SayCommandHook {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
                 Messaging.sendToChannel(Concord.getBot().getDiscord(),
-                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.serverContent()).getString());
+                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()).getString());
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

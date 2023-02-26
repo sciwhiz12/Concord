@@ -26,13 +26,13 @@ license = "MIT License"
 [[dependencies.concord]]
     modId = "forge"
     mandatory = true
-    versionRange = "[40.1.0,)"
+    versionRange = "[44.1.0,45.0.0)"
     ordering = "NONE"
     side = "BOTH"
 
 [[dependencies.concord]]
     modId = "minecraft"
     mandatory = true
-    versionRange = "[1.18.2,)"
+    versionRange = "[1.19.3,1.19.4)"
     ordering = "NONE"
     side = "BOTH"

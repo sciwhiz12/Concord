@@ -23,15 +23,15 @@
 package tk.sciwhiz12.concord.datagen;
 
 import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraftforge.common.data.LanguageProvider;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.util.Messages;
 import tk.sciwhiz12.concord.util.Translations;
 
 public class EnglishLanguage extends LanguageProvider {
-    public EnglishLanguage(DataGenerator gen) {
-        super(gen, Concord.MODID, LanguageManager.DEFAULT_LANGUAGE_CODE);
+    public EnglishLanguage(PackOutput output) {
+        super(output, Concord.MODID, LanguageManager.DEFAULT_LANGUAGE_CODE);
     }
 
     @Override
