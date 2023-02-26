@@ -86,6 +86,17 @@ public class ConcordNetwork {
     }
 
     public static boolean isModPresent(Connection connection) {
+        // We can't only use EventNetworkChannel#isRemotePresent, because that also checks the vanilla channel list which, 
+        // on Forge-Forge connections, will always contain the Concord network channel (as the server side registers it)
+        // TODO: Figure out if the above is a Forge bug or if it's how the vanilla channel list actually works
+
+        // We first check if the FML connection data is present, and if so, we rely only on it for our channel data
+        @Nullable final ConnectionData connectionData = NetworkHooks.getConnectionData(connection);
+        if (connectionData != null) {
+            return connectionData.getChannels().containsKey(EXISTENCE_CHANNEL_NAME);
+        }
+
+        // If the connection data is null, then we fallback to the vanilla channel list, via #isRemotePresent
         return EXISTENCE_CHANNEL.isRemotePresent(connection);
     }
 
