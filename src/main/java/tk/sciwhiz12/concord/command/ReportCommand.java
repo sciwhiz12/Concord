@@ -27,6 +27,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.minecraft.commands.CommandSourceStack;
@@ -84,10 +85,10 @@ public class ReportCommand {
 
         boolean sendingAllowed = false;
         if (channel != null && (channel.getType() == ChannelType.TEXT || channel.getType() == ChannelType.GUILD_PUBLIC_THREAD)) {
-            sendingAllowed = channel.canTalk();
+            sendingAllowed = channel.canTalk() && channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_EMBED_LINKS);
         }
 
-        // If reporting is disabled, also tell the user
+        // If reporting is disabled or not possible, also tell the user
         if (!sendingAllowed) {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
