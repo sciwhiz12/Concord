@@ -27,7 +27,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
@@ -79,10 +80,15 @@ public class ReportCommand {
 
         final ChatBot bot = Concord.getBot();
         final String channelID = ConcordConfig.REPORT_CHANNEL_ID.get();
-        final TextChannel channel = channelID.isBlank() ? null : bot.getDiscord().getTextChannelById(channelID);
+        final GuildMessageChannel channel = channelID.isBlank() ? null : bot.getDiscord().getChannelById(GuildMessageChannel.class, channelID);
+
+        boolean sendingAllowed = false;
+        if (channel != null && (channel.getType() == ChannelType.TEXT || channel.getType() == ChannelType.GUILD_PUBLIC_THREAD)) {
+            sendingAllowed = channel.canTalk();
+        }
 
         // If reporting is disabled, also tell the user
-        if (channel == null) {
+        if (!sendingAllowed) {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                             Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
