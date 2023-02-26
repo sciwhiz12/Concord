@@ -84,7 +84,8 @@ public class ReportCommand {
         final GuildMessageChannel channel = channelID.isBlank() ? null : bot.getDiscord().getChannelById(GuildMessageChannel.class, channelID);
 
         boolean sendingAllowed = false;
-        if (channel != null && (channel.getType() == ChannelType.TEXT || channel.getType() == ChannelType.GUILD_PUBLIC_THREAD)) {
+        if (channel != null && (channel.getType() == ChannelType.TEXT || channel.getType() == ChannelType.GUILD_PUBLIC_THREAD ||
+                                channel.getType() == ChannelType.GUILD_PRIVATE_THREAD)) {
             sendingAllowed = channel.canTalk() && channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_EMBED_LINKS);
         }
 
