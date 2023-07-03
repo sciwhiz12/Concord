@@ -4,7 +4,7 @@
   "chat.concord.attachment.hover.filename": "File name: %s",
   "chat.concord.attachment.no_extension": "attachment",
   "chat.concord.header": "(%s) %s",
-  "chat.concord.hover.header": "%s#%s %s- %s %s",
+  "chat.concord.hover.header": "%s %s- %s %s",
   "chat.concord.hover.reply": "Replied message: %s",
   "chat.concord.hover.roles": "Roles: ",
   "chat.concord.reply": "in reply to %s: ",
