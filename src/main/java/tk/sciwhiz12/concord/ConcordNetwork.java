@@ -82,7 +82,7 @@ public class ConcordNetwork {
     }
 
     public static boolean isModPresent(@Nullable ServerPlayer client) {
-        return client != null && isModPresent(client.connection.getConnection());
+        return client != null && isModPresent(client.connection.connection);
     }
 
     public static boolean isModPresent(Connection connection) {
