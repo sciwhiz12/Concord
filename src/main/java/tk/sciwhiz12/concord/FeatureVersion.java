@@ -37,7 +37,8 @@ public enum FeatureVersion {
      */
     // 1.0.0: All previous releases
     // 1.1.0: v1.4.0
-    TRANSLATIONS("translations", "1.1.0"),
+    // 1.2.0: v1.5.0 
+    TRANSLATIONS("translations", "1.2.0"),
     /**
      * The custom icon fonts feature.
      */

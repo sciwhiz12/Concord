@@ -47,7 +47,7 @@ public enum Translations implements Translation {
 
     // Hover text
 
-    HOVER_HEADER("chat", "hover.header", "1.0.0", "%s#%s %s- %s %s"),
+    HOVER_HEADER("chat", "hover.header", "1.2.0", "%s %s- %s %s"),
     HOVER_ROLES("chat", "hover.roles", "1.0.0", "Roles: "),
     HOVER_REPLY("chat", "hover.reply", "1.1.0", "Replied message: %s"),
 

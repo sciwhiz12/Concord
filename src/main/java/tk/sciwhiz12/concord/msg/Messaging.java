@@ -206,7 +206,6 @@ public class Messaging {
 
         return Translations.HOVER_HEADER.component(
                 Component.literal(member.getUser().getName()).withStyle(WHITE),
-                Component.literal(member.getUser().getDiscriminator()).withStyle(WHITE),
                 ownerText,
                 statusText,
                 status.getTranslation().component()
