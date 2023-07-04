@@ -24,7 +24,10 @@ package tk.sciwhiz12.concord.msg;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReference;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.minecraft.ChatFormatting;
@@ -193,21 +196,22 @@ public class Messaging {
             // TODO: cache the result of the above stream
         };
 
-        final MutableComponent ownerText = Component.literal(showCrown ? MemberStatus.CROWN_ICON + " " : "")
+        final MutableComponent ownerIcon = Component.literal(String.valueOf(MemberStatus.CROWN_ICON))
                 .withStyle(style -> style.withColor(CROWN_COLOR));
-        final MutableComponent statusText = Component.literal(String.valueOf(status.getIcon()))
+        final MutableComponent ownerText = showCrown ? Component.empty().append(ownerIcon).append(" ") : Component.empty();         
+        final MutableComponent statusIcon = Component.literal(String.valueOf(status.getIcon()))
                 .withStyle(style -> style.withColor(status.getColor()));
 
         // Use Concord icon font if configured and told to do so
         if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
-            ownerText.withStyle(style -> style.withFont(ICONS_FONT));
-            statusText.withStyle(style -> style.withFont(ICONS_FONT));
+            ownerIcon.withStyle(style -> style.withFont(ICONS_FONT));
+            statusIcon.withStyle(style -> style.withFont(ICONS_FONT));
         }
 
         return Translations.HOVER_HEADER.component(
                 Component.literal(member.getUser().getName()).withStyle(WHITE),
                 ownerText,
-                statusText,
+                statusIcon,
                 status.getTranslation().component()
                         .withStyle(style -> style.withColor(status.getColor()))
         ).withStyle(DARK_GRAY);
