@@ -22,16 +22,20 @@
 
 package tk.sciwhiz12.concord;
 
+import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.google.common.collect.Sets;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -41,10 +45,14 @@ import tk.sciwhiz12.concord.msg.MessageListener;
 import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.msg.PlayerListener;
 import tk.sciwhiz12.concord.msg.StatusListener;
+import tk.sciwhiz12.concord.msg.chat.ChatForwarder;
+import tk.sciwhiz12.concord.msg.chat.DefaultChatForwarder;
+import tk.sciwhiz12.concord.msg.chat.WebhookChatForwarder;
 import tk.sciwhiz12.concord.util.Messages;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.regex.Matcher;
 
 public class ChatBot extends ListenerAdapter {
     private static final Marker BOT = MarkerFactory.getMarker("BOT");
@@ -56,6 +64,7 @@ public class ChatBot extends ListenerAdapter {
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+    private ChatForwarder chatForwarder;
 
     ChatBot(JDA discord, MinecraftServer server) {
         this.discord = discord;
@@ -64,6 +73,7 @@ public class ChatBot extends ListenerAdapter {
         msgListener = new MessageListener(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+        chatForwarder = new DefaultChatForwarder(this);
 
         // Prevent any mentions not explicitly specified
         MessageRequest.setDefaultMentions(Collections.emptySet());
@@ -89,6 +99,27 @@ public class ChatBot extends ListenerAdapter {
             return;
         }
         Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
+
+        final String webhookID = ConcordConfig.RELAY_WEBHOOK.get();
+        if (webhookID != null && !webhookID.isEmpty()) {
+
+            final Matcher urlMatcher = Webhook.WEBHOOK_URL.matcher(webhookID);
+            if (urlMatcher.find()) {
+                chatForwarder = new WebhookChatForwarder(new WebhookClientBuilder(webhookID));
+
+                Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", urlMatcher.group("id"));
+            } else {
+                discord.retrieveWebhookById(webhookID).queue(webhook -> {
+                    chatForwarder = new WebhookChatForwarder(WebhookClientBuilder.fromJDA(webhook));
+
+                    Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", webhookID);
+                }, error -> new ErrorHandler(err -> Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder for an unknown reason!", err))
+                        .handle(ErrorResponse.UNKNOWN_WEBHOOK, err ->
+                                Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder as webhook does not exist!", err))
+                        .handle(ErrorResponse.MISSING_PERMISSIONS, err ->
+                                Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder as bot is missing permissions!", err)));
+            }
+        }
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
@@ -140,5 +171,9 @@ public class ChatBot extends ListenerAdapter {
 
         // Required permissions are there. All checks satisfied.
         return true;
+    }
+
+    public ChatForwarder getChatForwarder() {
+        return chatForwarder;
     }
 }

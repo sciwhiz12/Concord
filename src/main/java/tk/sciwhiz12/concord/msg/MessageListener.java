@@ -28,7 +28,6 @@ import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.MiscUtil;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent;
@@ -83,8 +82,7 @@ public class MessageListener extends ListenerAdapter {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onSubmittedServerChat(ServerChatEvent event) {
-        Messaging.sendToChannel(bot.getDiscord(), Component.translatable("chat.type.text", 
-                event.getPlayer().getDisplayName(), event.getMessage()).getString());
+        bot.getChatForwarder().forward(event.getPlayer(), event.getMessage());
     }
 
     static record MessageEntry(Member member, Message message) {

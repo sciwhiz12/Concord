@@ -41,6 +41,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
     public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> RELAY_WEBHOOK;
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
@@ -110,6 +111,11 @@ public class ConcordConfig {
             REPORT_CHANNEL_ID = builder.comment("The snowflake ID of the channel where this bot will post reports from in-game users.",
                             "If empty, reports will be disabled.")
                     .define("report_channel_id", "");
+
+            RELAY_WEBHOOK = builder.comment("The relay webhook, used for sending better-formatted chat-to-Discord messages.",
+                            "This should either be a full webhook URL (with ID and token), or the ID of the webhook.",
+                            "If empty, messages will be sent normally as the bot user.")
+                    .define("relay_webhook", "");
 
             builder.pop();
         }
