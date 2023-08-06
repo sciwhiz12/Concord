@@ -45,6 +45,8 @@ public class ConcordConfig {
 
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
+    public static final ForgeConfigSpec.BooleanValue USE_LEGACY_FORMATTING;
+    public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FORMATTING;
     public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
     public static final ForgeConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
     public static final ForgeConfigSpec.BooleanValue HIDE_ROLES;
@@ -137,6 +139,19 @@ public class ConcordConfig {
                                     "installed.",
                             "Set to false if you cannot ensure that all clients will have the mod installed.")
                     .define("lazy_translate", true);
+
+            USE_CUSTOM_FORMATTING = builder.comment("Allow Discord users to use Concord Message Formatting Codes in a message.",
+                            "This will cause in-game messages to have color formatting.",
+                            "To use it, send a message with a dollar sign ($) followed by either an English-language color (ie. $red), or a hex code (ie. $#FF0000).",
+                            "Names are delimited by a space which will be consumed, so the string \"this is a $red colored text\" will be shown as \"this is a colored text\".",
+                            "Please note that Custom Formatting will override Legacy Formatting when enabled. This is intentional.")
+                    .define("use_custom_formatting", false);
+
+            USE_LEGACY_FORMATTING = builder.comment("Allow Discord users to put legacy-style chat formatting (&5, etc) in a message.",
+                    "This will cause in-game messages to have color, bold, italic, strikethrough and \"obfuscated\" formatting.",
+                    "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.")
+                    .define("use_legacy_formatting", false);
+
 
             HIDE_CROWN = builder.comment("Configures when the Server Owner crown is visible to clients.",
                             "ALWAYS means the crown is always visible, NEVER means the crown is never visible.",
