@@ -46,6 +46,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
     public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
+    public static final ForgeConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
 
     public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
@@ -140,6 +141,15 @@ public class ConcordConfig {
                             "ALWAYS means the crown is always visible, NEVER means the crown is never visible.",
                             "WITHOUT_ADMINISTRATORS means it is only visible when there are no hoisted Administrator roles.")
                     .defineEnum("hide_crown", CrownVisibility.WITHOUT_ADMINISTRATORS);
+            
+            WEBHOOK_AVATAR_URL = builder.comment("The URL used for the avatar when sending messages using the relay webhook.",
+                            "The following placeholders can be used within the URL:",
+                            " - '{uuid}' is replaced with the UUID of the player, without any dashes (e.g 00112233445566778899aabbccddeeff)",
+                            " - '{uuid-dash}' is replaced with the UUID of the player, with dashes (e.g. 00112233-4455-6677-8899-aabbccddeeff)",
+                            " - '{username}' is replaced with the username of the player (e.g. Dev)",
+                            "If blank, no avatar will be set (the webhook's configured avatar applies).")
+                    .define("webhook_avatar_url", "");
+                            
 
             builder.pop();
         }

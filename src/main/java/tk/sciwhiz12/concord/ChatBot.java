@@ -50,6 +50,7 @@ import tk.sciwhiz12.concord.msg.chat.DefaultChatForwarder;
 import tk.sciwhiz12.concord.msg.chat.WebhookChatForwarder;
 import tk.sciwhiz12.concord.util.Messages;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
@@ -103,14 +104,23 @@ public class ChatBot extends ListenerAdapter {
         final String webhookID = ConcordConfig.RELAY_WEBHOOK.get();
         if (webhookID != null && !webhookID.isEmpty()) {
 
+            @Nullable final String avatarUrl;
+            final String configuredAvatarUrl = ConcordConfig.WEBHOOK_AVATAR_URL.get();
+            if (configuredAvatarUrl != null && !configuredAvatarUrl.isEmpty()) {
+                avatarUrl = configuredAvatarUrl;
+                Concord.LOGGER.debug("Using configured webhook avatar URL: {}", avatarUrl);
+            } else {
+                avatarUrl = null; 
+            }
+
             final Matcher urlMatcher = Webhook.WEBHOOK_URL.matcher(webhookID);
             if (urlMatcher.find()) {
-                chatForwarder = new WebhookChatForwarder(new WebhookClientBuilder(webhookID));
+                chatForwarder = new WebhookChatForwarder(new WebhookClientBuilder(webhookID), avatarUrl);
 
                 Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", urlMatcher.group("id"));
             } else {
                 discord.retrieveWebhookById(webhookID).queue(webhook -> {
-                    chatForwarder = new WebhookChatForwarder(WebhookClientBuilder.fromJDA(webhook));
+                    chatForwarder = new WebhookChatForwarder(WebhookClientBuilder.fromJDA(webhook), avatarUrl);
 
                     Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", webhookID);
                 }, error -> new ErrorHandler(err -> Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder for an unknown reason!", err))

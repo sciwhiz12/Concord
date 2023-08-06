@@ -30,15 +30,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
 
+import javax.annotation.Nullable;
+
 public class WebhookChatForwarder implements ChatForwarder {
     private final WebhookClient client;
+    @Nullable
+    private final String avatarUrl;
 
-    public WebhookChatForwarder(WebhookClient client) {
+    public WebhookChatForwarder(WebhookClient client, @Nullable String avatarUrl) {
         this.client = client;
+        this.avatarUrl = avatarUrl;
     }
 
-    public WebhookChatForwarder(WebhookClientBuilder builder) {
-        this(builder.setDaemon(true).build());
+    public WebhookChatForwarder(WebhookClientBuilder builder, @Nullable String avatarUrl) {
+        this(builder.setDaemon(true).build(), avatarUrl);
     }
 
     @Override
@@ -48,6 +53,16 @@ public class WebhookChatForwarder implements ChatForwarder {
                 .setTTS(false)
                 .setUsername(player.getDisplayName().getString())
                 .setAllowedMentions(getAllowedMentions());
+        
+        if (avatarUrl != null) {
+            final String playerUUID = player.getStringUUID();
+            final String playerAvatarUrl = avatarUrl
+                    .replace("{uuid}", playerUUID.replace("-", ""))
+                    .replace("{uuid-dash}", playerUUID)
+                    .replace("{username}", player.getGameProfile().getName());
+            
+            builder.setAvatarUrl(playerAvatarUrl);
+        }
 
         client.send(builder.build());
     }
