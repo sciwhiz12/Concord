@@ -102,20 +102,20 @@ public class ReportCommand {
                         .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
                         .addField("Reported",
                                 "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
-                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level.dimension().location(), position(reportedPlayer)),
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level().dimension().location(), position(reportedPlayer)),
                                 false)
                         .addField("Reason", reason, false)
                         .addField("Reporter",
                                 "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
-                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level.dimension().location(), position(sender)),
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level().dimension().location(), position(sender)),
                                 false)
                         .setTimestamp(Instant.now())
-                        .setFooter("Game time: " + sender.level.getGameTime())
+                        .setFooter("Game time: " + sender.level().getGameTime())
                         .build()
         ).queue();
 
         ctx.getSource().sendSuccess(
-                Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
+                () -> Translations.COMMAND_REPORT_SUCCESS.resolvedComponent(ctx.getSource(),
                         reportedPlayer.getName(), reason
                 ), true);
 
