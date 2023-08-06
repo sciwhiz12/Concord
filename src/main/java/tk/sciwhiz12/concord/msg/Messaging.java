@@ -62,22 +62,24 @@ import static tk.sciwhiz12.concord.Concord.MODID;
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
-
+    
     public static MutableComponent createUserComponent(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                                       Member member, @Nullable MutableComponent replyMessage) {
+                                                       boolean showRoles, Member member, @Nullable MutableComponent replyMessage) {
         final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
 
-        final List<Role> roles = member.getRoles().stream()
-                .filter(((Predicate<Role>) Role::isPublicRole).negate())
-                .toList();
-        if (!roles.isEmpty()) {
-            hover.append("\n").append(Translations.HOVER_ROLES.component());
-            for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
-                if (i != 0) hover.append(", "); // add joiner for more than one role
-                Role role = roles.get(i);
-                hover.append(Component.literal(role.getName())
-                        .withStyle(style -> style.withColor(TextColor.fromRgb(role.getColorRaw())))
-                );
+        if (showRoles) {
+            final List<Role> roles = member.getRoles().stream()
+                    .filter(((Predicate<Role>) Role::isPublicRole).negate())
+                    .toList();
+            if (!roles.isEmpty()) {
+                hover.append("\n").append(Translations.HOVER_ROLES.component());
+                for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
+                    if (i != 0) hover.append(", "); // add joiner for more than one role
+                    Role role = roles.get(i);
+                    hover.append(Component.literal(role.getName())
+                            .withStyle(style -> style.withColor(TextColor.fromRgb(role.getColorRaw())))
+                    );
+                }
             }
         }
 
@@ -98,7 +100,8 @@ public class Messaging {
     public static MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
                                                       Member member, Message message) {
         final MessageReference reference = message.getMessageReference();
-        final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, member, null);
+        final boolean showRoles = !ConcordConfig.HIDE_ROLES.get();
+        final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, showRoles, member, null);
         MutableComponent text = createContentComponent(message);
 
         if (reference != null) {
@@ -108,7 +111,7 @@ public class Messaging {
 
                 final Member referencedMember = referencedMessage.getMember();
                 if (referencedMember != null) {
-                    referencedUserComponent = createUserComponent(useIcons, crownVisibility, referencedMember,
+                    referencedUserComponent = createUserComponent(useIcons, crownVisibility, showRoles, referencedMember,
                             createContentComponent(referencedMessage));
                 } else {
                     referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()

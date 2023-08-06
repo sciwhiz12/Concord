@@ -47,6 +47,7 @@ public class ConcordConfig {
     public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
     public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
     public static final ForgeConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
+    public static final ForgeConfigSpec.BooleanValue HIDE_ROLES;
 
     public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
@@ -149,7 +150,11 @@ public class ConcordConfig {
                             " - '{username}' is replaced with the username of the player (e.g. Dev)",
                             "If blank, no avatar will be set (the webhook's configured avatar applies).")
                     .define("webhook_avatar_url", "");
-                            
+
+            HIDE_ROLES = builder.comment("Hides the listed roles from the hover information on a player.",
+                            "This is useful for servers which wish to keep the name and roles of the connected guild hidden,",
+                            "such as for private servers whose players stream on public platforms.")
+                    .define("hide_roles", false);
 
             builder.pop();
         }
