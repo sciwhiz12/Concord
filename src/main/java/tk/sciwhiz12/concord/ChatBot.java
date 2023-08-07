@@ -133,7 +133,9 @@ public class ChatBot extends ListenerAdapter {
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
 
-        Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
+        if (ConcordConfig.BOT_START.get()) {
+            Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
+        }
     }
 
     void shutdown() {

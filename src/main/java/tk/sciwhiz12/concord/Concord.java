@@ -114,7 +114,7 @@ public class Concord {
     public static void disable(boolean suppressMessage) {
         if (BOT == null || !isEnabled()) return;
         LOGGER.info("Shutting down Discord integration...");
-        if (!suppressMessage) {
+        if (!suppressMessage && ConcordConfig.BOT_STOP.get()) {
             Messaging.sendToChannel(BOT.getDiscord(), Messages.BOT_STOP.component().getString());
         }
         BOT.shutdown();
