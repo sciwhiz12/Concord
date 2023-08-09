@@ -76,7 +76,7 @@ public class MessageListener extends ListenerAdapter {
 
         MessageEntry entry;
         while ((entry = queuedMessages.poll()) != null) { // TODO: rate-limiting
-            Messaging.sendToAllPlayers(bot.getServer(), entry.member, entry.message);
+            bot.messaging().sendToAllPlayers(entry.member, entry.message);
         }
     }
 

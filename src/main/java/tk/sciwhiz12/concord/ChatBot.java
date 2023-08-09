@@ -62,6 +62,7 @@ public class ChatBot extends ListenerAdapter {
 
     private final JDA discord;
     private final MinecraftServer server;
+    private final Messaging messaging;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
@@ -72,6 +73,7 @@ public class ChatBot extends ListenerAdapter {
         this.server = server;
         discord.addEventListener(this);
         msgListener = new MessageListener(this);
+        messaging = new Messaging(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
         chatForwarder = new DefaultChatForwarder(this);
@@ -183,6 +185,10 @@ public class ChatBot extends ListenerAdapter {
 
         // Required permissions are there. All checks satisfied.
         return true;
+    }
+
+    public Messaging messaging() {
+        return messaging;
     }
 
     public ChatForwarder getChatForwarder() {
