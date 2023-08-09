@@ -22,6 +22,7 @@
 
 package tk.sciwhiz12.concord.msg;
 
+import com.mojang.authlib.GameProfile;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -54,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -114,17 +116,33 @@ public class Messaging {
         if (reference != null) {
             final Message referencedMessage = reference.getMessage();
             if (referencedMessage != null) {
-                final MutableComponent referencedUserComponent;
+                MutableComponent referencedUserComponent = null;
 
                 final Member referencedMember = referencedMessage.getMember();
                 if (referencedMember != null) {
                     referencedUserComponent = createUserComponent(useIcons, crownVisibility, showRoles, referencedMember,
                             createContentComponent(referencedMessage));
-                } else {
+                }
+
+                final SentMessageMemory.RememberedMessage memory = bot.getSentMessageMemory().findMessage(referencedMessage.getIdLong());
+                if (memory != null) {
+                    final GameProfile playerProfile = memory.player();
+                    final ServerPlayer player = bot.getServer().getPlayerList().getPlayer(playerProfile.getId());
+                    if (player != null) {
+                        referencedUserComponent = player.getDisplayName().copy();
+                    } else {
+                        referencedUserComponent = Component.literal(playerProfile.getName()).withStyle(ITALIC);
+                    }
+                    referencedUserComponent = referencedUserComponent
+                            .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, memory.message())));
+                }
+
+                if (referencedUserComponent == null) {
+                    // Fallback to an unknown user
                     referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
                             .withStyle(style -> style.withHoverEvent(
                                     new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
-                } // TODO: reply to the bot/webhook
+                }
 
                 text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
                         .withStyle(ChatFormatting.GRAY)
@@ -257,7 +275,7 @@ public class Messaging {
         }
     }
 
-    public static void sendToChannel(JDA discord, CharSequence text) {
+    public static CompletableFuture<Message> sendToChannel(JDA discord, CharSequence text) {
         final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
             Collection<Message.MentionType> allowedMentions = Collections.emptySet();
@@ -274,8 +292,10 @@ public class Messaging {
                     allowedMentions.add(Message.MentionType.ROLE);
                 }
             }
-            channel.sendMessage(text).setAllowedMentions(allowedMentions).queue();
+            return channel.sendMessage(text).setAllowedMentions(allowedMentions).submit();
         }
+        // TODO: handle this case properly (disable integration)
+        throw new RuntimeException("Somehow tried sending a message with a non-existent channel configured");
     }
 
     private static final DefaultArtifactVersion ZERO_VERSION = new DefaultArtifactVersion("0.0.0");

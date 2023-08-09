@@ -41,10 +41,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import tk.sciwhiz12.concord.msg.MessageListener;
-import tk.sciwhiz12.concord.msg.Messaging;
-import tk.sciwhiz12.concord.msg.PlayerListener;
-import tk.sciwhiz12.concord.msg.StatusListener;
+import tk.sciwhiz12.concord.msg.*;
 import tk.sciwhiz12.concord.msg.chat.ChatForwarder;
 import tk.sciwhiz12.concord.msg.chat.DefaultChatForwarder;
 import tk.sciwhiz12.concord.msg.chat.WebhookChatForwarder;
@@ -66,6 +63,7 @@ public class ChatBot extends ListenerAdapter {
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
     private final StatusListener statusListener;
+    private final SentMessageMemory sentMessageMemory;
     private ChatForwarder chatForwarder;
 
     ChatBot(JDA discord, MinecraftServer server) {
@@ -76,6 +74,7 @@ public class ChatBot extends ListenerAdapter {
         messaging = new Messaging(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
+        sentMessageMemory = new SentMessageMemory(this);
         chatForwarder = new DefaultChatForwarder(this);
 
         // Prevent any mentions not explicitly specified
@@ -117,12 +116,12 @@ public class ChatBot extends ListenerAdapter {
 
             final Matcher urlMatcher = Webhook.WEBHOOK_URL.matcher(webhookID);
             if (urlMatcher.find()) {
-                chatForwarder = new WebhookChatForwarder(new WebhookClientBuilder(webhookID), avatarUrl);
+                chatForwarder = new WebhookChatForwarder(this, new WebhookClientBuilder(webhookID), avatarUrl);
 
                 Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", urlMatcher.group("id"));
             } else {
                 discord.retrieveWebhookById(webhookID).queue(webhook -> {
-                    chatForwarder = new WebhookChatForwarder(WebhookClientBuilder.fromJDA(webhook), avatarUrl);
+                    chatForwarder = new WebhookChatForwarder(this, WebhookClientBuilder.fromJDA(webhook), avatarUrl);
 
                     Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", webhookID);
                 }, error -> new ErrorHandler(err -> Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder for an unknown reason!", err))
@@ -189,6 +188,10 @@ public class ChatBot extends ListenerAdapter {
 
     public Messaging messaging() {
         return messaging;
+    }
+
+    public SentMessageMemory getSentMessageMemory() {
+        return sentMessageMemory;
     }
 
     public ChatForwarder getChatForwarder() {

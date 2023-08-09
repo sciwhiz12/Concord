@@ -20,23 +20,42 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord.msg.chat;
+package tk.sciwhiz12.concord.msg;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ChatBot;
-import tk.sciwhiz12.concord.msg.Messaging;
 
-public class DefaultChatForwarder implements ChatForwarder {
+import javax.annotation.Nullable;
+import java.util.concurrent.TimeUnit;
+
+public class SentMessageMemory {
     private final ChatBot bot;
+    private final Cache<Long, RememberedMessageImpl> memory = CacheBuilder.newBuilder()
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .initialCapacity(1_000)
+            .build();
 
-    public DefaultChatForwarder(ChatBot bot) {
+    public SentMessageMemory(ChatBot bot) {
         this.bot = bot;
     }
 
-    public void forward(ServerPlayer player, Component message) {
-        Messaging.sendToChannel(bot.getDiscord(),
-                        Component.translatable("chat.type.text", player.getDisplayName(), message).getString())
-                .thenAccept(sentMessage -> bot.getSentMessageMemory().rememberMessage(sentMessage.getIdLong(), player.getGameProfile(), message));
+    public void rememberMessage(long messageSnowflake, GameProfile player, Component message) {
+        memory.put(messageSnowflake, new RememberedMessageImpl(player, message));
+    }
+
+    public @Nullable RememberedMessage findMessage(long messageSnowflake) {
+        return memory.getIfPresent(messageSnowflake);
+    }
+
+    public interface RememberedMessage {
+        GameProfile player();
+
+        Component message();
+    }
+
+    record RememberedMessageImpl(GameProfile player, Component message) implements RememberedMessage {
     }
 }
