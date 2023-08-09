@@ -41,10 +41,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import tk.sciwhiz12.concord.ChatBot;
-import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ConcordNetwork;
-import tk.sciwhiz12.concord.FeatureVersion;
+import tk.sciwhiz12.concord.*;
 import tk.sciwhiz12.concord.util.IntelligentTranslator;
 import tk.sciwhiz12.concord.util.Translation;
 import tk.sciwhiz12.concord.util.TranslationUtil;
@@ -60,7 +57,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static net.minecraft.ChatFormatting.*;
-import static tk.sciwhiz12.concord.Concord.MODID;
+import static tk.sciwhiz12.concord.Concord.*;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
@@ -293,9 +290,11 @@ public class Messaging {
                 }
             }
             return channel.sendMessage(text).setAllowedMentions(allowedMentions).submit();
+        } else {
+            LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
+            Concord.disable(true);
+            return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
         }
-        // TODO: handle this case properly (disable integration)
-        throw new RuntimeException("Somehow tried sending a message with a non-existent channel configured");
     }
 
     private static final DefaultArtifactVersion ZERO_VERSION = new DefaultArtifactVersion("0.0.0");
