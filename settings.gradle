@@ -14,16 +14,6 @@ pluginManagement {
             url 'https://maven.moddinginquisition.org/releases'
         }
     }
-    resolutionStrategy {
-        eachPlugin {
-            switch (requested.id.toString()) {
-                case "org.spongepowered.mixin": {
-                    useModule("org.spongepowered:mixingradle:${requested.version}")
-                    break;
-                }
-            }
-        }
-    }
 }
 
 rootProject.name = modid
