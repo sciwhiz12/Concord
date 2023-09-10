@@ -45,10 +45,6 @@ minecraft {
             mods.register(modid as String) {
                 source sourceSets.main as SourceSet
             }
-
-            lazyToken('minecraft_classpath') {
-                configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-            }
         }
 
         client {
@@ -70,9 +66,6 @@ minecraft {
 }
 
 configurations {
-    library
-    implementation.extendsFrom library
-
     dataImplementation.extendsFrom implementation
 }
 
@@ -86,13 +79,13 @@ repositories {
 dependencies {
     minecraft "net.neoforged:forge:${mc_version}-${forge_version}"
 
-    library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+    minecraftLibrary(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
         exclude module: 'jsr305'
     }
-    library(group: 'club.minnced', name: 'discord-webhooks', version: webhook_version)  {
+    minecraftLibrary(group: 'club.minnced', name: 'discord-webhooks', version: webhook_version)  {
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
     }
@@ -150,7 +143,7 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     reproducibleFileOrder = true
     archiveClassifier.set('')
 
-    configurations = [ project.configurations.library ]
+    configurations = [ project.configurations.minecraftLibrary ]
 
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
