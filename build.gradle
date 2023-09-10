@@ -41,7 +41,7 @@ minecraft {
             property 'forge.logging.markers', logging_markers
             property 'forge.logging.console.level', logging_console
 
-            ideaModule "${project.group}.${project.name}.main"
+            ideaModule "${project.name}.main"
             mods.register(modid as String) {
                 source sourceSets.main as SourceSet
             }
@@ -62,7 +62,6 @@ minecraft {
             args '--output', sourceSets.data.resources.srcDirs[0].toString()
             args '--existing', sourceSets.main.resources.srcDirs[0].toString()
 
-            ideaModule "${project.group}.${project.name}.data"
             mods.named(modid as String) {
                 sources sourceSets.main as SourceSet, sourceSets.data as SourceSet
             }
