@@ -33,7 +33,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -41,7 +40,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import tk.sciwhiz12.concord.*;
+import tk.sciwhiz12.concord.ChatBot;
+import tk.sciwhiz12.concord.Concord;
+import tk.sciwhiz12.concord.ConcordConfig;
+import tk.sciwhiz12.concord.features.ConcordFeatures;
+import tk.sciwhiz12.concord.features.FeatureVersion;
 import tk.sciwhiz12.concord.util.IntelligentTranslator;
 import tk.sciwhiz12.concord.util.Translation;
 import tk.sciwhiz12.concord.util.TranslationUtil;
@@ -57,7 +60,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static net.minecraft.ChatFormatting.*;
-import static tk.sciwhiz12.concord.Concord.*;
+import static tk.sciwhiz12.concord.Concord.LOGGER;
+import static tk.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
     public static final ResourceLocation ICONS_FONT = new ResourceLocation(MODID, "icons");
@@ -255,12 +259,10 @@ public class Messaging {
         server.sendSystemMessage(translator.resolve(new MessageContext(false, FeatureVersion.TRANSLATIONS.currentVersion())));
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            final Connection connection = player.connection.connection;
-
             final ArtifactVersion translationsVersion = lazyTranslateAll
-                    ? getFeatureVersionWithDefault(connection, FeatureVersion.TRANSLATIONS)
+                    ? getFeatureVersionWithDefault(player, FeatureVersion.TRANSLATIONS)
                     : ZERO_VERSION; // Eagerly translating means use the 0.0.0 version, which is never compatible
-            final ArtifactVersion iconsVersion = getFeatureVersionWithDefault(connection, FeatureVersion.ICONS);
+            final ArtifactVersion iconsVersion = getFeatureVersionWithDefault(player, FeatureVersion.ICONS);
 
             final boolean useIcons = useIconsAll && isCompatible(FeatureVersion.ICONS.currentVersion(), iconsVersion);
             final MessageContext ctx = new MessageContext(useIcons, translationsVersion);
@@ -298,14 +300,11 @@ public class Messaging {
     }
 
     private static final DefaultArtifactVersion ZERO_VERSION = new DefaultArtifactVersion("0.0.0");
-    private static final DefaultArtifactVersion ONE_VERSION = new DefaultArtifactVersion("1.0.0");
 
-    static ArtifactVersion getFeatureVersionWithDefault(Connection connection, FeatureVersion feature) {
-        @Nullable ArtifactVersion featureVersion = ConcordNetwork.getFeatureVersionIfExists(connection, feature);
-        // If no remote version, but mod exists on remote, then default to 1.0.0
-        // This should be removed when we switch to 2.0.0
-        if (featureVersion != null) return featureVersion;
-        return ConcordNetwork.isModPresent(connection) ? ONE_VERSION : ZERO_VERSION;
+    static ArtifactVersion getFeatureVersionWithDefault(ServerPlayer player, FeatureVersion feature) {
+        final @Nullable ArtifactVersion version = player.getData(ConcordFeatures.ATTACHMENT).getFeature(feature);
+        if (version == null) return ZERO_VERSION;
+        return version;
     }
 
     public static boolean isCompatible(ArtifactVersion first, ArtifactVersion second) {

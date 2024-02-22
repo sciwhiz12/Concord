@@ -30,8 +30,9 @@ import net.minecraft.world.entity.Entity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ConcordNetwork;
-import tk.sciwhiz12.concord.FeatureVersion;
+import tk.sciwhiz12.concord.features.ConcordFeatures;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
+import tk.sciwhiz12.concord.features.FeatureVersion;
 
 /**
  * A message with a translation key and its corresponding default text in English ({@code en_us}).
@@ -93,7 +94,8 @@ public interface Translation {
      * @see #component(Object...)
      */
     default MutableComponent component() {
-        return Component.translatable(key());
+        // TODO: consider whether to keep the english text here as a fallback
+        return Component.translatableWithFallback(key(), englishText());
     }
 
     /**
@@ -103,7 +105,8 @@ public interface Translation {
      * @see #component()
      */
     default MutableComponent component(Object... formatArgs) {
-        return Component.translatable(key(), formatArgs);
+        // TODO: consider whether to keep the english text here as a fallback
+        return Component.translatableWithFallback(key(), englishText(), formatArgs);
     }
 
     /**
@@ -128,12 +131,12 @@ public interface Translation {
 
     private boolean translateEagerly(CommandSourceStack source) {
         return !ConcordConfig.LAZY_TRANSLATIONS.get()
-                || (source.getEntity() instanceof ServerPlayer player && ConcordNetwork.isModPresent(player));
+                || (source.getEntity() instanceof ServerPlayer player && !player.getData(ConcordFeatures.ATTACHMENT).isEmpty());
     }
 
     private boolean translateEagerly(@Nullable Entity sourceEntity) {
         return !ConcordConfig.LAZY_TRANSLATIONS.get()
-                || (sourceEntity instanceof ServerPlayer player && ConcordNetwork.isModPresent(player));
+                || (sourceEntity instanceof ServerPlayer player && !player.getData(ConcordFeatures.ATTACHMENT).isEmpty());
     }
 
     /**

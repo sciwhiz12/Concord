@@ -22,62 +22,63 @@
 
 package tk.sciwhiz12.concord;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import tk.sciwhiz12.concord.util.Messages;
 
 import javax.annotation.Nullable;
 
 public class ConcordConfig {
-    static final ForgeConfigSpec CONFIG_SPEC;
+    static final ModConfigSpec CONFIG_SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue ENABLE_INTEGRATED;
+    public static final ModConfigSpec.BooleanValue ENABLE_INTEGRATED;
 
-    public static final ForgeConfigSpec.BooleanValue SAY_COMMAND_HOOK;
-    public static final ForgeConfigSpec.BooleanValue EMOTE_COMMAND_HOOK;
+    public static final ModConfigSpec.BooleanValue SAY_COMMAND_HOOK;
+    public static final ModConfigSpec.BooleanValue EMOTE_COMMAND_HOOK;
 
-    public static final ForgeConfigSpec.ConfigValue<String> TOKEN;
-    public static final ForgeConfigSpec.ConfigValue<String> GUILD_ID;
-    public static final ForgeConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
-    public static final ForgeConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
-    public static final ForgeConfigSpec.ConfigValue<String> RELAY_WEBHOOK;
+    public static final ModConfigSpec.ConfigValue<String> TOKEN;
+    public static final ModConfigSpec.ConfigValue<String> GUILD_ID;
+    public static final ModConfigSpec.ConfigValue<String> CHAT_CHANNEL_ID;
+    public static final ModConfigSpec.ConfigValue<String> REPORT_CHANNEL_ID;
+    public static final ModConfigSpec.ConfigValue<String> RELAY_WEBHOOK;
 
-    public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FONT;
-    public static final ForgeConfigSpec.BooleanValue LAZY_TRANSLATIONS;
-    public static final ForgeConfigSpec.BooleanValue USE_LEGACY_FORMATTING;
-    public static final ForgeConfigSpec.BooleanValue USE_CUSTOM_FORMATTING;
-    public static final ForgeConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
-    public static final ForgeConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
-    public static final ForgeConfigSpec.BooleanValue HIDE_ROLES;
+    public static final ModConfigSpec.BooleanValue USE_CUSTOM_FONT;
+    public static final ModConfigSpec.BooleanValue LAZY_TRANSLATIONS;
+    public static final ModConfigSpec.BooleanValue USE_LEGACY_FORMATTING;
+    public static final ModConfigSpec.BooleanValue USE_CUSTOM_FORMATTING;
+    public static final ModConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
+    public static final ModConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
+    public static final ModConfigSpec.BooleanValue HIDE_ROLES;
 
-    public static final ForgeConfigSpec.BooleanValue ALLOW_MENTIONS;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_USER_MENTIONS;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_ROLE_MENTIONS;
+    public static final ModConfigSpec.BooleanValue ALLOW_MENTIONS;
+    public static final ModConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
+    public static final ModConfigSpec.BooleanValue ALLOW_USER_MENTIONS;
+    public static final ModConfigSpec.BooleanValue ALLOW_ROLE_MENTIONS;
 
-    public static final ForgeConfigSpec.BooleanValue SERVER_START;
-    public static final ForgeConfigSpec.BooleanValue SERVER_STOP;
-    public static final ForgeConfigSpec.BooleanValue BOT_START;
-    public static final ForgeConfigSpec.BooleanValue BOT_STOP;
+    public static final ModConfigSpec.BooleanValue SERVER_START;
+    public static final ModConfigSpec.BooleanValue SERVER_STOP;
+    public static final ModConfigSpec.BooleanValue BOT_START;
+    public static final ModConfigSpec.BooleanValue BOT_STOP;
 
-    public static final ForgeConfigSpec.BooleanValue PLAYER_JOIN;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_LEAVE;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_DEATH;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GAMERULE;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_TASK;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_CHALLENGE;
-    public static final ForgeConfigSpec.BooleanValue PLAYER_ADV_GOAL;
+    public static final ModConfigSpec.BooleanValue PLAYER_JOIN;
+    public static final ModConfigSpec.BooleanValue PLAYER_LEAVE;
+    public static final ModConfigSpec.BooleanValue PLAYER_DEATH;
+    public static final ModConfigSpec.BooleanValue PLAYER_ADV_GAMERULE;
+    public static final ModConfigSpec.BooleanValue PLAYER_ADV_TASK;
+    public static final ModConfigSpec.BooleanValue PLAYER_ADV_CHALLENGE;
+    public static final ModConfigSpec.BooleanValue PLAYER_ADV_GOAL;
 
-    public static final ForgeConfigSpec.BooleanValue COMMAND_SAY;
-    public static final ForgeConfigSpec.BooleanValue COMMAND_EMOTE;
+    public static final ModConfigSpec.BooleanValue COMMAND_SAY;
+    public static final ModConfigSpec.BooleanValue COMMAND_EMOTE;
 
-    public static void register() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC);
+    public static void register(ModContainer container) {
+        container.addConfig(new ModConfig(ModConfig.Type.COMMON, CONFIG_SPEC, container));
     }
 
     static {
-        ForgeConfigSpec.Builder builder = new CommentFriendlyConfigSpecBuilder();
+        ModConfigSpec.Builder builder = new CommentFriendlyConfigSpecBuilder();
 
         ENABLE_INTEGRATED = builder
                 .comment("Whether the Discord integration is default enabled for integrated servers (i.e. singleplayer).",
@@ -273,17 +274,17 @@ public class ConcordConfig {
     }
 
     /**
-     * A comment-friendly version of {@link ForgeConfigSpec.Builder} which adds a space before the comment text, for
+     * A comment-friendly version of {@link ModConfigSpec.Builder} which adds a space before the comment text, for
      * easier readability.
      *
      * <p>Due to complications with modifying the comment, the "Allowed Values" comment added by {@link
-     * ForgeConfigSpec.Builder#defineEnum(java.util.List, java.util.function.Supplier,
+     * ModConfigSpec.Builder#defineEnum(java.util.List, java.util.function.Supplier,
      * com.electronwill.nightconfig.core.EnumGetMethod, java.util.function.Predicate, Class)} and its overloads will not
      * have the additional space.</p>
      */
-    private static class CommentFriendlyConfigSpecBuilder extends ForgeConfigSpec.Builder {
+    private static class CommentFriendlyConfigSpecBuilder extends ModConfigSpec.Builder {
         @Override
-        public ForgeConfigSpec.Builder comment(@Nullable String comment) {
+        public ModConfigSpec.Builder comment(@Nullable String comment) {
             if (comment != null && !comment.isEmpty()) {
                 comment = ' ' + comment;
             }
@@ -291,7 +292,7 @@ public class ConcordConfig {
         }
 
         @Override
-        public ForgeConfigSpec.Builder comment(@Nullable String... comment) {
+        public ModConfigSpec.Builder comment(@Nullable String... comment) {
             if (comment != null && (comment.length > 1 || !comment[0].isEmpty())) {
                 final String[] copy = new String[comment.length];
 

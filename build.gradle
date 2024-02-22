@@ -1,13 +1,6 @@
-import org.w3c.dom.NodeList
-
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
-
 plugins {
     id 'maven-publish'
-    id 'net.neoforged.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.neoforged.gradle.userdev' version '7.0.93'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'org.cadixdev.licenser' version '0.6.1'
     id 'tk.sciwhiz12.gradle.simplversion' version '0.1.0'
@@ -31,42 +24,43 @@ print "Java: ${System.getProperty('java.version')}"
 print ", JVM: ${System.getProperty('java.vm.version')} (${System.getProperty('java.vendor')})"
 println ", Arch: ${System.getProperty('os.arch')}"
 
-minecraft {
-    mappings channel: mappings_channel, version: mappings_version
-
-    runs {
-        configureEach {
-            workingDirectory project.file('run/' + it.name) as File
-
-            property 'forge.logging.markers', logging_markers
-            property 'forge.logging.console.level', logging_console
-
-            ideaModule "${project.name}.main"
-            mods.register(modid as String) {
-                source sourceSets.main as SourceSet
-            }
-        }
-
-        client {
-        }
-
-        server {
-        }
-
-        data {
-            args '--mod', modid, '--all'
-            args '--output', sourceSets.data.resources.srcDirs[0].toString()
-            args '--existing', sourceSets.main.resources.srcDirs[0].toString()
-
-            mods.named(modid as String) {
-                sources sourceSets.main as SourceSet, sourceSets.data as SourceSet
-            }
-        }
-    }
-}
-
 configurations {
     dataImplementation.extendsFrom implementation
+
+    library
+    implementation.extendsFrom library
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', logging_markers
+        systemProperty 'forge.logging.console.level', logging_console
+        systemProperty 'forge.enabledGameTestNamespaces', modid
+        
+        modSource project.sourceSets.main
+        
+        dependencies {
+            runtime project.configurations.library
+        }
+    }
+    
+    client {
+    }
+    
+    server {
+        programArgument '--nogui'
+    }
+    
+    gameTestServer {
+    }
+    
+    data {
+        programArguments.addAll '--mod', modid, '--all'
+        programArguments.addAll '--output', sourceSets.data.resources.srcDirs[0].toString()
+        programArguments.addAll '--existing', sourceSets.main.resources.srcDirs[0].toString()
+        
+        modSource project.sourceSets.data
+    }
 }
 
 repositories {
@@ -77,15 +71,15 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.neoforged:forge:${mc_version}-${forge_version}"
+    implementation "net.neoforged:neoforge:${neoforge_version}"
 
-    minecraftLibrary(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
+    library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
         exclude module: 'jsr305'
     }
-    minecraftLibrary(group: 'club.minnced', name: 'discord-webhooks', version: webhook_version)  {
+    library(group: 'club.minnced', name: 'discord-webhooks', version: webhook_version)  {
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
     }
@@ -129,9 +123,9 @@ tasks.withType(Jar).configureEach {
 }
 
 tasks.named('jar', Jar).configure {
-    finalizedBy 'reobfJar'
     archiveClassifier.set('lite')
 }
+
 @SuppressWarnings('GrMethodMayBeStatic')
 def relocate(origin) {
     shadowJar.relocate(origin, "tk.sciwhiz12.concord.shadow.$origin")
@@ -143,7 +137,7 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     reproducibleFileOrder = true
     archiveClassifier.set('')
 
-    configurations = [ project.configurations.minecraftLibrary ]
+    configurations = [ project.configurations.library ]
 
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
@@ -168,28 +162,10 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     exclude 'META-INF/LICENSE*'
     exclude 'META-INF/NOTICE*'
     exclude 'module-info.class'
-
-    finalizedBy 'reobfShadowJar'
 }
 
 tasks.named('assemble') {
     dependsOn shadowJar
-}
-
-reobf {
-    shadowJar {}
-}
-
-// Without these two, Gradle will issue warnings about task inputs from other tasks outputs without declaring dependencies
-tasks.named('reobfShadowJar') { dependsOn tasks.named('jar') }
-tasks.named('shadowJar') { dependsOn 'reobfJar' }
-
-// noinspection UnnecessaryQualifiedReference
-tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace).configureEach {
-    // Check if the tool is SpecialSource, just in case FG changes to using ForgeAutoRenamingTool in the future
-    if (it.tool.get().contains('SpecialSource')) {
-        args.add('--stable')
-    }
 }
 
 tasks.named('javadoc', Javadoc).configure {
@@ -213,29 +189,7 @@ publishing {
     publications.create('mavenJava', MavenPublication) {
         it.from components.java
 
-        it.artifactId = project.name
         it.version = "$mc_version-${versions.rawVersion}${versions.snapshot ? '-SNAPSHOT' : ''}"
-
-        // Modifies POM by removing the '_mapped_' part of dependency versions
-        it.pom { MavenPom pom ->
-            pom.withXml { xml ->
-                var xmlElement = xml.asElement()
-                try {
-                    // Selects the 'version' child element of any 'dependency' element
-                    var xPath = XPathFactory.newInstance().newXPath().compile("//*[local-name()=\"dependency\"]/*[local-name()=\"version\"]")
-                    NodeList versionNodes = (NodeList) xPath.evaluate(xmlElement, XPathConstants.NODESET)
-                    for (int i = 0; i < versionNodes.length; i++) {
-                        var node = versionNodes.item(i)
-                        var mappedIdx = node.textContent.lastIndexOf("_mapped_")
-                        if (mappedIdx != -1) {
-                            node.setTextContent(node.textContent.substring(0, mappedIdx))
-                        }
-                    }
-                } catch (Exception e) {
-                    project.logger.error("Error attempting to modify pom file", e)
-                }
-            }
-        }
     }
 
     repositories {

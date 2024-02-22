@@ -32,7 +32,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;

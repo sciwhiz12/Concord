@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord;
+package tk.sciwhiz12.concord.features;
 
-import net.minecraft.resources.ResourceLocation;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
@@ -46,12 +45,10 @@ public enum FeatureVersion {
     ICONS("icons", "1.0.0");
 
     private final String featureName;
-    private final ResourceLocation channelName;
     private final ArtifactVersion currentVersion;
 
     FeatureVersion(String featureName, String currentVersion) {
         this.featureName = featureName;
-        this.channelName = new ResourceLocation(Concord.MODID, featureName);
         this.currentVersion = new DefaultArtifactVersion(currentVersion);
     }
 
@@ -60,13 +57,6 @@ public enum FeatureVersion {
      */
     public String featureName() {
         return featureName;
-    }
-
-    /**
-     * {@return the name of the version carrier networking channel for this feature}
-     */
-    public ResourceLocation channelName() {
-        return channelName;
     }
 
     /**

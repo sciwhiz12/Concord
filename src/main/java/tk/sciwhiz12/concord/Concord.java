@@ -34,20 +34,21 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.NetworkConstants;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.command.ConcordCommand;
 import tk.sciwhiz12.concord.command.EmoteCommandHook;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
+import tk.sciwhiz12.concord.features.ConcordFeatures;
 import tk.sciwhiz12.concord.msg.Messaging;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.util.Messages;
 
 import javax.annotation.Nullable;
@@ -61,22 +62,23 @@ public class Concord {
     @Nullable
     public static ChatBot BOT;
 
-    public Concord() {
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
-        ConcordNetwork.register();
+    public Concord(ModContainer container, IEventBus modBus) {
+        // TODO: Figure out what this was replaced with.
+//        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
+//                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+        ConcordNetwork.register(modBus);
+        ConcordFeatures.register(modBus);
+        ConcordConfig.register(container);
 
-        ConcordConfig.register();
-
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
-        MinecraftForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
-        MinecraftForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
-        MinecraftForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
-        MinecraftForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
+        NeoForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
     }
 
-    
+
     public void onServerStarting(ServerStartingEvent event) {
         if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");

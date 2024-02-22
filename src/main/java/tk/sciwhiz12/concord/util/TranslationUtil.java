@@ -31,7 +31,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.ConcordNetwork;
+import tk.sciwhiz12.concord.features.ConcordFeatures;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public final class TranslationUtil {
     }
 
     public static MutableComponent createTranslation(@Nullable ServerPlayer entity, String translationKey, Object... args) {
-        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || ConcordNetwork.isModPresent(entity),
+        return createTranslation(!ConcordConfig.LAZY_TRANSLATIONS.get() || (entity != null && !entity.getData(ConcordFeatures.ATTACHMENT).isEmpty()),
                 translationKey, args);
     }
 

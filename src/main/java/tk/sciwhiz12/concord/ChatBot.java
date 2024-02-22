@@ -38,7 +38,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import tk.sciwhiz12.concord.msg.*;
@@ -141,9 +141,9 @@ public class ChatBot extends ListenerAdapter {
 
     void shutdown() {
         Concord.LOGGER.info(BOT, "Shutting down Discord bot...");
-        MinecraftForge.EVENT_BUS.unregister(msgListener);
-        MinecraftForge.EVENT_BUS.unregister(playerListener);
-        MinecraftForge.EVENT_BUS.unregister(statusListener);
+        NeoForge.EVENT_BUS.unregister(msgListener);
+        NeoForge.EVENT_BUS.unregister(playerListener);
+        NeoForge.EVENT_BUS.unregister(statusListener);
         discord.shutdown();
     }
 

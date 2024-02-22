@@ -27,12 +27,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.AdvancementEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.AdvancementEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.Messages;
@@ -43,7 +43,7 @@ public class PlayerListener {
 
     public PlayerListener(ChatBot bot) {
         this.bot = bot;
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -76,7 +76,6 @@ public class PlayerListener {
         }
     }
 
-    @SuppressWarnings("deprecation") // AdvancementEvent is deprecated but not for removal
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onAdvancementEarn(AdvancementEvent.AdvancementEarnEvent event) {
         Level world = event.getEntity().getCommandSenderWorld();
@@ -85,14 +84,14 @@ public class PlayerListener {
         if (ConcordConfig.PLAYER_ADV_GAMERULE.get() && !world.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS))
             return;
 
-        final DisplayInfo info = event.getAdvancement().getDisplay();
+        final DisplayInfo info = event.getAdvancement().value().display().orElse(null);
         if (info != null && info.shouldAnnounceChat()) {
-            boolean enabled = switch (info.getFrame()) {
+            boolean enabled = switch (info.getType()) {
                 case TASK -> ConcordConfig.PLAYER_ADV_TASK.get();
                 case CHALLENGE -> ConcordConfig.PLAYER_ADV_CHALLENGE.get();
                 case GOAL -> ConcordConfig.PLAYER_ADV_GOAL.get();
             };
-            Translation translation = switch (info.getFrame()) {
+            Translation translation = switch (info.getType()) {
                 case TASK -> Messages.ADVANCEMENT_TASK;
                 case CHALLENGE -> Messages.ADVANCEMENT_CHALLENGE;
                 case GOAL -> Messages.ADVANCEMENT_GOAL;

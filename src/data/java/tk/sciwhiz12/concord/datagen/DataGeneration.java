@@ -22,7 +22,6 @@
 
 package tk.sciwhiz12.concord.datagen;
 
-import com.google.common.collect.Maps;
 import net.minecraft.SharedConstants;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -30,14 +29,15 @@ import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraft.util.InclusiveRange;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 import tk.sciwhiz12.concord.Concord;
 
-import java.util.Set;
+import java.util.Optional;
 
-@EventBusSubscriber(modid = Concord.MODID, bus = EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = Concord.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DataGeneration {
     @SubscribeEvent
     static void onGatherData(GatherDataEvent event) {
@@ -45,11 +45,20 @@ public class DataGeneration {
         final PackOutput output = gen.getPackOutput();
 
         gen.addProvider(event.includeClient(), new EnglishLanguage(output));
+
+        final int clientVersion = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
+        final int serverVersion = SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA);
+        final InclusiveRange<Integer> range;
+        if (clientVersion <= serverVersion) {
+            range = new InclusiveRange<>(clientVersion, serverVersion);
+        } else {
+            range = new InclusiveRange<>(serverVersion, clientVersion);
+        }
         gen.addProvider(event.includeClient() || event.includeServer(), new PackMetadataGenerator(output)
                 .add(PackMetadataSection.TYPE, new PackMetadataSection(
                         Component.literal("concord resources"),
-                        SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES),
-                        Maps.asMap(Set.of(PackType.values()), SharedConstants.getCurrentVersion()::getPackVersion)
+                        Math.max(clientVersion, serverVersion),
+                        Optional.of(range)
                 )));
     }
 }

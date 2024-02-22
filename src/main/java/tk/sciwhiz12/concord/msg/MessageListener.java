@@ -28,11 +28,11 @@ import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.MiscUtil;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.ServerChatEvent;
+import net.neoforged.neoforge.event.TickEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 
@@ -48,7 +48,7 @@ public class MessageListener extends ListenerAdapter {
     public MessageListener(ChatBot bot) {
         this.bot = bot;
         bot.getDiscord().addEventListener(this);
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @Override

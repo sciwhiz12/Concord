@@ -22,11 +22,11 @@
 
 package tk.sciwhiz12.concord.msg;
 
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.util.Messages;
@@ -36,7 +36,7 @@ public class StatusListener {
 
     public StatusListener(ChatBot bot) {
         this.bot = bot;
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

@@ -20,27 +20,41 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord.datagen;
+package tk.sciwhiz12.concord.network;
 
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import tk.sciwhiz12.concord.Concord;
-import tk.sciwhiz12.concord.util.Messages;
-import tk.sciwhiz12.concord.util.Translations;
 
-public class EnglishLanguage extends LanguageProvider {
-    public EnglishLanguage(PackOutput output) {
-        super(output, Concord.MODID, "en_us");
+import java.util.Map;
+
+public record FeaturesPayload(Map<String, ArtifactVersion> features) implements CustomPacketPayload {
+    public static final ResourceLocation ID = new ResourceLocation(Concord.MODID, "features");
+
+    public FeaturesPayload {
+        features = Map.copyOf(features);
     }
 
     @Override
-    protected void addTranslations() {
-        for (Messages message : Messages.values()) {
-            add(message.key(), message.englishText());
-        }
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeMap(features,
+                FriendlyByteBuf::writeUtf,
+                (buf, ver) -> buf.writeUtf(ver.toString())
+        );
+    }
 
-        for (Translations translation : Translations.values()) {
-            add(translation.key(), translation.englishText());
-        }
+    public static FeaturesPayload read(FriendlyByteBuf buffer) {
+        return new FeaturesPayload(buffer.readMap(
+                FriendlyByteBuf::readUtf,
+                buf -> new DefaultArtifactVersion(buf.readUtf())
+        ));
+    }
+
+    @Override
+    public ResourceLocation id() {
+        return ID;
     }
 }

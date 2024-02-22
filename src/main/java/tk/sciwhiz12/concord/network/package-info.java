@@ -20,27 +20,12 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.concord.datagen;
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
+@FieldsAreNonnullByDefault
+package tk.sciwhiz12.concord.network;
 
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.LanguageProvider;
-import tk.sciwhiz12.concord.Concord;
-import tk.sciwhiz12.concord.util.Messages;
-import tk.sciwhiz12.concord.util.Translations;
+import net.minecraft.FieldsAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 
-public class EnglishLanguage extends LanguageProvider {
-    public EnglishLanguage(PackOutput output) {
-        super(output, Concord.MODID, "en_us");
-    }
-
-    @Override
-    protected void addTranslations() {
-        for (Messages message : Messages.values()) {
-            add(message.key(), message.englishText());
-        }
-
-        for (Translations translation : Translations.values()) {
-            add(translation.key(), translation.englishText());
-        }
-    }
-}
+import javax.annotation.ParametersAreNonnullByDefault;
