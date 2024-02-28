@@ -47,7 +47,6 @@ import tk.sciwhiz12.concord.command.EmoteCommandHook;
 import tk.sciwhiz12.concord.command.ReportCommand;
 import tk.sciwhiz12.concord.command.SayCommandHook;
 import tk.sciwhiz12.concord.features.ConcordFeatures;
-import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.util.Messages;
 

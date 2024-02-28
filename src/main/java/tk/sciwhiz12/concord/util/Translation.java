@@ -31,8 +31,8 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import tk.sciwhiz12.concord.ConcordConfig;
 import tk.sciwhiz12.concord.features.ConcordFeatures;
-import tk.sciwhiz12.concord.network.ConcordNetwork;
 import tk.sciwhiz12.concord.features.FeatureVersion;
+import tk.sciwhiz12.concord.network.ConcordNetwork;
 
 /**
  * A message with a translation key and its corresponding default text in English ({@code en_us}).

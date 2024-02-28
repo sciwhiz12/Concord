@@ -78,7 +78,7 @@ public class WebhookChatForwarder implements ChatForwarder {
                 mentions.add(Message.MentionType.USER);
             }
             if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
-                mentions.add(Message.MentionType.ROLE);   
+                mentions.add(Message.MentionType.ROLE);
             }
             return mentions;
         }

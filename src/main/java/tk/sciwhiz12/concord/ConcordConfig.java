@@ -23,7 +23,6 @@
 package tk.sciwhiz12.concord;
 
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import tk.sciwhiz12.concord.util.Messages;
@@ -149,8 +148,8 @@ public class ConcordConfig {
                     .define("use_custom_formatting", false);
 
             USE_LEGACY_FORMATTING = builder.comment("Allow Discord users to put legacy-style chat formatting (&5, etc) in a message.",
-                    "This will cause in-game messages to have color, bold, italic, strikethrough and \"obfuscated\" formatting.",
-                    "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.")
+                            "This will cause in-game messages to have color, bold, italic, strikethrough and \"obfuscated\" formatting.",
+                            "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.")
                     .define("use_legacy_formatting", false);
 
 
@@ -158,7 +157,7 @@ public class ConcordConfig {
                             "ALWAYS means the crown is always visible, NEVER means the crown is never visible.",
                             "WITHOUT_ADMINISTRATORS means it is only visible when there are no hoisted Administrator roles.")
                     .defineEnum("hide_crown", CrownVisibility.WITHOUT_ADMINISTRATORS);
-            
+
             WEBHOOK_AVATAR_URL = builder.comment("The URL used for the avatar when sending messages using the relay webhook.",
                             "The following placeholders can be used within the URL:",
                             " - '{uuid}' is replaced with the UUID of the player, without any dashes (e.g 00112233445566778899aabbccddeeff)",

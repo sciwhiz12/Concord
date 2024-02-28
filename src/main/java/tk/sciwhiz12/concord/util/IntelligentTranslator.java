@@ -23,7 +23,10 @@
 package tk.sciwhiz12.concord.util;
 
 import com.google.common.collect.Maps;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
 import javax.annotation.Nullable;

@@ -113,7 +113,7 @@ public class ChatBot extends ListenerAdapter {
                 avatarUrl = configuredAvatarUrl;
                 Concord.LOGGER.debug("Using configured webhook avatar URL: {}", avatarUrl);
             } else {
-                avatarUrl = null; 
+                avatarUrl = null;
             }
 
             final Matcher urlMatcher = Webhook.WEBHOOK_URL.matcher(webhookID);
@@ -123,7 +123,7 @@ public class ChatBot extends ListenerAdapter {
                 Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", urlMatcher.group("id"));
             } else {
                 discord.retrieveWebhookById(webhookID).queue(webhook -> {
-                    
+
                     chatForwarder = new WebhookChatForwarder(this, webhook, avatarUrl);
 
                     Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", webhookID);
