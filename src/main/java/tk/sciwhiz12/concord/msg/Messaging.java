@@ -92,7 +92,12 @@ public class Messaging {
     }
 
     public void processMessages() {
-        if (!processMessages) return;
+        this.processMessages(false);
+    }
+
+    @ApiStatus.Internal
+    public void processMessages(boolean bypass) {
+        if (!processMessages && !bypass) return;
 
         // TODO: rate-limiting
         MessageEntry entry;

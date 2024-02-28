@@ -147,7 +147,7 @@ public class ChatBot extends ListenerAdapter {
         Concord.LOGGER.info(BOT, "Shutting down Discord bot...");
         messaging.allowProcessingMessages(false);
         // Process all pending messages now
-        messaging.processMessages();
+        messaging.processMessages(true);
         NeoForge.EVENT_BUS.unregister(msgListener);
         NeoForge.EVENT_BUS.unregister(playerListener);
         NeoForge.EVENT_BUS.unregister(statusListener);
