@@ -25,7 +25,6 @@ package tk.sciwhiz12.concord.msg.chat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ChatBot;
-import tk.sciwhiz12.concord.msg.Messaging;
 
 public class DefaultChatForwarder implements ChatForwarder {
     private final ChatBot bot;
@@ -35,8 +34,8 @@ public class DefaultChatForwarder implements ChatForwarder {
     }
 
     public void forward(ServerPlayer player, Component message) {
-        Messaging.sendToChannel(bot.getDiscord(),
-                        Component.translatable("chat.type.text", player.getDisplayName(), message).getString())
+        bot.messaging().sendToDiscord(
+                        Component.translatable("chat.type.text", player.getDisplayName(), message))
                 .thenAccept(sentMessage -> bot.getSentMessageMemory().rememberMessage(sentMessage.getIdLong(), player.getGameProfile(), message));
     }
 }

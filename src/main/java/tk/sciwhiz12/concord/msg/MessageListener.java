@@ -37,12 +37,8 @@ import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 
 import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MessageListener extends ListenerAdapter {
-    // Using a concurrent queue because messages is received on a different thread from the main server thread.
-    private final Queue<MessageEntry> queuedMessages = new ConcurrentLinkedQueue<>();
     private final ChatBot bot;
 
     public MessageListener(ChatBot bot) {
@@ -61,34 +57,25 @@ public class MessageListener extends ListenerAdapter {
         if (event.getGuild().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.GUILD_ID.get()) &&
                 event.getChannel().getIdLong() == MiscUtil.parseSnowflake(ConcordConfig.CHAT_CHANNEL_ID.get())) {
 
-            final MessageEntry entry = new MessageEntry(event);
-            final MessageReference reference = entry.message.getMessageReference();
+            // Currently, only events with non-null members ever get here
+            final Member member = Objects.requireNonNull(event.getMember());
+            final Message message = event.getMessage();
+            final MessageReference reference = message.getMessageReference();
             if (reference != null) {
                 reference.resolve().queue();
             }
-            queuedMessages.add(entry);
+            bot.messaging().sendToMinecraft(member, message);
         }
     }
 
     @SubscribeEvent
     void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-
-        MessageEntry entry;
-        while ((entry = queuedMessages.poll()) != null) { // TODO: rate-limiting
-            bot.messaging().sendToAllPlayers(entry.member, entry.message);
-        }
+        bot.messaging().processMessages();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onSubmittedServerChat(ServerChatEvent event) {
         bot.getChatForwarder().forward(event.getPlayer(), event.getMessage());
-    }
-
-    static record MessageEntry(Member member, Message message) {
-        MessageEntry(MessageReceivedEvent event) {
-            // Currently, only events with non-null members ever get here
-            this(Objects.requireNonNull(event.getMember()), event.getMessage());
-        }
     }
 }

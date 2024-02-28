@@ -35,7 +35,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
-import tk.sciwhiz12.concord.msg.Messaging;
 import tk.sciwhiz12.concord.util.Messages;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
@@ -71,8 +70,8 @@ public class EmoteCommandHook {
     private static void sendMessage(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_EMOTE.get()) {
-                Messaging.sendToChannel(Concord.getBot().getDiscord(),
-                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()).getString());
+                Concord.getBot().messaging().sendToDiscord(
+                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
             }
         } catch (Exception e) {
             LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

@@ -22,24 +22,20 @@
 
 package tk.sciwhiz12.concord.msg;
 
-import com.mojang.authlib.GameProfile;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.sticker.StickerItem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.jetbrains.annotations.ApiStatus;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.Concord;
 import tk.sciwhiz12.concord.ConcordConfig;
@@ -48,18 +44,15 @@ import tk.sciwhiz12.concord.features.FeatureVersion;
 import tk.sciwhiz12.concord.util.IntelligentTranslator;
 import tk.sciwhiz12.concord.util.Translation;
 import tk.sciwhiz12.concord.util.TranslationUtil;
-import tk.sciwhiz12.concord.util.Translations;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import static net.minecraft.ChatFormatting.*;
 import static tk.sciwhiz12.concord.Concord.LOGGER;
 import static tk.sciwhiz12.concord.Concord.MODID;
 
@@ -68,189 +61,63 @@ public class Messaging {
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
     private final ChatBot bot;
+    // Using concurrent queues because messages may added by different threads
+    private final Queue<MessageEntry> messageQueue = new ConcurrentLinkedQueue<>();
+    private volatile boolean processMessages = false;
 
     public Messaging(ChatBot bot) {
         this.bot = bot;
     }
 
-    private MutableComponent createUserComponent(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                                 boolean showRoles, Member member, @Nullable MutableComponent replyMessage) {
-        final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
-
-        if (showRoles) {
-            final List<Role> roles = member.getRoles().stream()
-                    .filter(((Predicate<Role>) Role::isPublicRole).negate())
-                    .toList();
-            if (!roles.isEmpty()) {
-                hover.append("\n").append(Translations.HOVER_ROLES.component());
-                for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
-                    if (i != 0) hover.append(", "); // add joiner for more than one role
-                    Role role = roles.get(i);
-                    hover.append(Component.literal(role.getName())
-                            .withStyle(style -> style.withColor(TextColor.fromRgb(role.getColorRaw())))
-                    );
-                }
-            }
-        }
-
-        if (replyMessage != null) {
-            hover.append("\n")
-                    .append(Translations.HOVER_REPLY.component(
-                                    replyMessage.withStyle(WHITE))
-                            .withStyle(GRAY)
-                    );
-        }
-
-        return Component.literal(member.getEffectiveName())
-                .withStyle(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
-                        .withColor(TextColor.fromRgb(member.getColorRaw())));
+    public CompletableFuture<Message> sendToDiscord(String message) {
+        final DiscordBound entry = new DiscordBound(message);
+        messageQueue.add(entry);
+        return entry.future;
     }
 
-    private MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                           Member member, Message message) {
-        final MessageReference reference = message.getMessageReference();
-        final boolean showRoles = !ConcordConfig.HIDE_ROLES.get();
-        final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, showRoles, member, null);
-        MutableComponent text = createContentComponent(message);
+    public CompletableFuture<Message> sendToDiscord(Component message) {
+        return sendToDiscord(message.getString());
+    }
 
-        if (reference != null) {
-            final Message referencedMessage = reference.getMessage();
-            if (referencedMessage != null) {
-                MutableComponent referencedUserComponent = null;
+    @SuppressWarnings("UnusedReturnValue")
+    public CompletableFuture<Void> sendToMinecraft(Member sender, Message message) {
+        final MinecraftBound entry = new MinecraftBound(sender, message);
+        messageQueue.add(entry);
+        return entry.future;
+    }
 
-                final Member referencedMember = referencedMessage.getMember();
-                if (referencedMember != null) {
-                    referencedUserComponent = createUserComponent(useIcons, crownVisibility, showRoles, referencedMember,
-                            createContentComponent(referencedMessage));
-                }
+    @ApiStatus.Internal
+    public void allowProcessingMessages(boolean processMessages) {
+        this.processMessages = processMessages;
+    }
 
-                final SentMessageMemory.RememberedMessage memory = bot.getSentMessageMemory().findMessage(referencedMessage.getIdLong());
-                if (memory != null) {
-                    final GameProfile playerProfile = memory.player();
-                    final ServerPlayer player = bot.getServer().getPlayerList().getPlayer(playerProfile.getId());
-                    if (player != null) {
-                        referencedUserComponent = player.getDisplayName().copy();
+    public void processMessages() {
+        if (!processMessages) return;
+
+        // TODO: rate-limiting
+        MessageEntry entry;
+        while ((entry = messageQueue.poll()) != null) {
+            if (entry instanceof MinecraftBound d2m) {
+                this.sendToAllPlayers(d2m.member, d2m.message);
+                d2m.future.complete(null);
+            } else if (entry instanceof DiscordBound m2d) {
+                final CompletableFuture<Message> future = m2d.future;
+                this.sendToChannel(m2d.message).whenComplete((message, throwable) -> {
+                    if (message != null) {
+                        future.complete(message);
                     } else {
-                        referencedUserComponent = Component.literal(playerProfile.getName()).withStyle(ITALIC);
+                        future.completeExceptionally(throwable);
                     }
-                    referencedUserComponent = referencedUserComponent
-                            .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, memory.message())));
-                }
-
-                if (referencedUserComponent == null) {
-                    // Fallback to an unknown user
-                    referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
-                            .withStyle(style -> style.withHoverEvent(
-                                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
-                }
-
-                text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(text);
+                });
             }
         }
-
-        MutableComponent result = Translations.CHAT_HEADER.component(userComponent, text);
-        result.withStyle(DARK_GRAY);
-        return result;
     }
 
-    private MutableComponent createContentComponent(Message message) {
-        final String content = message.getContentDisplay();
-        final MutableComponent text = FormattingUtilities.processCustomFormatting(content);
-
-        boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
-        for (StickerItem sticker : message.getStickers()) {
-            // Ensures a space between stickers, and a space between message and first sticker (whether added by
-            // us or from the message)
-            if (!skipSpace) {
-                text.append(" ");
-            }
-            skipSpace = false;
-
-            MutableComponent stickerComponent = Translations.CHAT_STICKER.component(sticker.getName());
-            stickerComponent = ComponentUtils.wrapInSquareBrackets(stickerComponent);
-            stickerComponent.withStyle(ChatFormatting.LIGHT_PURPLE);
-
-            text.append(stickerComponent);
-        }
-
-        for (Message.Attachment attachment : message.getAttachments()) {
-            // Ensures a space between attachments, and a space between message and first attachment (whether added by
-            // us or from the message)
-            if (!skipSpace) {
-                text.append(" ");
-            }
-            skipSpace = false;
-
-            final String extension = attachment.getFileExtension();
-            MutableComponent attachmentComponent;
-            if (extension != null) {
-                attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component(extension);
-            } else {
-                attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component();
-            }
-            attachmentComponent = ComponentUtils.wrapInSquareBrackets(attachmentComponent);
-            attachmentComponent.withStyle(AQUA);
-
-            final MutableComponent attachmentHoverComponent = Component.literal("");
-            attachmentHoverComponent.append(
-                    Translations.HOVER_ATTACHMENT_FILENAME.component(
-                                    Component.literal(attachment.getFileName()).withStyle(WHITE))
-                            .withStyle(GRAY)
-            ).append("\n");
-            attachmentHoverComponent.append(Component.literal(attachment.getUrl()).withStyle(DARK_GRAY)).append("\n");
-            attachmentHoverComponent.append(Translations.HOVER_ATTACHMENT_CLICK.component());
-
-            attachmentComponent.withStyle(style ->
-                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl())));
-
-            text.append(attachmentComponent);
-        }
-
-        return text;
-    }
-
-    private MutableComponent createUserHover(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, Member member) {
-        final MemberStatus status = MemberStatus.from(member);
-
-        final boolean showCrown = switch (crownVisibility) {
-            case ALWAYS -> member.isOwner(); // Always show for the owner
-            case NEVER -> false; // Never show
-            case WITHOUT_ADMINISTRATORS -> member.isOwner() // Show if owner and there are no hoisted Admin roles
-                    && member.getGuild().getRoleCache().streamUnordered()
-                    .noneMatch(role -> role.isHoisted() && role.hasPermission(Permission.ADMINISTRATOR));
-            // TODO: cache the result of the above stream
-        };
-
-        final MutableComponent ownerIcon = Component.literal(String.valueOf(MemberStatus.CROWN_ICON))
-                .withStyle(style -> style.withColor(CROWN_COLOR));
-        final MutableComponent ownerText = showCrown ? Component.empty().append(ownerIcon).append(" ") : Component.empty();
-        final MutableComponent statusIcon = Component.literal(String.valueOf(status.getIcon()))
-                .withStyle(style -> style.withColor(status.getColor()));
-
-        // Use Concord icon font if configured and told to do so
-        if (ConcordConfig.USE_CUSTOM_FONT.get() && useIcons) {
-            ownerIcon.withStyle(style -> style.withFont(ICONS_FONT));
-            statusIcon.withStyle(style -> style.withFont(ICONS_FONT));
-        }
-
-        return Translations.HOVER_HEADER.component(
-                Component.literal(member.getUser().getName()).withStyle(WHITE),
-                ownerText,
-                statusIcon,
-                status.getTranslation().component()
-                        .withStyle(style -> style.withColor(status.getColor()))
-        ).withStyle(DARK_GRAY);
-    }
-
-    public void sendToAllPlayers(Member member, Message message) {
+    private void sendToAllPlayers(Member member, Message message) {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
         final IntelligentTranslator<MessageContext> translator = versionCheckingTranslator(
-                ctx -> createMessage(ctx.useIcons, crownVisibility, member, message));
+                ctx -> MessageFormatter.createMessage(ctx.useIcons, crownVisibility, member, bot.getSentMessageMemory(), bot.getServer().getPlayerList(), message));
 
         final boolean lazyTranslateAll = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIconsAll = ConcordConfig.USE_CUSTOM_FONT.get();
@@ -274,28 +141,48 @@ public class Messaging {
         }
     }
 
-    public static CompletableFuture<Message> sendToChannel(JDA discord, CharSequence text) {
-        final TextChannel channel = discord.getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
+    private CompletableFuture<Message> sendToChannel(CharSequence text) {
+        final TextChannel channel = bot.getDiscord().getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
         if (channel != null) {
-            Collection<Message.MentionType> allowedMentions = Collections.emptySet();
-            if (ConcordConfig.ALLOW_MENTIONS.get()) {
-                allowedMentions = EnumSet.noneOf(Message.MentionType.class);
-                if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.EVERYONE);
-                    allowedMentions.add(Message.MentionType.HERE);
-                }
-                if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.USER);
-                }
-                if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
-                    allowedMentions.add(Message.MentionType.ROLE);
-                }
-            }
-            return channel.sendMessage(text).setAllowedMentions(allowedMentions).submit();
+            return channel.sendMessage(text).setAllowedMentions(getAllowedMentions()).submit();
         } else {
             LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
             Concord.disable(true);
             return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
+        }
+    }
+
+    private Set<Message.MentionType> getAllowedMentions() {
+        if (ConcordConfig.ALLOW_MENTIONS.get()) {
+            final Set<Message.MentionType> allowedMentions = EnumSet.noneOf(Message.MentionType.class);
+            if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.EVERYONE);
+                allowedMentions.add(Message.MentionType.HERE);
+            }
+            if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.USER);
+            }
+            if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+                allowedMentions.add(Message.MentionType.ROLE);
+            }
+            return allowedMentions;
+        }
+        return Set.of();
+    }
+
+    sealed interface MessageEntry {
+    }
+
+    static record MinecraftBound(Member member, Message message,
+                                 CompletableFuture<Void> future) implements MessageEntry {
+        MinecraftBound(Member member, Message message) {
+            this(member, message, new CompletableFuture<>());
+        }
+    }
+
+    static record DiscordBound(String message, CompletableFuture<Message> future) implements MessageEntry {
+        DiscordBound(String message) {
+            this(message, new CompletableFuture<>());
         }
     }
 

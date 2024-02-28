@@ -136,14 +136,16 @@ public class ChatBot extends ListenerAdapter {
         }
 
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
+        messaging.allowProcessingMessages(true);
 
         if (ConcordConfig.BOT_START.get()) {
-            Messaging.sendToChannel(discord, Messages.BOT_START.component().getString());
+            messaging.sendToDiscord(Messages.BOT_START.component());
         }
     }
 
     void shutdown() {
         Concord.LOGGER.info(BOT, "Shutting down Discord bot...");
+        messaging.allowProcessingMessages(false);
         NeoForge.EVENT_BUS.unregister(msgListener);
         NeoForge.EVENT_BUS.unregister(playerListener);
         NeoForge.EVENT_BUS.unregister(statusListener);

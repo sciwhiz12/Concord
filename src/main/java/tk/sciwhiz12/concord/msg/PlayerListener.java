@@ -54,7 +54,7 @@ public class PlayerListener {
 
         Component text = Messages.PLAYER_JOIN.component(event.getEntity().getDisplayName());
 
-        Messaging.sendToChannel(bot.getDiscord(), text.getString());
+        bot.messaging().sendToDiscord(text.getString());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -65,7 +65,7 @@ public class PlayerListener {
 
         Component text = Messages.PLAYER_LEAVE.component(event.getEntity().getDisplayName());
 
-        Messaging.sendToChannel(bot.getDiscord(), text.getString());
+        bot.messaging().sendToDiscord(text.getString());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -74,7 +74,7 @@ public class PlayerListener {
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
         if (event.getEntity() instanceof ServerPlayer player) {
-            Messaging.sendToChannel(bot.getDiscord(), player.getCombatTracker().getDeathMessage().getString());
+            bot.messaging().sendToDiscord(player.getCombatTracker().getDeathMessage().getString());
         }
     }
 
@@ -104,7 +104,7 @@ public class PlayerListener {
                     info.getTitle(),
                     info.getDescription());
 
-            Messaging.sendToChannel(bot.getDiscord(), text.getString());
+            bot.messaging().sendToDiscord(text.getString());
         }
     }
 }
