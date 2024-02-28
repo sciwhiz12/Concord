@@ -26,7 +26,7 @@ license = "MIT License"
 [[dependencies.concord]]
     modId = "neoforge"
     type = "required"
-    versionRange = "[20.4.169,20.5.0)"
+    versionRange = "[20.4.182,20.5.0)"
     ordering = "NONE"
     side = "BOTH"
 
