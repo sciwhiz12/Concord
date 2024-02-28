@@ -22,37 +22,33 @@
 
 package tk.sciwhiz12.concord.msg.chat;
 
-import club.minnced.discord.webhook.WebhookClient;
-import club.minnced.discord.webhook.WebhookClientBuilder;
-import club.minnced.discord.webhook.send.AllowedMentions;
-import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.WebhookClient;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import tk.sciwhiz12.concord.ChatBot;
 import tk.sciwhiz12.concord.ConcordConfig;
 
 import javax.annotation.Nullable;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class WebhookChatForwarder implements ChatForwarder {
     private final ChatBot bot;
-    private final WebhookClient client;
+    private final WebhookClient<Message> client;
     @Nullable
     private final String avatarUrl;
 
-    public WebhookChatForwarder(ChatBot bot, WebhookClient client, @Nullable String avatarUrl) {
+    public WebhookChatForwarder(ChatBot bot, WebhookClient<Message> client, @Nullable String avatarUrl) {
         this.bot = bot;
         this.client = client;
         this.avatarUrl = avatarUrl;
     }
 
-    public WebhookChatForwarder(ChatBot bot, WebhookClientBuilder builder, @Nullable String avatarUrl) {
-        this(bot, builder.setDaemon(true).setWait(true).build(), avatarUrl);
-    }
-
     @Override
     public void forward(ServerPlayer player, Component message) {
-        final WebhookMessageBuilder builder = new WebhookMessageBuilder()
-                .append(message.getString())
+        WebhookMessageCreateAction<Message> action = client.sendMessage(message.getString())
                 .setTTS(false)
                 .setUsername(player.getDisplayName().getString())
                 .setAllowedMentions(getAllowedMentions());
@@ -64,20 +60,28 @@ public class WebhookChatForwarder implements ChatForwarder {
                     .replace("{uuid-dash}", playerUUID)
                     .replace("{username}", player.getGameProfile().getName());
 
-            builder.setAvatarUrl(playerAvatarUrl);
+            action = action.setAvatarUrl(playerAvatarUrl);
         }
 
-        client.send(builder.build()).thenAccept(sentMessage ->
-                bot.getSentMessageMemory().rememberMessage(sentMessage.getId(), player.getGameProfile(), message));
+        action.queue(sentMessage ->
+                bot.getSentMessageMemory().rememberMessage(sentMessage.getIdLong(), player.getGameProfile(), message));
     }
 
-    private AllowedMentions getAllowedMentions() {
+    private Set<Message.MentionType> getAllowedMentions() {
         if (ConcordConfig.ALLOW_MENTIONS.get()) {
-            return AllowedMentions.none()
-                    .withParseEveryone(ConcordConfig.ALLOW_PUBLIC_MENTIONS.get())
-                    .withParseUsers(ConcordConfig.ALLOW_USER_MENTIONS.get())
-                    .withParseRoles(ConcordConfig.ALLOW_ROLE_MENTIONS.get());
+            final Set<Message.MentionType> mentions = EnumSet.noneOf(Message.MentionType.class);
+            if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
+                mentions.add(Message.MentionType.EVERYONE);
+                mentions.add(Message.MentionType.HERE);
+            }
+            if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
+                mentions.add(Message.MentionType.USER);
+            }
+            if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
+                mentions.add(Message.MentionType.ROLE);   
+            }
+            return mentions;
         }
-        return AllowedMentions.none();
+        return Set.of();
     }
 }

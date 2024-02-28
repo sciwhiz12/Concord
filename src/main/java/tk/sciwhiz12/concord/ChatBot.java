@@ -22,7 +22,6 @@
 
 package tk.sciwhiz12.concord;
 
-import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.google.common.collect.Sets;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -30,6 +29,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Webhook;
+import net.dv8tion.jda.api.entities.WebhookClient;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -116,12 +116,13 @@ public class ChatBot extends ListenerAdapter {
 
             final Matcher urlMatcher = Webhook.WEBHOOK_URL.matcher(webhookID);
             if (urlMatcher.find()) {
-                chatForwarder = new WebhookChatForwarder(this, new WebhookClientBuilder(webhookID), avatarUrl);
+                chatForwarder = new WebhookChatForwarder(this, WebhookClient.createClient(discord, webhookID), avatarUrl);
 
                 Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", urlMatcher.group("id"));
             } else {
                 discord.retrieveWebhookById(webhookID).queue(webhook -> {
-                    chatForwarder = new WebhookChatForwarder(this, WebhookClientBuilder.fromJDA(webhook), avatarUrl);
+                    
+                    chatForwarder = new WebhookChatForwarder(this, webhook, avatarUrl);
 
                     Concord.LOGGER.info(BOT, "Enabled webhook chat forwarder, using webhook with ID {}", webhookID);
                 }, error -> new ErrorHandler(err -> Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder for an unknown reason!", err))
