@@ -124,7 +124,7 @@ tasks.named('jar', Jar).configure {
 
 @SuppressWarnings('GrMethodMayBeStatic')
 def relocate(origin) {
-    shadowJar.relocate(origin, "tk.sciwhiz12.concord.shadow.$origin")
+    shadowJar.relocate(origin, "dev.sciwhiz12.concord.shadow.$origin")
 }
 
 // noinspection UnnecessaryQualifiedReference
