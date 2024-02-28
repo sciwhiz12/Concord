@@ -27,6 +27,7 @@
   "command.concord.status.disabled": "DISABLED",
   "command.concord.status.enabled": "ENABLED",
   "message.concord.bot.start": "_Discord integration is now active!_",
+  "message.concord.bot.status.online": "Minecraft - %s online",
   "message.concord.bot.stop": "_Discord integration is being disabled!_",
   "message.concord.command.emote": "* _**%s** %s_",
   "message.concord.command.say": "[**%s**] %s",

@@ -37,7 +37,8 @@ public enum Messages implements Translation {
     PLAYER_LEAVE("player.leave", "1.0.0", "**%s** _left the game._"),
     ADVANCEMENT_TASK("player.advancement.task", "1.0.0", "**%s** has made the advancement **%s**\n_%s_"),
     ADVANCEMENT_CHALLENGE("player.advancement.challenge", "1.0.0", "**%s** has completed the challenge **%s**\n_%s_"),
-    ADVANCEMENT_GOAL("player.advancement.goal", "1.0.0", "**%s** has reached the goal **%s**\n_%s_");
+    ADVANCEMENT_GOAL("player.advancement.goal", "1.0.0", "**%s** has reached the goal **%s**\n_%s_"),
+    BOT_STATUS_ONLINE("bot.status.online", "1.3.0", "Minecraft - %s online");
 
     private final String key;
     private final ArtifactVersion lastModifiedVersion;

@@ -37,8 +37,10 @@ import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import tk.sciwhiz12.concord.msg.*;
@@ -91,7 +93,7 @@ public class ChatBot extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-        discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing("some Minecraft"));
+        this.updateActivity();
 
         Concord.LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
         // Required permissions are there. All checks satisfied.
@@ -185,6 +187,14 @@ public class ChatBot extends ListenerAdapter {
 
         // Required permissions are there. All checks satisfied.
         return true;
+    }
+
+    @ApiStatus.Internal
+    public void updateActivity() {
+        final int playerCount = server.getPlayerList().getPlayers().size();
+        final Component message = Messages.BOT_STATUS_ONLINE.eagerComponent(playerCount);
+        // TODO: make the activity type adjustable
+        discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing(message.getString()));
     }
 
     public Messaging messaging() {
