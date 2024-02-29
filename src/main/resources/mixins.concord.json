@@ -1,0 +1,8 @@
+{
+  "package": "dev.sciwhiz12.concord.mixin",
+  "mixins": [
+    "SayCommandMixin",
+    "EmoteCommandsMixin"
+  ],
+  "required": false
+}

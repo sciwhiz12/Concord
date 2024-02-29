@@ -25,9 +25,7 @@ package dev.sciwhiz12.concord;
 import com.google.common.base.Strings;
 import com.mojang.logging.LogUtils;
 import dev.sciwhiz12.concord.command.ConcordCommand;
-import dev.sciwhiz12.concord.command.EmoteCommandHook;
 import dev.sciwhiz12.concord.command.ReportCommand;
-import dev.sciwhiz12.concord.command.SayCommandHook;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.network.ConcordNetwork;
 import dev.sciwhiz12.concord.util.Messages;
@@ -73,8 +71,6 @@ public class Concord {
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
-        NeoForge.EVENT_BUS.addListener(SayCommandHook::onRegisterCommands);
-        NeoForge.EVENT_BUS.addListener(EmoteCommandHook::onRegisterCommands);
     }
 
 

@@ -23,6 +23,9 @@ license = "MIT License"
       - FindBugs JSR305, the JSR305 Annotations provided by Findbugs
     '''
 
+[[mixins]]
+    config = "mixins.concord.json" 
+
 [[dependencies.concord]]
     modId = "neoforge"
     type = "required"

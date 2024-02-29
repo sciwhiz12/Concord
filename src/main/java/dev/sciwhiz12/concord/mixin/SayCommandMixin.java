@@ -20,61 +20,40 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.command;
+package dev.sciwhiz12.concord.mixin;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.util.Messages;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.MessageArgument;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.server.players.PlayerList;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.minecraft.server.commands.SayCommand;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
+@Mixin(SayCommand.class)
+public abstract class SayCommandMixin {
+    @Unique
+    private static final Logger concord$LOGGER = LogUtils.getLogger();
 
-public class SayCommandHook {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    @Inject(method = "*(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/network/chat/PlayerChatMessage;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/network/chat/ChatType$Bound;)V"))
+    private static void concord$injectCommandHook(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message, CallbackInfo ci) {
+        if (!ConcordConfig.EMOTE_COMMAND_HOOK.get()) return;
 
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        if (!ConcordConfig.SAY_COMMAND_HOOK.get()) return;
-
-        LOGGER.debug("Hooking into /say command");
-        event.getDispatcher().register(literal("say")
-                .requires((ctx) -> ctx.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                .then(argument("message", MessageArgument.message())
-                        .executes(SayCommandHook::execute)
-                )
-        );
-    }
-
-    private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        final CommandSourceStack source = ctx.getSource();
-        final PlayerList playerList = source.getServer().getPlayerList();
-        MessageArgument.resolveChatMessage(ctx, "message", (message) -> {
-            playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.SAY_COMMAND, source));
-            sendMessage(ctx, message);
-        });
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static void sendMessage(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message) {
         try {
             if (Concord.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
                 Concord.getBot().messaging().sendToDiscord(
                         Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
             }
         } catch (Exception e) {
-            LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
+            concord$LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);
         }
     }
 }

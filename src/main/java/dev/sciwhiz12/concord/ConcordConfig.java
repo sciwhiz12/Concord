@@ -88,13 +88,13 @@ public class ConcordConfig {
             builder.comment("Hooks settings").push("hooks");
 
             SAY_COMMAND_HOOK = builder
-                    .comment("Hook into the /say command by overriding the command node, to intercept messages from this.",
-                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .comment("Enable the hook in the /say command to intercept and relay messages.",
+                            "Usually does not cause compatibility issues. Takes effect upon config reload.")
                     .define("say_command", true);
 
             EMOTE_COMMAND_HOOK = builder
-                    .comment("Hook into the /me command by overriding the command node, to intercept messages from this.",
-                            "Usually does not cause compatibility issues. Takes effect upon a reload (/reload command).")
+                    .comment("Enable the hook in the /me command to intercept and relay messages.",
+                            "Usually does not cause compatibility issues. Takes effect upon config reload.")
                     .define("emote_command", true);
 
             builder.pop();
