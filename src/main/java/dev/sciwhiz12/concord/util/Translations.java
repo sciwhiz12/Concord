@@ -44,6 +44,7 @@ public enum Translations implements Translation {
     CHAT_ATTACHMENT_WITH_EXTENSION("chat", "attachment", "1.1.0", "attachment:%s"),
     CHAT_ATTACHMENT_NO_EXTENSION("chat", "attachment.no_extension", "1.1.0", "attachment"),
     CHAT_STICKER("chat", "sticker", "1.1.0", "sticker:%s"),
+    CHAT_BARE_LINK("chat", "link.bare", "1.3.0", "link:%s"),
 
     // Hover text
 
@@ -53,6 +54,8 @@ public enum Translations implements Translation {
 
     HOVER_ATTACHMENT_FILENAME("chat", "attachment.hover.filename", "1.1.0", "File name: %s"),
     HOVER_ATTACHMENT_CLICK("chat", "attachment.hover.click", "1.1.0", "Click to open attachment in browser"),
+    
+    HOVER_LINK_CLICK("chat", "link.hover.click", "1.3.0", "Click to open URL in browser"),
 
     // Commands
 

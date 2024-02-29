@@ -22,18 +22,81 @@
 
 package dev.sciwhiz12.concord.msg;
 
+import com.google.common.base.CharMatcher;
 import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.*;
 
-import static net.minecraft.ChatFormatting.WHITE;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static net.minecraft.ChatFormatting.*;
 
 // Package-private class for formatting-related helper/utility methods
 final class FormattingUtilities {
     private FormattingUtilities() {
+    }
+
+    // Adapted from net.neoforged.neoforge.common.CommonHooks.URL_PATTERN
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "https?://(?<domain>(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6})\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)",
+            Pattern.CASE_INSENSITIVE);
+    private static final CharMatcher END_PUNCTUATION = CharMatcher.anyOf(".,;:)]\"'");
+
+    public static MutableComponent redactLinks(String input) {
+        final Matcher urlMatcher = URL_PATTERN.matcher(input);
+        if (!urlMatcher.find()) {
+            // No URLs found to redact -- return in full
+            return Component.literal(input).withStyle(WHITE);
+        }
+
+        MutableComponent base = Component.literal("").withStyle(WHITE);
+        int lastPosition = 0;
+        do {
+            final int urlStart = urlMatcher.start();
+            int urlEnd = urlMatcher.end();
+            final String urlDomain = urlMatcher.group("domain");
+
+            // Adjust to avoid including common punctuation at the end of the URL
+            final String url;
+            final String originalUrl = urlMatcher.group();
+            final String trimmedUrl = END_PUNCTUATION.trimTrailingFrom(originalUrl);
+            if (!trimmedUrl.equals(originalUrl)) {
+                // Move the URL end leftwards the amount of characters removed from the trimmed URL
+                urlEnd -= originalUrl.length() - trimmedUrl.length();
+                url = trimmedUrl;
+            } else {
+                url = originalUrl;
+            }
+
+            // Append everything from before the URL start since the last URL (or the string start, for the first URL)
+            base.append(input.substring(lastPosition, urlStart));
+
+            // Create the link component
+            MutableComponent linkComponent = Translations.CHAT_BARE_LINK.component(urlDomain);
+            linkComponent = ComponentUtils.wrapInSquareBrackets(linkComponent);
+            linkComponent.withStyle(BLUE);
+
+            final MutableComponent attachmentHoverComponent = Component.literal("");
+            attachmentHoverComponent.append(Component.literal(url).withStyle(DARK_GRAY)).append("\n");
+            attachmentHoverComponent.append(Translations.HOVER_LINK_CLICK.component());
+
+            linkComponent.withStyle(style ->
+                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+
+            base.append(linkComponent);
+
+            lastPosition = urlEnd;
+        } while (urlMatcher.find());
+
+        // Add everything up to the end of the string
+        if (lastPosition < input.length()) {
+            base.append(input.substring(lastPosition));
+        }
+
+        return base;
     }
 
     /**

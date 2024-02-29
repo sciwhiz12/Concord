@@ -7,6 +7,8 @@
   "chat.concord.hover.header": "%s %s- %s %s",
   "chat.concord.hover.reply": "Replied message: %s",
   "chat.concord.hover.roles": "Roles: ",
+  "chat.concord.link.bare": "link:%s",
+  "chat.concord.link.hover.click": "Click to open URL in browser",
   "chat.concord.reply": "in reply to %s: ",
   "chat.concord.reply.unknown": "an unknown user",
   "chat.concord.status.do_not_disturb": "Do Not Disturb",

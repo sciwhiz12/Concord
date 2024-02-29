@@ -50,6 +50,7 @@ public class ConcordConfig {
     public static final ModConfigSpec.EnumValue<CrownVisibility> HIDE_CROWN;
     public static final ModConfigSpec.ConfigValue<String> WEBHOOK_AVATAR_URL;
     public static final ModConfigSpec.BooleanValue HIDE_ROLES;
+    public static final ModConfigSpec.BooleanValue VEILED_LINKS;
 
     public static final ModConfigSpec.BooleanValue ALLOW_MENTIONS;
     public static final ModConfigSpec.BooleanValue ALLOW_PUBLIC_MENTIONS;
@@ -144,12 +145,13 @@ public class ConcordConfig {
                             "This will cause in-game messages to have color formatting.",
                             "To use it, send a message with a dollar sign ($) followed by either an English-language color (ie. $red), or a hex code (ie. $#FF0000).",
                             "Names are delimited by a space which will be consumed, so the string \"this is a $red colored text\" will be shown as \"this is a colored text\".",
-                            "Please note that Custom Formatting will override Legacy Formatting when enabled. This is intentional.")
+                            "Overrides legacy formatting when enabled. Is overridden by veiled links.")
                     .define("use_custom_formatting", false);
 
             USE_LEGACY_FORMATTING = builder.comment("Allow Discord users to put legacy-style chat formatting (&5, etc) in a message.",
                             "This will cause in-game messages to have color, bold, italic, strikethrough and \"obfuscated\" formatting.",
-                            "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.")
+                            "Note however, that this only works with vanilla formatting codes, and is likely to cause weirdness.",
+                            "Is overridden by custom formatting or veiled links.")
                     .define("use_legacy_formatting", false);
 
 
@@ -170,6 +172,13 @@ public class ConcordConfig {
                             "This is useful for servers which wish to keep the name and roles of the connected guild hidden,",
                             "such as for private servers whose players stream on public platforms.")
                     .define("hide_roles", false);
+
+            VEILED_LINKS = builder.comment("Obscures links by veiling the full URL through an on-hover component.",
+                            "(For now, this affects all links, while Markdown is not implemented yet.)",
+                            "This is useful to prevent public watchers of in-game chat (such as through players streaming on",
+                            "public platforms) from accessing links, and/or reducing the space links might occupy in in-game chat.",
+                            "Overrides legacy formatting and custom formatting when enabled.")
+                    .define("veiled_links", true);
 
             builder.pop();
         }

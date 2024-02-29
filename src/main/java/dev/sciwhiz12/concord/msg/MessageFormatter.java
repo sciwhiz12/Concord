@@ -112,7 +112,12 @@ class MessageFormatter {
 
     static MutableComponent createContentComponent(Message message) {
         final String content = message.getContentDisplay();
-        final MutableComponent text = FormattingUtilities.processCustomFormatting(content);
+        final MutableComponent text;
+        if (ConcordConfig.VEILED_LINKS.get()) {
+            text = FormattingUtilities.redactLinks(content);
+        } else {
+            text = FormattingUtilities.processCustomFormatting(content);
+        }
 
         boolean skipSpace = content.length() <= 0 || Character.isWhitespace(content.codePointAt(content.length() - 1));
         for (StickerItem sticker : message.getStickers()) {
@@ -143,6 +148,7 @@ class MessageFormatter {
             if (extension != null) {
                 attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component(extension);
             } else {
+                // TODO: fix bug!
                 attachmentComponent = Translations.CHAT_ATTACHMENT_WITH_EXTENSION.component();
             }
             attachmentComponent = ComponentUtils.wrapInSquareBrackets(attachmentComponent);
