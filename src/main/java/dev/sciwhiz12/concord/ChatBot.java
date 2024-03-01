@@ -93,7 +93,7 @@ public class ChatBot extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-        this.updateActivity();
+        this.updateActivity(0);
 
         Concord.LOGGER.debug(BOT, "Checking guild and channel existence, and satisfaction of required permissions...");
         // Required permissions are there. All checks satisfied.
@@ -194,8 +194,8 @@ public class ChatBot extends ListenerAdapter {
     }
 
     @ApiStatus.Internal
-    public void updateActivity() {
-        final int playerCount = server.getPlayerList().getPlayers().size();
+    public void updateActivity(int offset) {
+        final int playerCount = server.getPlayerList().getPlayers().size() + offset;
         final Component message = Messages.BOT_STATUS_ONLINE.eagerComponent(playerCount);
         // TODO: make the activity type adjustable
         discord.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing(message.getString()));

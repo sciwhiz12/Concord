@@ -49,7 +49,7 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        bot.updateActivity();
+        bot.updateActivity(0);
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
         Component text = Messages.PLAYER_JOIN.component(event.getEntity().getDisplayName());
@@ -60,7 +60,8 @@ public class PlayerListener {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
-        bot.updateActivity();
+        // The player is still on the player list during this event, so offset to account for it
+        bot.updateActivity(-1);
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
 
         Component text = Messages.PLAYER_LEAVE.component(event.getEntity().getDisplayName());
