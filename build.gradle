@@ -1,6 +1,6 @@
 plugins {
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.155'
+    id 'net.neoforged.moddev' version '1.0.15'
     id 'io.github.goooler.shadow' version '8.1.8'
     id 'org.cadixdev.licenser' version '0.6.1'
     id 'dev.sciwhiz12.gradle.simplversion' version '0.2.0'
@@ -35,37 +35,49 @@ configurations {
 
     library
     implementation.extendsFrom library
+    additionalRuntimeClasspath.extendsFrom library
 }
 
-runs {
-    configureEach {
-        systemProperty 'forge.logging.markers', logging_markers
-        systemProperty 'forge.logging.console.level', logging_console
-        systemProperty 'forge.enabledGameTestNamespaces', modid
-        
-        modSource project.sourceSets.main
-        
-        dependencies {
-            runtime project.configurations.library
+neoForge {
+    version = project.neoforge_version
+
+    parchment {
+        mappingsVersion = project.mappings_version
+        minecraftVersion = project.mc_version
+    }
+
+    addModdingDependenciesTo sourceSets.data
+
+    runs {
+        configureEach {
+            gameDirectory = project.file("runs/$name")
+        }
+
+        client {
+            client()
+        }
+
+        server {
+            server()
+
+            programArgument '--nogui'
+        }
+
+        data {
+            data()
+            sourceSet = sourceSets.data
+
+            programArguments.addAll '--mod', modid, '--all'
+            programArguments.addAll '--output', sourceSets.data.resources.srcDirs[0].toString()
+            programArguments.addAll '--existing', sourceSets.main.resources.srcDirs[0].toString()
         }
     }
-    
-    client {
-    }
-    
-    server {
-        programArgument '--nogui'
-    }
-    
-    gameTestServer {
-    }
-    
-    data {
-        programArguments.addAll '--mod', modid, '--all'
-        programArguments.addAll '--output', sourceSets.data.resources.srcDirs[0].toString()
-        programArguments.addAll '--existing', sourceSets.main.resources.srcDirs[0].toString()
-        
-        modSource project.sourceSets.data
+
+    mods {
+        "${modid}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.data
+        }
     }
 }
 
@@ -77,8 +89,6 @@ repositories {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neoforge_version}"
-
     library(group: 'net.dv8tion', name: 'JDA', version: jda_version) {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
@@ -133,7 +143,7 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     reproducibleFileOrder = true
     archiveClassifier.set('')
 
-    configurations = [ project.configurations.library ]
+    configurations = [project.configurations.library]
 
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'
