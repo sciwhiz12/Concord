@@ -1,7 +1,7 @@
 plugins {
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.77'
-    id 'io.github.goooler.shadow' version '8.1.8'
+    id 'com.gradleup.shadow' version '8.3.5'
     id 'net.neoforged.licenser' version '0.7.5'
     id 'dev.sciwhiz12.gradle.simplversion' version '0.2.0'
 }
