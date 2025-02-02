@@ -97,6 +97,7 @@ dependencies {
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
         exclude module: 'jsr305'
+        exclude module: 'gson'
     }
 
     dataImplementation sourceSets.main.output
