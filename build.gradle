@@ -20,8 +20,11 @@ sourceSets {
     }
 }
 
+base {
+    archivesName = "${project.name}-${mc_version}"
+}
+
 java {
-    archivesBaseName = "${project.name}-${mc_version}"
     toolchain.languageVersion = JavaLanguageVersion.of(java_version)
     withSourcesJar()
 }
@@ -83,8 +86,8 @@ configurations {
 
 repositories {
     maven {
-        name 'm2-dv8tion'
-        url 'https://m2.dv8tion.net/releases'
+        name = 'm2-dv8tion'
+        url = 'https://m2.dv8tion.net/releases'
     }
 }
 
@@ -116,7 +119,7 @@ var manifestAttributes = [
 
 tasks.withType(Jar).configureEach {
     manifest.attributes(manifestAttributes)
-    includeEmptyDirs false
+    includeEmptyDirs = false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 
@@ -200,8 +203,8 @@ publishing {
 
     repositories {
         maven {
-            name 'projectLocal'
-            url "file://${project.file('repo').absolutePath}"
+            name = 'projectLocal'
+            url = "file://${project.file('repo').absolutePath}"
         }
     }
 }
