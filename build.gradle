@@ -153,7 +153,10 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     relocate 'org.json'
     relocate 'net.sf.trove4j'
     relocate 'gnu.trove'
-    relocate 'com.google'
+    // Can't relocate 'com.google' because that would touch references to Guava classes
+    relocate 'com.google.crypto'
+    relocate 'com.google.errorprone'
+    relocate 'com.google.protobuf'
 
     relocate 'com.neovisionaries.ws.client'
     relocate 'okio'
