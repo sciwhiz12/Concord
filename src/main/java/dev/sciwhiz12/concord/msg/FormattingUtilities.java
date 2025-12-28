@@ -28,6 +28,7 @@ import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 
+import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,8 +84,8 @@ final class FormattingUtilities {
             attachmentHoverComponent.append(Translations.HOVER_LINK_CLICK.component());
 
             linkComponent.withStyle(style ->
-                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+                    style.withHoverEvent(new HoverEvent.ShowText(attachmentHoverComponent))
+                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))); // TODO: wrap URI.create in try-catch
 
             base.append(linkComponent);
 

@@ -24,21 +24,19 @@ package dev.sciwhiz12.concord.network;
 
 import com.google.common.collect.Maps;
 import dev.sciwhiz12.concord.Concord;
-import dev.sciwhiz12.concord.features.ConcordFeatures;
 import io.netty.buffer.ByteBuf;
-import io.netty.util.AttributeKey;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import java.util.Map;
 
 public record FeaturesPayload(Map<String, ArtifactVersion> features) implements CustomPacketPayload {
-    public static final Type<FeaturesPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Concord.MODID, "features"));
+    public static final Type<FeaturesPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Concord.MODID, "features"));
     private static final StreamCodec<ByteBuf, ArtifactVersion> ARTIFACT_VERSION_CODEC = ByteBufCodecs.STRING_UTF8.map(
             DefaultArtifactVersion::new,
             ArtifactVersion::toString

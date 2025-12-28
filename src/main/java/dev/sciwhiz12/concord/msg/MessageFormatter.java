@@ -37,6 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -106,7 +107,7 @@ class MessageFormatter {
 
         return Component.literal(member.getEffectiveName())
                 .withStyle(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                        .withHoverEvent(new HoverEvent.ShowText(hover))
                         .withColor(TextColor.fromRgb(member.getColorRaw())));
     }
 
@@ -164,8 +165,8 @@ class MessageFormatter {
             attachmentHoverComponent.append(Translations.HOVER_ATTACHMENT_CLICK.component());
 
             attachmentComponent.withStyle(style ->
-                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, attachmentHoverComponent))
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl())));
+                    style.withHoverEvent(new HoverEvent.ShowText(attachmentHoverComponent))
+                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(attachment.getUrl())))); // TOOD: wrap URI.create in try-catch
 
             text.append(attachmentComponent);
         }
@@ -194,21 +195,21 @@ class MessageFormatter {
                 final SentMessageMemory.RememberedMessage memory = messageMemory.findMessage(referencedMessage.getIdLong());
                 if (memory != null) {
                     final GameProfile playerProfile = memory.player();
-                    final ServerPlayer player = playerList.getPlayer(playerProfile.getId());
+                    final ServerPlayer player = playerList.getPlayer(playerProfile.id());
                     if (player != null) {
                         referencedUserComponent = player.getDisplayName().copy();
                     } else {
-                        referencedUserComponent = Component.literal(playerProfile.getName()).withStyle(ITALIC);
+                        referencedUserComponent = Component.literal(playerProfile.name()).withStyle(ITALIC);
                     }
                     referencedUserComponent = referencedUserComponent
-                            .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, memory.message())));
+                            .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(memory.message())));
                 }
 
                 if (referencedUserComponent == null) {
                     // Fallback to an unknown user
                     referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
                             .withStyle(style -> style.withHoverEvent(
-                                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, createContentComponent(referencedMessage))));
+                                    new HoverEvent.ShowText(createContentComponent(referencedMessage))));
                 }
 
                 text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)

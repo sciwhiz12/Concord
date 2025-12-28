@@ -26,7 +26,6 @@ import com.google.common.base.Strings;
 import com.mojang.logging.LogUtils;
 import dev.sciwhiz12.concord.command.ConcordCommand;
 import dev.sciwhiz12.concord.command.ReportCommand;
-import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.network.ConcordNetwork;
 import dev.sciwhiz12.concord.util.Messages;
 import net.dv8tion.jda.api.JDA;

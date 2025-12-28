@@ -35,9 +35,10 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -57,7 +58,7 @@ import static dev.sciwhiz12.concord.Concord.LOGGER;
 import static dev.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
-    public static final ResourceLocation ICONS_FONT = ResourceLocation.fromNamespaceAndPath(MODID, "icons");
+    public static final FontDescription.Resource ICONS_FONT = new FontDescription.Resource(Identifier.fromNamespaceAndPath(MODID, "icons"));
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
     private final ChatBot bot;

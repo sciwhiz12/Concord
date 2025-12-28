@@ -58,7 +58,7 @@ public class WebhookChatForwarder implements ChatForwarder {
             final String playerAvatarUrl = avatarUrl
                     .replace("{uuid}", playerUUID.replace("-", ""))
                     .replace("{uuid-dash}", playerUUID)
-                    .replace("{username}", player.getGameProfile().getName());
+                    .replace("{username}", player.getGameProfile().name());
 
             action = action.setAvatarUrl(playerAvatarUrl);
         }

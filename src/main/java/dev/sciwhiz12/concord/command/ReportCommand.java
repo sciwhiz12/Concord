@@ -101,13 +101,13 @@ public class ReportCommand {
                         .setColor(0xF5E65C)
                         .setDescription("**%s** has been reported by **%s**".formatted(reportedName, senderName))
                         .addField("Reported",
-                                "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().getId().toString()) + '\n' +
-                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level().dimension().location(), position(reportedPlayer)),
+                                "%s (`%s`)".formatted(escape(reportedName), reportedPlayer.getGameProfile().id().toString()) + '\n' +
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(reportedPlayer.level().dimension().identifier(), position(reportedPlayer)),
                                 false)
                         .addField("Reason", reason, false)
                         .addField("Reporter",
-                                "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().getId().toString()) + '\n' +
-                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level().dimension().location(), position(sender)),
+                                "%s (`%s`)".formatted(escape(senderName), sender.getGameProfile().id().toString()) + '\n' +
+                                        "- _Dimension_ `%s` @ _XYZ_ `%s`".formatted(sender.level().dimension().identifier(), position(sender)),
                                 false)
                         .setTimestamp(Instant.now())
                         .setFooter("Game time: " + sender.level().getGameTime())

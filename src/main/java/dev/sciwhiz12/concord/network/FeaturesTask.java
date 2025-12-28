@@ -24,12 +24,11 @@ package dev.sciwhiz12.concord.network;
 
 import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.features.FeatureVersion;
-import net.minecraft.Util;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.configuration.ServerConfigurationPacketListener;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.neoforged.neoforge.network.configuration.ICustomConfigurationTask;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 
 import java.util.Arrays;
@@ -37,7 +36,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public record FeaturesTask(ServerConfigurationPacketListener listener) implements ICustomConfigurationTask {
-    public static final Type TYPE = new Type(ResourceLocation.fromNamespaceAndPath(Concord.MODID, "features"));
+    public static final Type TYPE = new Type(Identifier.fromNamespaceAndPath(Concord.MODID, "features"));
 
     @Override
     public void run(Consumer<CustomPacketPayload> sender) {

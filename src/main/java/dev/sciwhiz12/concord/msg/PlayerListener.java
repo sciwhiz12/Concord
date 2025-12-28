@@ -28,9 +28,9 @@ import dev.sciwhiz12.concord.util.Messages;
 import dev.sciwhiz12.concord.util.Translation;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -48,7 +48,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
+        if (event.getEntity().level().isClientSide()) return;
         bot.updateActivity(0);
         if (!ConcordConfig.PLAYER_JOIN.get()) return;
 
@@ -59,7 +59,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
+        if (event.getEntity().level().isClientSide()) return;
         // The player is still on the player list during this event, so offset to account for it
         bot.updateActivity(-1);
         if (!ConcordConfig.PLAYER_LEAVE.get()) return;
@@ -71,7 +71,7 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onLivingDeath(LivingDeathEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide()) return;
+        if (event.getEntity().level().isClientSide()) return;
         if (!ConcordConfig.PLAYER_DEATH.get()) return;
 
         if (event.getEntity() instanceof ServerPlayer player) {
@@ -81,10 +81,9 @@ public class PlayerListener {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onAdvancementEarn(AdvancementEvent.AdvancementEarnEvent event) {
-        Level world = event.getEntity().getCommandSenderWorld();
-        if (world.isClientSide()) return;
+        if (!(event.getEntity().level() instanceof ServerLevel world)) return;
 
-        if (ConcordConfig.PLAYER_ADV_GAMERULE.get() && !world.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS))
+        if (ConcordConfig.PLAYER_ADV_GAMERULE.get() && !world.getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES))
             return;
 
         final DisplayInfo info = event.getAdvancement().value().display().orElse(null);

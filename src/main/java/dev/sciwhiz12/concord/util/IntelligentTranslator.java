@@ -110,12 +110,8 @@ public class IntelligentTranslator<C> {
     // Returns a new style
     private Style checkHover(Style style, UnaryOperator<String> resolver) {
         @Nullable HoverEvent hover = style.getHoverEvent();
-        if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
-            @Nullable Component hoverComponent = hover.getValue(HoverEvent.Action.SHOW_TEXT);
-            if (hoverComponent != null) {
-                return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        checkComponent(hoverComponent, resolver)));
-            }
+        if (hover instanceof HoverEvent.ShowText hoverText) {
+            return style.withHoverEvent(new HoverEvent.ShowText(checkComponent(hoverText.value(), resolver)));
         }
         return style;
     }
@@ -142,12 +138,9 @@ public class IntelligentTranslator<C> {
             components.addAll(current.getSiblings());
 
             @Nullable HoverEvent hover = current.getStyle().getHoverEvent();
-            if (hover != null) {
-                @Nullable Component hoverComponent = hover.getValue(HoverEvent.Action.SHOW_TEXT);
-                if (hoverComponent != null) {
-                    // Add component in hover for checking
-                    components.add(hoverComponent);
-                }
+            if (hover instanceof HoverEvent.ShowText hoverText) {
+                // Add component in hover for checking
+                components.add(hoverText.value());
             }
         }
 

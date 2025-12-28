@@ -137,11 +137,8 @@ public final class TranslationUtil {
 
     private static Style checkHover(Style style) {
         HoverEvent hover = style.getHoverEvent();
-        if (hover != null && hover.getAction() == HoverEvent.Action.SHOW_TEXT) {
-            Component hoverComponent = hover.getValue(HoverEvent.Action.SHOW_TEXT);
-            if (hoverComponent != null) {
-                return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, checkComponent(hoverComponent)));
-            }
+        if (hover instanceof HoverEvent.ShowText hoverText) {
+            return style.withHoverEvent(new HoverEvent.ShowText(checkComponent(hoverText.value())));
         }
         return style;
     }

@@ -25,8 +25,9 @@ package dev.sciwhiz12.concord.network;
 import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -40,6 +41,7 @@ public class ConcordNetwork {
     public static void register(IEventBus modBus) {
         modBus.addListener(ConcordNetwork::onRegisterPayloadHandlers);
         modBus.addListener(ConcordNetwork::onGatherPayloads);
+        modBus.addListener(ConcordNetwork::onRegisterClientPayloadHandlersEvent);
     }
 
     static void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
@@ -47,6 +49,10 @@ public class ConcordNetwork {
                 .optional();
 
         registrar.configurationBidirectional(FeaturesPayload.TYPE, FeaturesPayload.STREAM_CODEC, ConcordNetwork::handle);
+    }
+
+    static void onRegisterClientPayloadHandlersEvent(RegisterClientPayloadHandlersEvent event) {
+        event.register(FeaturesPayload.TYPE, ConcordNetwork::handle);
     }
 
     static void onGatherPayloads(RegisterConfigurationTasksEvent event) {

@@ -23,42 +23,19 @@
 package dev.sciwhiz12.concord.datagen;
 
 import dev.sciwhiz12.concord.Concord;
-import net.minecraft.SharedConstants;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.metadata.PackMetadataGenerator;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
-import net.minecraft.util.InclusiveRange;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.Optional;
-
-@EventBusSubscriber(modid = Concord.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Concord.MODID)
 public class DataGeneration {
     @SubscribeEvent
-    static void onGatherData(GatherDataEvent event) {
+    static void onGatherDataClient(GatherDataEvent.Client event) {
         final DataGenerator gen = event.getGenerator();
         final PackOutput output = gen.getPackOutput();
 
-        gen.addProvider(event.includeClient(), new EnglishLanguage(output));
-
-        final int clientVersion = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
-        final int serverVersion = SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA);
-        final InclusiveRange<Integer> range;
-        if (clientVersion <= serverVersion) {
-            range = new InclusiveRange<>(clientVersion, serverVersion);
-        } else {
-            range = new InclusiveRange<>(serverVersion, clientVersion);
-        }
-        gen.addProvider(event.includeClient() || event.includeServer(), new PackMetadataGenerator(output)
-                .add(PackMetadataSection.TYPE, new PackMetadataSection(
-                        Component.literal("concord resources"),
-                        Math.max(clientVersion, serverVersion),
-                        Optional.of(range)
-                )));
+        gen.addProvider(true, new EnglishLanguage(output));
     }
 }
