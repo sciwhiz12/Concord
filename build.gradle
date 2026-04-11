@@ -39,11 +39,6 @@ println ", Arch: ${System.getProperty('os.arch')}"
 neoForge {
     version = project.neoforge_version
 
-    parchment {
-        mappingsVersion = project.mappings_version
-        minecraftVersion = project.mappings_mc_version
-    }
-
     addModdingDependenciesTo sourceSets.data
 
     runs {
