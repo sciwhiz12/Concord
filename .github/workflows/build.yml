@@ -19,13 +19,13 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
         with:
           # Read-only cache if not on repo's default branch: https://stackoverflow.com/a/68414395
           cache-read-only: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
       - run: ./gradlew build
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: Build artifacts
           path: build/libs/*.jar
