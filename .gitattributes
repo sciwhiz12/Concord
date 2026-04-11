@@ -8,6 +8,7 @@ src/**/*.java               text eol=lf
 src/data/**/.cache/cache    text eol=lf
 src/data/**/*.json          text eol=lf
 
-# Pack metadata and JSON files should use LF
+# Pack metadata, JSON, and TOML files should use LF
 src/**/*.mcmeta             text eol=lf
+src/**/*.json               text eol=lf
 src/**/*.json               text eol=lf
