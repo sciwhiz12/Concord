@@ -50,6 +50,13 @@ neoForge {
             client()
         }
 
+        clientAuth {
+            client()
+            devLogin = true
+            ideName = "Client (with Auth)"
+            gameDirectory = project.file("runs/client")
+        }
+
         server {
             server()
 
