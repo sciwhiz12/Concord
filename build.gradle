@@ -138,13 +138,6 @@ tasks.withType(Jar).configureEach {
     includeEmptyDirs = false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-
-    // Normalize line endings from CRLF to LF
-    filesMatching('META-INF/neoforge.mods.toml') {
-        //noinspection UnnecessaryQualifiedReference
-        filter(org.apache.tools.ant.filters.FixCrLfFilter.class,
-                eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('lf'))
-    }
 }
 
 tasks.named('jar', Jar).configure {
