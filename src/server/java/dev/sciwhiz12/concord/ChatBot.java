@@ -99,7 +99,7 @@ public class ChatBot extends ListenerAdapter {
         // Required permissions are there. All checks satisfied.
         if (!checkSatisfaction()) {
             Concord.LOGGER.warn(BOT, "Some checks were not satisfied; disabling Discord integration.");
-            Concord.disable();
+            ConcordServer.disable();
             return;
         }
         Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");

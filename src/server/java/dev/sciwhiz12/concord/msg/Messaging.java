@@ -25,6 +25,7 @@ package dev.sciwhiz12.concord.msg;
 import dev.sciwhiz12.concord.ChatBot;
 import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
 import dev.sciwhiz12.concord.util.IntelligentTranslator;
@@ -153,7 +154,7 @@ public class Messaging {
             return channel.sendMessage(text).setAllowedMentions(getAllowedMentions()).submit();
         } else {
             LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
-            Concord.disable(true);
+            ConcordServer.disable(true);
             return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
         }
     }

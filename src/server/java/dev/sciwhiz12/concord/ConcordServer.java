@@ -23,7 +23,6 @@
 package dev.sciwhiz12.concord;
 
 import com.google.common.base.Strings;
-import com.mojang.logging.LogUtils;
 import dev.sciwhiz12.concord.command.ConcordCommand;
 import dev.sciwhiz12.concord.command.ReportCommand;
 import dev.sciwhiz12.concord.network.ConcordNetwork;
@@ -45,23 +44,17 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 
-@Mod(Concord.MODID)
-public class Concord {
-    public static final String MODID = "concord";
-    public static final Logger LOGGER = LogUtils.getLogger();
-
+@Mod(ConcordServer.MODID)
+public class ConcordServer extends Concord {
     @Nullable
     public static ChatBot BOT;
 
-    public Concord(ModContainer container, IEventBus modBus) {
-        // TODO: Figure out what this was replaced with.
-//        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
-//                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (ver, remote) -> true));
+    public ConcordServer(ModContainer container, IEventBus modBus) {
+        super();
         ConcordNetwork.register(modBus);
         ConcordConfig.register(container);
 

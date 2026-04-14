@@ -13,12 +13,19 @@ version = versions.version
 println "Mod version: $version"
 
 sourceSets {
+    shared
+    client.resources {
+        srcDirs += 'src/data/clientResources'
+        exclude '.cache/'
+    }
+    server.resources {
+        srcDirs += 'src/data/serverResources'
+        exclude '.cache/'
+    }
+
     data.resources {
         srcDirs += 'src/data/clientResources'
         srcDirs += 'src/data/serverResources'
-    }
-    main.resources {
-        srcDirs += data.resources.srcDirs
         exclude '.cache/'
     }
 }
@@ -39,6 +46,9 @@ println ", Arch: ${System.getProperty('os.arch')}"
 neoForge {
     version = project.neoforge_version
 
+    addModdingDependenciesTo sourceSets.shared
+    addModdingDependenciesTo sourceSets.client
+    addModdingDependenciesTo sourceSets.server
     addModdingDependenciesTo sourceSets.data
 
     runs {
@@ -48,6 +58,8 @@ neoForge {
 
         client {
             client()
+
+            sourceSet = sourceSets.main
         }
 
         clientAuth {
@@ -55,23 +67,24 @@ neoForge {
             devLogin = true
             ideName = "Client (with Auth)"
             gameDirectory = project.file("runs/client")
+
+            sourceSet = sourceSets.main
         }
 
         server {
             server()
 
             programArgument '--nogui'
+
+            sourceSet = sourceSets.server
         }
 
         clientData {
             clientData()
             programArguments.addAll '--mod', modid, '--all'
-            var srcDir = sourceSets.data.resources.srcDirs[1]
 
-            programArguments.addAll '--output', srcDir.toString()
-            for (var existingDir : (sourceSets.main.resources.srcDirs - srcDir)) {
-                programArguments.addAll '--existing', existingDir.toString()
-            }
+            programArguments.addAll '--output', sourceSets.client.resources.srcDirs[2].toString()
+            programArguments.addAll '--existing', sourceSets.shared.resources.srcDirs.toString()
 
             sourceSet = sourceSets.data
         }
@@ -79,12 +92,9 @@ neoForge {
         serverData {
             serverData()
             programArguments.addAll '--mod', modid, '--all'
-            var srcDir = sourceSets.data.resources.srcDirs[2]
 
-            programArguments.addAll '--output', srcDir.toString()
-            for (var existingDir : (sourceSets.main.resources.srcDirs - srcDir)) {
-                programArguments.addAll '--existing', existingDir.toString()
-            }
+            programArguments.addAll '--output', sourceSets.server.resources.srcDirs[2].toString()
+            programArguments.addAll '--existing', sourceSets.shared.resources.srcDirs.toString()
 
             sourceSet = sourceSets.data
         }
@@ -92,6 +102,9 @@ neoForge {
 
     mods {
         "${modid}" {
+            sourceSet sourceSets.shared
+            sourceSet sourceSets.client
+            sourceSet sourceSets.server
             sourceSet sourceSets.main
             sourceSet sourceSets.data
         }
@@ -99,11 +112,14 @@ neoForge {
 }
 
 configurations {
+    clientImplementation.extendsFrom sharedImplementation
+    serverImplementation.extendsFrom sharedImplementation
+    implementation.extendsFrom clientImplementation
+    implementation.extendsFrom serverImplementation
     dataImplementation.extendsFrom implementation
 
-    library
-    implementation.extendsFrom library
-    additionalRuntimeClasspath.extendsFrom library
+    serverLibrary
+    serverImplementation.extendsFrom serverLibrary
 }
 
 repositories {
@@ -111,7 +127,7 @@ repositories {
 }
 
 dependencies {
-    library("net.dv8tion:JDA:$jda_version") {
+    serverLibrary("net.dv8tion:JDA:$jda_version") {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
         exclude module: 'annotations'
@@ -119,6 +135,10 @@ dependencies {
         exclude module: 'gson'
     }
 
+    clientImplementation sourceSets.shared.output
+    serverImplementation sourceSets.shared.output
+    implementation sourceSets.client.output
+    implementation sourceSets.server.output
     dataImplementation sourceSets.main.output
 }
 
@@ -145,7 +165,16 @@ tasks.withType(Jar).configureEach {
 }
 
 tasks.named('jar', Jar).configure {
+    from sourceSets.shared.output
+    from sourceSets.client.output
+    from sourceSets.server.output
     archiveClassifier.set('lite')
+}
+
+tasks.named('sourcesJar', Jar).configure {
+    from sourceSets.shared.allSource
+    from sourceSets.client.allSource
+    from sourceSets.server.allSource
 }
 
 @SuppressWarnings('GrMethodMayBeStatic')
@@ -159,7 +188,10 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     reproducibleFileOrder = true
     archiveClassifier.set('')
 
-    configurations = [project.configurations.library]
+    from sourceSets.shared.output
+    from sourceSets.client.output
+    from sourceSets.server.output
+    configurations = [project.configurations.serverLibrary]
 
     relocate 'com.iwebpp.crypto'
     relocate 'org.json'

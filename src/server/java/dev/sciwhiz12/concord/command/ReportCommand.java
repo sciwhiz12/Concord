@@ -27,8 +27,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.sciwhiz12.concord.ChatBot;
-import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.util.Translations;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -69,7 +69,7 @@ public class ReportCommand {
 
     private static int report(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         // If Concord is disabled for whatever reason, tell the player.
-        if (!Concord.isEnabled()) {
+        if (!ConcordServer.isEnabled()) {
             ctx.getSource().sendFailure(
                     Translations.COMMAND_REPORT_STATUS.resolvedComponent(ctx.getSource(),
                             Translations.COMMAND_STATUS_DISABLED.resolvedComponent(ctx.getSource())
@@ -77,7 +77,7 @@ public class ReportCommand {
             return 0;
         }
 
-        final ChatBot bot = Concord.getBot();
+        final ChatBot bot = ConcordServer.getBot();
         final String channelID = ConcordConfig.REPORT_CHANNEL_ID.get();
         final TextChannel channel = channelID.isBlank() ? null : bot.getDiscord().getTextChannelById(channelID);
 

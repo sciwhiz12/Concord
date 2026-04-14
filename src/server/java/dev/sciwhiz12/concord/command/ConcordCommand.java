@@ -24,7 +24,7 @@ package dev.sciwhiz12.concord.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
-import dev.sciwhiz12.concord.Concord;
+import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -61,39 +61,39 @@ public class ConcordCommand {
     private static int reload(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         ctx.getSource().sendSuccess(() -> Translations.COMMAND_ENABLING.resolvedComponent(source), true);
-        if (Concord.isEnabled()) {
-            Concord.disable();
+        if (ConcordServer.isEnabled()) {
+            ConcordServer.disable();
         }
-        Concord.enable(source.getServer());
+        ConcordServer.enable(source.getServer());
         return Command.SINGLE_SUCCESS;
     }
 
     private static int enable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
-        if (Concord.isEnabled()) {
+        if (ConcordServer.isEnabled()) {
             ctx.getSource().sendFailure(Translations.COMMAND_ALREADY_ENABLED.resolvedComponent(source));
             return Command.SINGLE_SUCCESS;
         }
         ctx.getSource().sendSuccess(() -> Translations.COMMAND_ENABLING.resolvedComponent(source), true);
-        Concord.enable(source.getServer());
+        ConcordServer.enable(source.getServer());
         return Command.SINGLE_SUCCESS;
     }
 
     private static int disable(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
-        if (!Concord.isEnabled()) {
+        if (!ConcordServer.isEnabled()) {
             ctx.getSource().sendFailure(Translations.COMMAND_ALREADY_DISABLED.resolvedComponent(source));
             return Command.SINGLE_SUCCESS;
         }
         ctx.getSource().sendSuccess(() -> Translations.COMMAND_DISABLING.resolvedComponent(source), true);
-        Concord.disable();
+        ConcordServer.disable();
         return Command.SINGLE_SUCCESS;
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         Component result;
-        if (Concord.isEnabled()) {
+        if (ConcordServer.isEnabled()) {
             result = Translations.COMMAND_STATUS_ENABLED.resolvedComponent(source).withStyle(GREEN);
         } else {
             result = Translations.COMMAND_STATUS_DISABLED.resolvedComponent(source).withStyle(RED);
