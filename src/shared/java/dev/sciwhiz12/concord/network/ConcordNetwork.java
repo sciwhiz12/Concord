@@ -24,58 +24,27 @@ package dev.sciwhiz12.concord.network;
 
 import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
-import dev.sciwhiz12.concord.features.FeatureVersion;
-import net.minecraft.util.Util;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-
-import java.util.Arrays;
-import java.util.Map;
 
 public class ConcordNetwork {
     public static void register(IEventBus modBus) {
         modBus.addListener(ConcordNetwork::onRegisterPayloadHandlers);
         modBus.addListener(ConcordNetwork::onGatherPayloads);
-        modBus.addListener(ConcordNetwork::onRegisterClientPayloadHandlersEvent);
     }
 
     static void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar(Concord.MODID)
                 .optional();
 
-        registrar.configurationBidirectional(FeaturesPayload.TYPE, FeaturesPayload.STREAM_CODEC, ConcordNetwork::handle);
-    }
-
-    static void onRegisterClientPayloadHandlersEvent(RegisterClientPayloadHandlersEvent event) {
-        event.register(FeaturesPayload.TYPE, ConcordNetwork::handle);
+        registrar.configurationBidirectional(FeaturesPayload.TYPE, FeaturesPayload.STREAM_CODEC, ConcordNetwork::handleServer);
     }
 
     static void onGatherPayloads(RegisterConfigurationTasksEvent event) {
         event.register(new FeaturesTask(event.getListener()));
-    }
-
-    static void handle(FeaturesPayload payload, IPayloadContext context) {
-        switch (context.flow()) {
-            case CLIENTBOUND -> handleClient(payload, context);
-            case SERVERBOUND -> handleServer(payload, context);
-        }
-    }
-
-    static void handleClient(FeaturesPayload payload, IPayloadContext context) {
-        // Received the payload from the server, so we know the server has Concord enabled
-        // Send back our own payload, to inform the server that we, the client, have Concord enabled too
-        final Map<String, ArtifactVersion> features = Arrays.stream(FeatureVersion.values())
-                .map(f -> Map.entry(f.featureName(), f.currentVersion()))
-                .collect(Util.toMap());
-        context.reply(new FeaturesPayload(features));
-
-        // In the future, we can use the info from the payload to decide on what we are going to do
-        // For now, the features payload is a 'ping' for server->client
     }
 
     static void handleServer(FeaturesPayload payload, IPayloadContext context) {
