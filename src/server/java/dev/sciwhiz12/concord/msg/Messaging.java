@@ -23,7 +23,6 @@
 package dev.sciwhiz12.concord.msg;
 
 import dev.sciwhiz12.concord.ChatBot;
-import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
@@ -47,7 +46,6 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.jetbrains.annotations.ApiStatus;
 
-import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Queue;
 import java.util.Set;
@@ -196,7 +194,7 @@ public class Messaging {
     private static final DefaultArtifactVersion ZERO_VERSION = new DefaultArtifactVersion("0.0.0");
 
     static ArtifactVersion getFeatureVersionWithDefault(ServerPlayer player, FeatureVersion feature) {
-        final @Nullable ArtifactVersion version = ConcordFeatures.getOrEmpty(player).getFeature(feature);
+        final ArtifactVersion version = ConcordFeatures.getOrEmpty(player).getFeature(feature);
         if (version == null) return ZERO_VERSION;
         return version;
     }
@@ -209,7 +207,7 @@ public class Messaging {
     private IntelligentTranslator<MessageContext> versionCheckingTranslator(
             final Function<MessageContext, MutableComponent> componentCreator) {
         return new IntelligentTranslator<>(componentCreator, ((originalKey, remoteContext) -> {
-            @Nullable final Translation translation = TranslationUtil.findTranslation(originalKey);
+            final Translation translation = TranslationUtil.findTranslation(originalKey);
             if (translation == null) return originalKey; // Non-Concord translation, so skip
 
             final ArtifactVersion translationVersion = translation.lastModifiedVersion();

@@ -49,7 +49,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
@@ -107,7 +106,7 @@ public class ChatBot extends ListenerAdapter {
         final String webhookID = ConcordConfig.RELAY_WEBHOOK.get();
         if (webhookID != null && !webhookID.isEmpty()) {
 
-            @Nullable final String avatarUrl;
+            final String avatarUrl;
             final String configuredAvatarUrl = ConcordConfig.WEBHOOK_AVATAR_URL.get();
             if (configuredAvatarUrl != null && !configuredAvatarUrl.isEmpty()) {
                 avatarUrl = configuredAvatarUrl;

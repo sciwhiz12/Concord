@@ -27,7 +27,7 @@ import io.netty.util.AttributeKey;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -53,7 +53,7 @@ public class ConcordFeatures {
     }
 
     public ArtifactVersion getFeatureOrThrow(FeatureVersion feature) {
-        final @Nullable ArtifactVersion version = getFeature(feature);
+        final ArtifactVersion version = getFeature(feature);
         if (version == null) {
             throw new NoSuchElementException(feature.featureName());
         }
@@ -70,7 +70,7 @@ public class ConcordFeatures {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConcordFeatures that = (ConcordFeatures) o;
@@ -82,6 +82,7 @@ public class ConcordFeatures {
         return Objects.hash(features);
     }
     
+    @SuppressWarnings("DataFlowIssue") // This can return null
     @Nullable
     public static ConcordFeatures getOrNull(ServerPlayer player) {
         return player.connection.getConnection().channel().attr(CHANNEL_ATTRIBUTE_KEY).get();

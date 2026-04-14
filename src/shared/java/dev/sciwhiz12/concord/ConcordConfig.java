@@ -27,8 +27,6 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-import javax.annotation.Nullable;
-
 public class ConcordConfig {
     static final ModConfigSpec CONFIG_SPEC;
 
@@ -292,21 +290,21 @@ public class ConcordConfig {
      */
     private static class CommentFriendlyConfigSpecBuilder extends ModConfigSpec.Builder {
         @Override
-        public ModConfigSpec.Builder comment(@Nullable String comment) {
-            if (comment != null && !comment.isEmpty()) {
+        public ModConfigSpec.Builder comment(String comment) {
+            if (!comment.isEmpty()) {
                 comment = ' ' + comment;
             }
             return super.comment(comment);
         }
 
         @Override
-        public ModConfigSpec.Builder comment(@Nullable String... comment) {
-            if (comment != null && (comment.length > 1 || !comment[0].isEmpty())) {
+        public ModConfigSpec.Builder comment(String... comment) {
+            if (comment.length > 1 || !comment[0].isEmpty()) {
                 final String[] copy = new String[comment.length];
 
                 for (int i = 0; i < comment.length; i++) {
                     String text = comment[i];
-                    if (text != null && !text.isEmpty()) {
+                    if (!text.isEmpty()) {
                         text = ' ' + text;
                     }
                     copy[i] = text;

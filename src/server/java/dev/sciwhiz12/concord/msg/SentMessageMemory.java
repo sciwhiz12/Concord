@@ -28,7 +28,7 @@ import com.mojang.authlib.GameProfile;
 import dev.sciwhiz12.concord.ChatBot;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class SentMessageMemory {
