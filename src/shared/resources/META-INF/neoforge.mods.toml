@@ -24,7 +24,7 @@ license = "MIT License"
     '''
 
 [[mixins]]
-    config = "mixins.concord.json" 
+    config = "mixins.concord-server.json"
 
 [[dependencies.concord]]
     modId = "neoforge"
