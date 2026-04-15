@@ -25,21 +25,18 @@ package dev.sciwhiz12.concord.msg;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.authlib.GameProfile;
-import dev.sciwhiz12.concord.ChatBot;
 import net.minecraft.network.chat.Component;
-
 import org.jspecify.annotations.Nullable;
+
 import java.util.concurrent.TimeUnit;
 
 public class SentMessageMemory {
-    private final ChatBot bot;
     private final Cache<Long, RememberedMessageImpl> memory = CacheBuilder.newBuilder()
             .expireAfterAccess(6, TimeUnit.HOURS)
             .initialCapacity(1_000)
             .build();
 
-    public SentMessageMemory(ChatBot bot) {
-        this.bot = bot;
+    public SentMessageMemory() {
     }
 
     public void rememberMessage(long messageSnowflake, GameProfile player, Component message) {

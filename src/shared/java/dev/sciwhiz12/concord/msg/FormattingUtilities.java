@@ -27,6 +27,7 @@ import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.net.URI;
 import java.util.regex.Matcher;
@@ -35,7 +36,8 @@ import java.util.regex.Pattern;
 import static net.minecraft.ChatFormatting.*;
 
 // Package-private class for formatting-related helper/utility methods
-final class FormattingUtilities {
+@VisibleForTesting
+public final class FormattingUtilities {
     private FormattingUtilities() {
     }
 

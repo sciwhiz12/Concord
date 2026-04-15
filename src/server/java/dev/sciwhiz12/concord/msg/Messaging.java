@@ -25,6 +25,7 @@ package dev.sciwhiz12.concord.msg;
 import dev.sciwhiz12.concord.ChatBot;
 import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.ConcordServer;
+import dev.sciwhiz12.concord.JdaAdaptor;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
 import dev.sciwhiz12.concord.util.IntelligentTranslator;
@@ -32,6 +33,7 @@ import dev.sciwhiz12.concord.util.Translation;
 import dev.sciwhiz12.concord.util.TranslationUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -47,6 +49,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -122,7 +125,20 @@ public class Messaging {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
         final IntelligentTranslator<MessageContext> translator = versionCheckingTranslator(
-                ctx -> MessageFormatter.createMessage(ctx.useIcons, crownVisibility, member, bot.getSentMessageMemory(), bot.getServer().getPlayerList(), message));
+                ctx -> MessageFormatter.createMessage(
+                        ctx.useIcons,
+                        crownVisibility,
+                        bot.getSentMessageMemory(),
+                        uuid -> {
+                            ServerPlayer player = bot.getServer().getPlayerList().getPlayer(uuid);
+                            if (player != null) {
+                                return player.getDisplayName().copy();
+                            }
+                            return null;
+                        },
+                        JdaAdaptor.adapt(message),
+                        Optional.ofNullable(message.getMessageReference()).map(MessageReference::getMessage).map(JdaAdaptor::adapt).orElse(null)
+                ));
 
         final boolean lazyTranslateAll = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIconsAll = ConcordConfig.USE_CUSTOM_FONT.get();
@@ -223,4 +239,5 @@ public class Messaging {
 
     private record MessageContext(boolean useIcons, ArtifactVersion version) {
     }
+
 }

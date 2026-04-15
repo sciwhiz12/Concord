@@ -75,7 +75,7 @@ public class ChatBot extends ListenerAdapter {
         messaging = new Messaging(this);
         playerListener = new PlayerListener(this);
         statusListener = new StatusListener(this);
-        sentMessageMemory = new SentMessageMemory(this);
+        sentMessageMemory = new SentMessageMemory();
         chatForwarder = new DefaultChatForwarder(this);
 
         // Prevent any mentions not explicitly specified
