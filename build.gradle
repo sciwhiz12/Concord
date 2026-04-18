@@ -83,7 +83,7 @@ neoForge {
             clientData()
             programArguments.addAll '--mod', modid, '--all'
 
-            programArguments.addAll '--output', sourceSets.client.resources.srcDirs[2].toString()
+            programArguments.addAll '--output', sourceSets.client.resources.srcDirs[1].toString()
             programArguments.addAll '--existing', sourceSets.shared.resources.srcDirs.toString()
 
             sourceSet = sourceSets.data
@@ -93,7 +93,7 @@ neoForge {
             serverData()
             programArguments.addAll '--mod', modid, '--all'
 
-            programArguments.addAll '--output', sourceSets.server.resources.srcDirs[2].toString()
+            programArguments.addAll '--output', sourceSets.server.resources.srcDirs[1].toString()
             programArguments.addAll '--existing', sourceSets.shared.resources.srcDirs.toString()
 
             sourceSet = sourceSets.data
