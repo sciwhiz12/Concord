@@ -3,6 +3,7 @@
   "chat.concord.attachment.hover.click": "Click to open attachment in browser",
   "chat.concord.attachment.hover.filename": "File name: %s",
   "chat.concord.attachment.no_extension": "attachment",
+  "chat.concord.forwarded": "forwarded message",
   "chat.concord.header": "(%s) %s",
   "chat.concord.hover.header": "%s %s- %s %s",
   "chat.concord.hover.reply": "Replied message: %s",

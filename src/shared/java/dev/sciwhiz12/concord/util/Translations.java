@@ -45,6 +45,7 @@ public enum Translations implements Translation {
     CHAT_ATTACHMENT_NO_EXTENSION("chat", "attachment.no_extension", "1.1.0", "attachment"),
     CHAT_STICKER("chat", "sticker", "1.1.0", "sticker:%s"),
     CHAT_BARE_LINK("chat", "link.bare", "1.3.0", "link:%s"),
+    CHAT_FORWARDED_FROM("chat", "forwarded", "1.4.0", "forwarded message"),
 
     // Hover text
 

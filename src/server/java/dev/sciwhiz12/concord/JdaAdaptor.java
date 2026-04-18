@@ -22,9 +22,7 @@
 
 package dev.sciwhiz12.concord;
 
-import dev.sciwhiz12.concord.dto.DiscordMember;
-import dev.sciwhiz12.concord.dto.DiscordMessage;
-import dev.sciwhiz12.concord.dto.DiscordRole;
+import dev.sciwhiz12.concord.dto.*;
 import dev.sciwhiz12.concord.msg.MemberStatus;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
@@ -32,6 +30,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.messages.MessageSnapshot;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 
 import java.util.Objects;
@@ -41,19 +40,29 @@ public final class JdaAdaptor {
     private JdaAdaptor() {
     }
 
-    public static DiscordMessage adapt(Message message) {
-        return new DiscordMessage(
+    public static DiscordFullMessage adapt(Message message) {
+        return new DiscordFullMessage(
                 message.getIdLong(),
                 adapt(Objects.requireNonNull(message.getMember())),
                 message.getContentDisplay(),
                 message.getStickers().stream().map(JdaAdaptor::adapt).toList(),
-                message.getAttachments().stream().map(JdaAdaptor::adapt).toList()
+                message.getAttachments().stream().map(JdaAdaptor::adapt).toList(),
+                message.getMessageSnapshots().stream().map(JdaAdaptor::adapt).toList()
+        );
+    }
+
+    public static DiscordMessageSnapshot adapt(MessageSnapshot snapshot) {
+        return new DiscordMessageSnapshot(
+                snapshot.getContentRaw(),
+                snapshot.getStickers().stream().map(JdaAdaptor::adapt).toList(),
+                snapshot.getAttachments().stream().map(JdaAdaptor::adapt).toList()
         );
     }
 
     public static DiscordMessage.Sticker adapt(StickerItem sticker) {
         return new DiscordMessage.Sticker(
-                sticker.getName()
+                sticker.getName(),
+                sticker.getIconUrl()
         );
     }
 

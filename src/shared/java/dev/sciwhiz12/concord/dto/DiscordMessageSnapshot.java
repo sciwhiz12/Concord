@@ -22,25 +22,12 @@
 
 package dev.sciwhiz12.concord.dto;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.SequencedCollection;
 
-public interface DiscordMessage {
-    /// The content of the Discord message.
-    String content();
-
-    SequencedCollection<Sticker> stickers();
-
-    SequencedCollection<Attachment> attachments();
-
-    public record Sticker(String name, @Nullable String url) {
-    }
-
-    public record Attachment(String fileName, String url) {
-        public @Nullable String fileExtension() {
-            int index = fileName.lastIndexOf('.') + 1;
-            return index == 0 || index == fileName.length() ? null : fileName.substring(index);
-        }
-    }
+/// A snapshot of a Discord message. Primarily used for forwarded messages.
+public record DiscordMessageSnapshot(
+        String content,
+        SequencedCollection<DiscordMessage.Sticker> stickers,
+        SequencedCollection<DiscordMessage.Attachment> attachments
+) implements DiscordMessage {
 }

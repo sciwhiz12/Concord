@@ -24,9 +24,7 @@ package dev.sciwhiz12.concord.msg;
 
 import com.mojang.authlib.GameProfile;
 import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.dto.DiscordMember;
-import dev.sciwhiz12.concord.dto.DiscordMessage;
-import dev.sciwhiz12.concord.dto.DiscordRole;
+import dev.sciwhiz12.concord.dto.*;
 import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
@@ -109,6 +107,26 @@ public class MessageFormatter {
                         .withColor(TextColor.fromRgb(member.color())));
     }
 
+    static MutableComponent createFullContentComponent(DiscordFullMessage message) {
+        MutableComponent baseComponent = createContentComponent(message);
+
+        boolean addNewline = !baseComponent.getString(1).isEmpty();
+        for (DiscordMessageSnapshot snapshot : message.snapshots()) {
+            if (addNewline) {
+                baseComponent.append("\n");
+            }
+            MutableComponent snapshotComponent = Translations.CHAT_FORWARDED_FROM.component();
+            snapshotComponent = ComponentUtils.wrapInSquareBrackets(snapshotComponent);
+            snapshotComponent.withStyle(ChatFormatting.GREEN);
+            snapshotComponent.append(" ");
+
+            baseComponent.append(snapshotComponent);
+            baseComponent.append(createContentComponent(snapshot));
+        }
+
+        return baseComponent;
+    }
+
     static MutableComponent createContentComponent(DiscordMessage message) {
         final String content = message.content();
         final MutableComponent text;
@@ -175,17 +193,17 @@ public class MessageFormatter {
     @SuppressWarnings("SameParameterValue")
     static MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
                                           SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
-                                          DiscordMessage message, @Nullable DiscordMessage repliedMessage) {
+                                          DiscordFullMessage message, @Nullable DiscordFullMessage repliedMessage) {
         final boolean showRoles = !ConcordConfig.HIDE_ROLES.get();
         final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, showRoles, message.member(), null);
-        MutableComponent text = createContentComponent(message);
+        MutableComponent text = createFullContentComponent(message);
 
         if (repliedMessage != null) {
             MutableComponent referencedUserComponent = null;
 
             if (repliedMessage.member() != null) {
                 referencedUserComponent = createUserComponent(useIcons, crownVisibility, showRoles, repliedMessage.member(),
-                        createContentComponent(repliedMessage));
+                        createFullContentComponent(repliedMessage));
             }
 
             final SentMessageMemory.RememberedMessage memory = messageMemory.findMessage(repliedMessage.id());
@@ -200,7 +218,7 @@ public class MessageFormatter {
                 // Fallback to an unknown user
                 referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
                         .withStyle(style -> style.withHoverEvent(
-                                new HoverEvent.ShowText(createContentComponent(repliedMessage))));
+                                new HoverEvent.ShowText(createFullContentComponent(repliedMessage))));
             }
 
             text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
