@@ -22,11 +22,13 @@
 
 package dev.sciwhiz12.concord.dto;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.SequencedCollection;
 
 public record DiscordFullMessage(
         long id,
-        DiscordMember member,
+        @Nullable DiscordMember member, // sent by a webhook
         String content,
         SequencedCollection<DiscordMessage.Sticker> stickers,
         SequencedCollection<DiscordMessage.Attachment> attachments,

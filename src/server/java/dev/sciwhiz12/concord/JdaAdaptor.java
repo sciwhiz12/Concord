@@ -32,8 +32,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.messages.MessageSnapshot;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
-
-import java.util.Objects;
+import net.minecraft.Optionull;
 
 /// Utilities to adapt from JDA objects to Concord DTOs.
 public final class JdaAdaptor {
@@ -43,7 +42,7 @@ public final class JdaAdaptor {
     public static DiscordFullMessage adapt(Message message) {
         return new DiscordFullMessage(
                 message.getIdLong(),
-                adapt(Objects.requireNonNull(message.getMember())),
+                Optionull.map(message.getMember(), JdaAdaptor::adapt),
                 message.getContentDisplay(),
                 message.getStickers().stream().map(JdaAdaptor::adapt).toList(),
                 message.getAttachments().stream().map(JdaAdaptor::adapt).toList(),
