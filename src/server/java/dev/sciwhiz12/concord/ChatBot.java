@@ -132,7 +132,8 @@ public class ChatBot extends ListenerAdapter {
                         .handle(ErrorResponse.UNKNOWN_WEBHOOK, err ->
                                 Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder as webhook does not exist!", err))
                         .handle(ErrorResponse.MISSING_PERMISSIONS, err ->
-                                Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder as bot is missing permissions!", err)));
+                                Concord.LOGGER.error(BOT, "Failed to enable webhook chat forwarder as bot is missing permissions!", err))
+                        .accept(error));
             }
         }
 
