@@ -106,11 +106,11 @@ public class ChatBot extends ListenerAdapter {
         Concord.LOGGER.debug(BOT, "Guild and channel are correct, and permissions are satisfied.");
 
         final String webhookID = ConcordConfig.RELAY_WEBHOOK.get();
-        if (webhookID != null && !webhookID.isEmpty()) {
+        if (!webhookID.isEmpty()) {
 
             final String avatarUrl;
             final String configuredAvatarUrl = ConcordConfig.WEBHOOK_AVATAR_URL.get();
-            if (configuredAvatarUrl != null && !configuredAvatarUrl.isEmpty()) {
+            if (!configuredAvatarUrl.isEmpty()) {
                 avatarUrl = configuredAvatarUrl;
                 Concord.LOGGER.debug("Using configured webhook avatar URL: {}", avatarUrl);
             } else {
