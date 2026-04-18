@@ -60,6 +60,7 @@ public class ChatBot extends ListenerAdapter {
 
     private final JDA discord;
     private final MinecraftServer server;
+    private final boolean causedByServerStart;
     private final Messaging messaging;
     private final MessageListener msgListener;
     private final PlayerListener playerListener;
@@ -67,9 +68,10 @@ public class ChatBot extends ListenerAdapter {
     private final SentMessageMemory sentMessageMemory;
     private ChatForwarder chatForwarder;
 
-    ChatBot(JDA discord, MinecraftServer server) {
+    ChatBot(JDA discord, MinecraftServer server, boolean causedByServerStart) {
         this.discord = discord;
         this.server = server;
+        this.causedByServerStart = causedByServerStart;
         discord.addEventListener(this);
         msgListener = new MessageListener(this);
         messaging = new Messaging(this);
@@ -137,7 +139,7 @@ public class ChatBot extends ListenerAdapter {
         Concord.LOGGER.info(BOT, "Discord bot is ready!");
         messaging.allowProcessingMessages(true);
 
-        if (ConcordConfig.BOT_START.get()) {
+        if (ConcordConfig.BOT_START.get() && !(causedByServerStart && ConcordConfig.SERVER_START.get())) {
             messaging.sendSystemMessage(Messages.BOT_START.component());
         }
     }

@@ -45,6 +45,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -75,7 +76,7 @@ public class ConcordServer extends Concord {
             LOGGER.info("Discord integration for integrated servers is disabled in server config.");
             return;
         }
-        enable(event.getServer());
+        enable(true, event.getServer());
     }
 
     public void onServerStopping(ServerStoppingEvent event) {
@@ -115,6 +116,11 @@ public class ConcordServer extends Concord {
     }
 
     public static void enable(MinecraftServer server) {
+        enable(false, server);
+    }
+
+    @ApiStatus.Internal
+    public static void enable(boolean causedByServerStart, MinecraftServer server) {
         if (isEnabled()) return;
         final String token = ConcordConfig.TOKEN.get();
         if (Strings.isNullOrEmpty(token)) {
@@ -138,7 +144,7 @@ public class ConcordServer extends Concord {
                 .setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
             final JDA jda = jdaBuilder.build();
-            BOT = new ChatBot(jda, server);
+            BOT = new ChatBot(jda, server, causedByServerStart);
         } catch (InvalidTokenException e) {
             LOGGER.error("Error while trying to login to Discord; integration will not be enabled.", e);
         }
