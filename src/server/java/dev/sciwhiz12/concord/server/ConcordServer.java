@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord;
+package dev.sciwhiz12.concord.server;
 
 import com.google.common.base.Strings;
-import dev.sciwhiz12.concord.command.ConcordCommand;
-import dev.sciwhiz12.concord.command.ReportCommand;
+import dev.sciwhiz12.concord.Concord;
+import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.server.command.ConcordCommand;
+import dev.sciwhiz12.concord.server.command.ReportCommand;
 import dev.sciwhiz12.concord.network.ConcordNetwork;
 import dev.sciwhiz12.concord.util.Messages;
 import net.dv8tion.jda.api.JDA;

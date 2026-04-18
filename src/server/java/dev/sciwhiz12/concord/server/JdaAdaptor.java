@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord;
+package dev.sciwhiz12.concord.server;
 
 import dev.sciwhiz12.concord.dto.*;
 import dev.sciwhiz12.concord.msg.MemberStatus;

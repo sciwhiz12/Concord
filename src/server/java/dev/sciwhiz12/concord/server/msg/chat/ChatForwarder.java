@@ -20,7 +20,16 @@
  * SOFTWARE.
  */
 
-@NullMarked
-package dev.sciwhiz12.concord.command;
+package dev.sciwhiz12.concord.server.msg.chat;
 
-import org.jspecify.annotations.NullMarked;
+import net.dv8tion.jda.api.entities.Message;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+
+import java.util.concurrent.CompletableFuture;
+
+public interface ChatForwarder {
+    CompletableFuture<Message> forwardPlayerMessage(ServerPlayer player, Component message);
+
+    CompletableFuture<Message> forwardSystemMessage(String message);
+}

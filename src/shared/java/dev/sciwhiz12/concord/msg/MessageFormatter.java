@@ -190,7 +190,7 @@ public class MessageFormatter {
     }
 
     @SuppressWarnings("SameParameterValue")
-    static MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
+    public static MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
                                           SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
                                           DiscordFullMessage message, @Nullable DiscordFullMessage repliedMessage) {
         final boolean showRoles = !ConcordConfig.HIDE_ROLES.get();

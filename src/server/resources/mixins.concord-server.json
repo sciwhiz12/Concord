@@ -1,5 +1,5 @@
 {
-  "package": "dev.sciwhiz12.concord.mixin",
+  "package": "dev.sciwhiz12.concord.server.mixin",
   "mixins": [
     "SayCommandMixin",
     "EmoteCommandsMixin"

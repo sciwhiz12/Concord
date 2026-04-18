@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.mixin;
+package dev.sciwhiz12.concord.server.mixin;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.ConcordServer;
+import dev.sciwhiz12.concord.server.ConcordServer;
 import dev.sciwhiz12.concord.util.Messages;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.server.commands.SayCommand;
+import net.minecraft.server.commands.EmoteCommands;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -37,20 +37,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(SayCommand.class)
-public abstract class SayCommandMixin {
+@Mixin(EmoteCommands.class)
+public abstract class EmoteCommandsMixin {
     @Unique
     private static final Logger concord$LOGGER = LogUtils.getLogger();
 
     @Inject(method = "*(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/network/chat/PlayerChatMessage;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/network/chat/ChatType$Bound;)V"))
     private static void concord$injectCommandHook(CommandContext<CommandSourceStack> ctx, PlayerChatMessage message, CallbackInfo ci) {
-        if (!ConcordConfig.EMOTE_COMMAND_HOOK.get()) return;
+        if (!ConcordConfig.SAY_COMMAND_HOOK.get()) return;
 
         try {
-            if (ConcordServer.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
+            if (ConcordServer.isEnabled() && ConcordConfig.COMMAND_EMOTE.get()) {
                 ConcordServer.getBot().messaging().sendSystemMessage(
-                        Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
+                        Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
             }
         } catch (Exception e) {
             concord$LOGGER.warn("Exception from command hook; ignoring to continue command execution", e);

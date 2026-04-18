@@ -21,6 +21,6 @@
  */
 
 @NullMarked
-package dev.sciwhiz12.concord.msg;
+package dev.sciwhiz12.concord.server.msg;
 
 import org.jspecify.annotations.NullMarked;

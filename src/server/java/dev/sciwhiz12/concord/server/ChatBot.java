@@ -20,13 +20,19 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord;
+package dev.sciwhiz12.concord.server;
 
 import com.google.common.collect.Sets;
+import dev.sciwhiz12.concord.Concord;
+import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.msg.*;
-import dev.sciwhiz12.concord.msg.chat.ChatForwarder;
-import dev.sciwhiz12.concord.msg.chat.DefaultChatForwarder;
-import dev.sciwhiz12.concord.msg.chat.WebhookChatForwarder;
+import dev.sciwhiz12.concord.server.msg.MessageListener;
+import dev.sciwhiz12.concord.server.msg.Messaging;
+import dev.sciwhiz12.concord.server.msg.PlayerListener;
+import dev.sciwhiz12.concord.server.msg.StatusListener;
+import dev.sciwhiz12.concord.server.msg.chat.ChatForwarder;
+import dev.sciwhiz12.concord.server.msg.chat.DefaultChatForwarder;
+import dev.sciwhiz12.concord.server.msg.chat.WebhookChatForwarder;
 import dev.sciwhiz12.concord.util.Messages;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;

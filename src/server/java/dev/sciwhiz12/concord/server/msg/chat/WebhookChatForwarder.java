@@ -20,43 +20,55 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.msg.chat;
+package dev.sciwhiz12.concord.server.msg.chat;
 
-import dev.sciwhiz12.concord.ChatBot;
-import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.ConcordServer;
+import dev.sciwhiz12.concord.server.ChatBot;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.WebhookClient;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-import static dev.sciwhiz12.concord.Concord.LOGGER;
-
-public class DefaultChatForwarder implements ChatForwarder {
+public class WebhookChatForwarder implements ChatForwarder {
     private final ChatBot bot;
+    private final WebhookClient<Message> client;
+    @Nullable
+    private final String avatarUrl;
 
-    public DefaultChatForwarder(ChatBot bot) {
+    public WebhookChatForwarder(ChatBot bot, WebhookClient<Message> client, @Nullable String avatarUrl) {
         this.bot = bot;
+        this.client = client;
+        this.avatarUrl = avatarUrl;
     }
 
     @Override
     public CompletableFuture<Message> forwardPlayerMessage(ServerPlayer player, Component message) {
-        return forwardSystemMessage(Component.translatable("chat.type.text", player.getDisplayName(), message).getString());
+        WebhookMessageCreateAction<Message> action = client.sendMessage(message.getString())
+                .setTTS(false)
+                .setUsername(player.getDisplayName().getString())
+                .setAllowedMentions(bot.messaging().getAllowedMentions());
+
+        if (avatarUrl != null) {
+            final String playerUUID = player.getStringUUID();
+            final String playerAvatarUrl = avatarUrl
+                    .replace("{uuid}", playerUUID.replace("-", ""))
+                    .replace("{uuid-dash}", playerUUID)
+                    .replace("{username}", player.getGameProfile().name());
+
+            action = action.setAvatarUrl(playerAvatarUrl);
+        }
+
+        return action.submit();
     }
 
     @Override
     public CompletableFuture<Message> forwardSystemMessage(String message) {
-        final TextChannel channel = bot.getDiscord().getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
-        if (channel != null) {
-            return channel.sendMessage(message)
-                    .setAllowedMentions(bot.messaging().getAllowedMentions())
-                    .submit();
-        } else {
-            LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
-            ConcordServer.disable(true);
-            return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
-        }
+        return client.sendMessage(message)
+                .setTTS(false)
+                .setAllowedMentions(bot.messaging().getAllowedMentions())
+                .submit();
     }
 }

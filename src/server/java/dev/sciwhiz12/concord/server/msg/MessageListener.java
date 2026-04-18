@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.msg;
+package dev.sciwhiz12.concord.server.msg;
 
-import dev.sciwhiz12.concord.ChatBot;
+import dev.sciwhiz12.concord.server.ChatBot;
 import dev.sciwhiz12.concord.ConcordConfig;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;

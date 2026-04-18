@@ -20,14 +20,15 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.msg;
+package dev.sciwhiz12.concord.server.msg;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import dev.sciwhiz12.concord.ChatBot;
 import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.JdaAdaptor;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
+import dev.sciwhiz12.concord.msg.MessageFormatter;
+import dev.sciwhiz12.concord.server.ChatBot;
+import dev.sciwhiz12.concord.server.JdaAdaptor;
 import dev.sciwhiz12.concord.util.IntelligentTranslator;
 import dev.sciwhiz12.concord.util.Translation;
 import dev.sciwhiz12.concord.util.TranslationUtil;

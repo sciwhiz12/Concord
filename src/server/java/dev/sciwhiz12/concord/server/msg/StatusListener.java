@@ -20,7 +20,36 @@
  * SOFTWARE.
  */
 
-@NullMarked
-package dev.sciwhiz12.concord;
+package dev.sciwhiz12.concord.server.msg;
 
-import org.jspecify.annotations.NullMarked;
+import dev.sciwhiz12.concord.server.ChatBot;
+import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.util.Messages;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+
+public class StatusListener {
+    private final ChatBot bot;
+
+    public StatusListener(ChatBot bot) {
+        this.bot = bot;
+        NeoForge.EVENT_BUS.register(this);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    void onServerStarted(ServerStartedEvent event) {
+        if (!ConcordConfig.SERVER_START.get()) return;
+
+        bot.messaging().sendSystemMessage(Messages.SERVER_START.component());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    void onServerStopping(ServerStoppingEvent event) {
+        if (!ConcordConfig.SERVER_STOP.get()) return;
+
+        bot.messaging().sendSystemMessage(Messages.SERVER_STOP.component());
+    }
+}

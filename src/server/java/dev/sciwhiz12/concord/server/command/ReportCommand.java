@@ -20,15 +20,15 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.command;
+package dev.sciwhiz12.concord.server.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.sciwhiz12.concord.ChatBot;
+import dev.sciwhiz12.concord.server.ChatBot;
 import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.ConcordServer;
+import dev.sciwhiz12.concord.server.ConcordServer;
 import dev.sciwhiz12.concord.util.Translations;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;

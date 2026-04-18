@@ -27,6 +27,6 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.UUID;
 
 @FunctionalInterface
-interface DisplayNameResolver {
+public interface DisplayNameResolver {
     MutableComponent resolve(UUID uuid);
 }

@@ -20,11 +20,11 @@
  * SOFTWARE.
  */
 
-package dev.sciwhiz12.concord.command;
+package dev.sciwhiz12.concord.server.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
-import dev.sciwhiz12.concord.ConcordServer;
+import dev.sciwhiz12.concord.server.ConcordServer;
 import dev.sciwhiz12.concord.util.Translations;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
