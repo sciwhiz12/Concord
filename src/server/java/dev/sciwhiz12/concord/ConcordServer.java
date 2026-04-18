@@ -46,6 +46,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import org.jspecify.annotations.Nullable;
+
 import java.util.EnumSet;
 
 @Mod(ConcordServer.MODID)
@@ -62,8 +63,12 @@ public class ConcordServer extends Concord {
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ConcordCommand::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(ReportCommand::onRegisterCommands);
-    }
 
+        Runtime.getRuntime().addShutdownHook(Thread.ofPlatform()
+                .unstarted(() -> {
+                    if (BOT != null) BOT.messaging().allowProcessingMessages(false);
+                }));
+    }
 
     public void onServerStarting(ServerStartingEvent event) {
         if (!event.getServer().isDedicatedServer() && !ConcordConfig.ENABLE_INTEGRATED.get()) {
