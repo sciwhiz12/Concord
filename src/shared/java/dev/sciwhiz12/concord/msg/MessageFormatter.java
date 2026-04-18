@@ -209,7 +209,7 @@ public class MessageFormatter {
                 case SentMessageMemory.RememberedMessage.Player player -> {
                     final GameProfile playerProfile = player.player();
                     final MutableComponent resolvedName = displayNameResolver.resolve(playerProfile.id());
-                    referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC))
+                    referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC)).withStyle(WHITE)
                             .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(player.message())));
                 }
                 case SentMessageMemory.RememberedMessage.System system ->
