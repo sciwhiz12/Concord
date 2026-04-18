@@ -22,9 +22,14 @@
 
 package dev.sciwhiz12.concord.msg.chat;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface ChatForwarder {
-    void forward(ServerPlayer player, Component message);
+    CompletableFuture<Message> forwardPlayerMessage(ServerPlayer player, Component message);
+
+    CompletableFuture<Message> forwardSystemMessage(String message);
 }

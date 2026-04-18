@@ -11,6 +11,7 @@
   "chat.concord.link.bare": "link:%s",
   "chat.concord.link.hover.click": "Click to open URL in browser",
   "chat.concord.reply": "in reply to %s: ",
+  "chat.concord.reply.system": "a system message",
   "chat.concord.reply.unknown": "an unknown user",
   "chat.concord.status.do_not_disturb": "Do Not Disturb",
   "chat.concord.status.idle": "Idle",

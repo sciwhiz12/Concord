@@ -138,7 +138,7 @@ public class ChatBot extends ListenerAdapter {
         messaging.allowProcessingMessages(true);
 
         if (ConcordConfig.BOT_START.get()) {
-            messaging.sendToDiscord(Messages.BOT_START.component());
+            messaging.sendSystemMessage(Messages.BOT_START.component());
         }
     }
 

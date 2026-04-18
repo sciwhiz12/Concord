@@ -22,9 +22,9 @@
 
 package dev.sciwhiz12.concord.msg;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.sciwhiz12.concord.ChatBot;
 import dev.sciwhiz12.concord.ConcordConfig;
-import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.JdaAdaptor;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
@@ -34,7 +34,6 @@ import dev.sciwhiz12.concord.util.TranslationUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
@@ -47,6 +46,7 @@ import net.minecraft.world.entity.player.ChatVisiblity;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -56,7 +56,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
-import static dev.sciwhiz12.concord.Concord.LOGGER;
 import static dev.sciwhiz12.concord.Concord.MODID;
 
 public class Messaging {
@@ -72,18 +71,27 @@ public class Messaging {
         this.bot = bot;
     }
 
-    public CompletableFuture<Message> sendToDiscord(String message) {
-        final DiscordBound entry = new DiscordBound(message);
+    @CanIgnoreReturnValue
+    public CompletableFuture<Message> sendSystemMessage(String message) {
+        return sendSystemMessage(Component.literal(message));
+    }
+
+    @CanIgnoreReturnValue
+    public CompletableFuture<Message> sendSystemMessage(Component message) {
+        final DiscordBoundSystem entry = new DiscordBoundSystem(message);
         messageQueue.add(entry);
         return entry.future;
     }
 
-    public CompletableFuture<Message> sendToDiscord(Component message) {
-        return sendToDiscord(message.getString());
+    @CanIgnoreReturnValue
+    public CompletableFuture<Message> sendPlayerMessage(ServerPlayer player, Component message) {
+        final DiscordBoundPlayer entry = new DiscordBoundPlayer(player, message);
+        messageQueue.add(entry);
+        return entry.future;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    public CompletableFuture<Void> sendToMinecraft(Member sender, Message message) {
+    @CanIgnoreReturnValue
+    public CompletableFuture<@Nullable Void> sendDiscordMessage(Member sender, Message message) {
         final MinecraftBound entry = new MinecraftBound(sender, message);
         messageQueue.add(entry);
         return entry.future;
@@ -105,18 +113,35 @@ public class Messaging {
         // TODO: rate-limiting
         MessageEntry entry;
         while ((entry = messageQueue.poll()) != null) {
-            if (entry instanceof MinecraftBound d2m) {
-                this.sendToAllPlayers(d2m.member, d2m.message);
-                d2m.future.complete(null);
-            } else if (entry instanceof DiscordBound m2d) {
-                final CompletableFuture<Message> future = m2d.future;
-                this.sendToChannel(m2d.message).whenComplete((message, throwable) -> {
-                    if (message != null) {
-                        future.complete(message);
-                    } else {
-                        future.completeExceptionally(throwable);
-                    }
-                });
+            switch (entry) {
+                case MinecraftBound d2m -> {
+                    this.sendToAllPlayers(d2m.member, d2m.message);
+                    d2m.future.complete(null);
+                }
+                case DiscordBoundSystem m2dS -> {
+                    final CompletableFuture<Message> future = m2dS.future;
+                    this.bot.getChatForwarder().forwardSystemMessage(m2dS.message.getString())
+                            .whenComplete((message, throwable) -> {
+                                if (message != null) {
+                                    this.bot.getSentMessageMemory().rememberSystemMessage(message.getIdLong(), m2dS.message);
+                                    future.complete(message);
+                                } else {
+                                    future.completeExceptionally(throwable);
+                                }
+                            });
+                }
+                case DiscordBoundPlayer m2dP -> {
+                    final CompletableFuture<Message> future = m2dP.future;
+                    this.bot.getChatForwarder().forwardPlayerMessage(m2dP.player, m2dP.message)
+                            .whenComplete((message, throwable) -> {
+                                if (message != null) {
+                                    this.bot.getSentMessageMemory().rememberPlayerMessage(message.getIdLong(), m2dP.player.getGameProfile(), m2dP.message);
+                                    future.complete(message);
+                                } else {
+                                    future.completeExceptionally(throwable);
+                                }
+                            });
+                }
             }
         }
     }
@@ -162,18 +187,7 @@ public class Messaging {
         }
     }
 
-    private CompletableFuture<Message> sendToChannel(CharSequence text) {
-        final TextChannel channel = bot.getDiscord().getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
-        if (channel != null) {
-            return channel.sendMessage(text).setAllowedMentions(getAllowedMentions()).submit();
-        } else {
-            LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
-            ConcordServer.disable(true);
-            return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
-        }
-    }
-
-    private Set<Message.MentionType> getAllowedMentions() {
+    public Set<Message.MentionType> getAllowedMentions() {
         if (ConcordConfig.ALLOW_MENTIONS.get()) {
             final Set<Message.MentionType> allowedMentions = EnumSet.noneOf(Message.MentionType.class);
             if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
@@ -195,15 +209,22 @@ public class Messaging {
     }
 
     static record MinecraftBound(Member member, Message message,
-                                 CompletableFuture<Void> future) implements MessageEntry {
+                                 CompletableFuture<@Nullable Void> future) implements MessageEntry {
         MinecraftBound(Member member, Message message) {
             this(member, message, new CompletableFuture<>());
         }
     }
 
-    static record DiscordBound(String message, CompletableFuture<Message> future) implements MessageEntry {
-        DiscordBound(String message) {
+    static record DiscordBoundSystem(Component message, CompletableFuture<Message> future) implements MessageEntry {
+        DiscordBoundSystem(Component message) {
             this(message, new CompletableFuture<>());
+        }
+    }
+
+    static record DiscordBoundPlayer(ServerPlayer player, Component message,
+                                     CompletableFuture<Message> future) implements MessageEntry {
+        DiscordBoundPlayer(ServerPlayer player, Component message) {
+            this(player, message, new CompletableFuture<>());
         }
     }
 

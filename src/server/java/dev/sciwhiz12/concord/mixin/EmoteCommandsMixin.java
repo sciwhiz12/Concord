@@ -49,7 +49,7 @@ public abstract class EmoteCommandsMixin {
 
         try {
             if (ConcordServer.isEnabled() && ConcordConfig.COMMAND_EMOTE.get()) {
-                ConcordServer.getBot().messaging().sendToDiscord(
+                ConcordServer.getBot().messaging().sendSystemMessage(
                         Messages.EMOTE_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
             }
         } catch (Exception e) {

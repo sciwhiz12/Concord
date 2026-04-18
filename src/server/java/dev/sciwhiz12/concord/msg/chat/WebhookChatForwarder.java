@@ -23,16 +23,14 @@
 package dev.sciwhiz12.concord.msg.chat;
 
 import dev.sciwhiz12.concord.ChatBot;
-import dev.sciwhiz12.concord.ConcordConfig;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.WebhookClient;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-
 import org.jspecify.annotations.Nullable;
-import java.util.EnumSet;
-import java.util.Set;
+
+import java.util.concurrent.CompletableFuture;
 
 public class WebhookChatForwarder implements ChatForwarder {
     private final ChatBot bot;
@@ -47,11 +45,11 @@ public class WebhookChatForwarder implements ChatForwarder {
     }
 
     @Override
-    public void forward(ServerPlayer player, Component message) {
+    public CompletableFuture<Message> forwardPlayerMessage(ServerPlayer player, Component message) {
         WebhookMessageCreateAction<Message> action = client.sendMessage(message.getString())
                 .setTTS(false)
                 .setUsername(player.getDisplayName().getString())
-                .setAllowedMentions(getAllowedMentions());
+                .setAllowedMentions(bot.messaging().getAllowedMentions());
 
         if (avatarUrl != null) {
             final String playerUUID = player.getStringUUID();
@@ -63,25 +61,14 @@ public class WebhookChatForwarder implements ChatForwarder {
             action = action.setAvatarUrl(playerAvatarUrl);
         }
 
-        action.queue(sentMessage ->
-                bot.getSentMessageMemory().rememberMessage(sentMessage.getIdLong(), player.getGameProfile(), message));
+        return action.submit();
     }
 
-    private Set<Message.MentionType> getAllowedMentions() {
-        if (ConcordConfig.ALLOW_MENTIONS.get()) {
-            final Set<Message.MentionType> mentions = EnumSet.noneOf(Message.MentionType.class);
-            if (ConcordConfig.ALLOW_PUBLIC_MENTIONS.get()) {
-                mentions.add(Message.MentionType.EVERYONE);
-                mentions.add(Message.MentionType.HERE);
-            }
-            if (ConcordConfig.ALLOW_USER_MENTIONS.get()) {
-                mentions.add(Message.MentionType.USER);
-            }
-            if (ConcordConfig.ALLOW_ROLE_MENTIONS.get()) {
-                mentions.add(Message.MentionType.ROLE);
-            }
-            return mentions;
-        }
-        return Set.of();
+    @Override
+    public CompletableFuture<Message> forwardSystemMessage(String message) {
+        return client.sendMessage(message)
+                .setTTS(false)
+                .setAllowedMentions(bot.messaging().getAllowedMentions())
+                .submit();
     }
 }

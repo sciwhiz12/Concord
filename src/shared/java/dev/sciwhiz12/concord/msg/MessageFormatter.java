@@ -26,7 +26,6 @@ import com.mojang.authlib.GameProfile;
 import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.dto.*;
 import dev.sciwhiz12.concord.util.Translations;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -117,7 +116,7 @@ public class MessageFormatter {
             }
             MutableComponent snapshotComponent = Translations.CHAT_FORWARDED_FROM.component();
             snapshotComponent = ComponentUtils.wrapInSquareBrackets(snapshotComponent);
-            snapshotComponent.withStyle(ChatFormatting.GREEN);
+            snapshotComponent.withStyle(GREEN);
             snapshotComponent.append(" ");
 
             baseComponent.append(snapshotComponent);
@@ -147,7 +146,7 @@ public class MessageFormatter {
 
             MutableComponent stickerComponent = Translations.CHAT_STICKER.component(sticker.name());
             stickerComponent = ComponentUtils.wrapInSquareBrackets(stickerComponent);
-            stickerComponent.withStyle(ChatFormatting.LIGHT_PURPLE);
+            stickerComponent.withStyle(LIGHT_PURPLE);
 
             text.append(stickerComponent);
         }
@@ -206,12 +205,18 @@ public class MessageFormatter {
                         createFullContentComponent(repliedMessage));
             }
 
-            final SentMessageMemory.RememberedMessage memory = messageMemory.findMessage(repliedMessage.id());
-            if (memory != null) {
-                final GameProfile playerProfile = memory.player();
-                final MutableComponent resolvedName = displayNameResolver.resolve(playerProfile.id());
-                referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC))
-                        .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(memory.message())));
+            switch (messageMemory.findMessage(repliedMessage.id())) {
+                case SentMessageMemory.RememberedMessage.Player player -> {
+                    final GameProfile playerProfile = player.player();
+                    final MutableComponent resolvedName = displayNameResolver.resolve(playerProfile.id());
+                    referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC))
+                            .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(player.message())));
+                }
+                case SentMessageMemory.RememberedMessage.System system ->
+                        referencedUserComponent = Translations.CHAT_REPLY_SYSTEM.component().withStyle(ITALIC)
+                                .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(system.message())));
+                case null -> { // no-op
+                }
             }
 
             if (referencedUserComponent == null) {
@@ -222,7 +227,7 @@ public class MessageFormatter {
             }
 
             text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
-                    .withStyle(ChatFormatting.GRAY)
+                    .withStyle(GRAY)
                     .append(text);
         }
 

@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class SentMessageMemory {
-    private final Cache<Long, RememberedMessageImpl> memory = CacheBuilder.newBuilder()
+    private final Cache<Long, RememberedMessage> memory = CacheBuilder.newBuilder()
             .expireAfterAccess(6, TimeUnit.HOURS)
             .initialCapacity(1_000)
             .build();
@@ -39,20 +39,32 @@ public class SentMessageMemory {
     public SentMessageMemory() {
     }
 
-    public void rememberMessage(long messageSnowflake, GameProfile player, Component message) {
-        memory.put(messageSnowflake, new RememberedMessageImpl(player, message));
+    public void rememberPlayerMessage(long messageSnowflake, GameProfile player, Component message) {
+        memory.put(messageSnowflake, new RememberedMessagePlayerImpl(player, message));
+    }
+
+    public void rememberSystemMessage(long messageSnowflake, Component message) {
+        memory.put(messageSnowflake, new RememberedMessageSystemImpl(message));
     }
 
     public @Nullable RememberedMessage findMessage(long messageSnowflake) {
         return memory.getIfPresent(messageSnowflake);
     }
 
-    public interface RememberedMessage {
-        GameProfile player();
-
+    public sealed interface RememberedMessage {
         Component message();
+
+        public sealed interface Player extends RememberedMessage {
+            GameProfile player();
+        }
+
+        public sealed interface System extends RememberedMessage {
+        }
     }
 
-    record RememberedMessageImpl(GameProfile player, Component message) implements RememberedMessage {
+    record RememberedMessagePlayerImpl(GameProfile player, Component message) implements RememberedMessage.Player {
+    }
+
+    record RememberedMessageSystemImpl(Component message) implements RememberedMessage.System {
     }
 }

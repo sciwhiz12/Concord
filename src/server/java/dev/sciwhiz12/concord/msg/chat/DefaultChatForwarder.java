@@ -23,8 +23,16 @@
 package dev.sciwhiz12.concord.msg.chat;
 
 import dev.sciwhiz12.concord.ChatBot;
+import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.ConcordServer;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.concurrent.CompletableFuture;
+
+import static dev.sciwhiz12.concord.Concord.LOGGER;
 
 public class DefaultChatForwarder implements ChatForwarder {
     private final ChatBot bot;
@@ -33,9 +41,22 @@ public class DefaultChatForwarder implements ChatForwarder {
         this.bot = bot;
     }
 
-    public void forward(ServerPlayer player, Component message) {
-        bot.messaging().sendToDiscord(
-                        Component.translatable("chat.type.text", player.getDisplayName(), message))
-                .thenAccept(sentMessage -> bot.getSentMessageMemory().rememberMessage(sentMessage.getIdLong(), player.getGameProfile(), message));
+    @Override
+    public CompletableFuture<Message> forwardPlayerMessage(ServerPlayer player, Component message) {
+        return forwardSystemMessage(Component.translatable("chat.type.text", player.getDisplayName(), message).getString());
+    }
+
+    @Override
+    public CompletableFuture<Message> forwardSystemMessage(String message) {
+        final TextChannel channel = bot.getDiscord().getTextChannelById(ConcordConfig.CHAT_CHANNEL_ID.get());
+        if (channel != null) {
+            return channel.sendMessage(message)
+                    .setAllowedMentions(bot.messaging().getAllowedMentions())
+                    .submit();
+        } else {
+            LOGGER.error("Failed to retrieve chat channel from JDA channel cache; was the channel deleted?");
+            ConcordServer.disable(true);
+            return CompletableFuture.failedFuture(new RuntimeException("Failed to retrieve chat channel from JDA channel cache"));
+        }
     }
 }

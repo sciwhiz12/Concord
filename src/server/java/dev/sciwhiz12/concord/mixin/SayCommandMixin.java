@@ -24,7 +24,6 @@ package dev.sciwhiz12.concord.mixin;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
-import dev.sciwhiz12.concord.Concord;
 import dev.sciwhiz12.concord.ConcordConfig;
 import dev.sciwhiz12.concord.ConcordServer;
 import dev.sciwhiz12.concord.util.Messages;
@@ -50,7 +49,7 @@ public abstract class SayCommandMixin {
 
         try {
             if (ConcordServer.isEnabled() && ConcordConfig.COMMAND_SAY.get()) {
-                ConcordServer.getBot().messaging().sendToDiscord(
+                ConcordServer.getBot().messaging().sendSystemMessage(
                         Messages.SAY_COMMAND.component(ctx.getSource().getDisplayName(), message.decoratedContent()));
             }
         } catch (Exception e) {

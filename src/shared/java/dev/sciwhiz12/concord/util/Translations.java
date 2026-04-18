@@ -41,6 +41,7 @@ public enum Translations implements Translation {
     CHAT_HEADER("chat", "header", "1.0.0", "(%s) %s"),
     CHAT_REPLY_USER("chat", "reply", "1.1.0", "in reply to %s: "),
     CHAT_REPLY_UNKNOWN("chat", "reply.unknown", "1.1.0", "an unknown user"),
+    CHAT_REPLY_SYSTEM("chat", "reply.system", "1.4.0", "a system message"),
     CHAT_ATTACHMENT_WITH_EXTENSION("chat", "attachment", "1.1.0", "attachment:%s"),
     CHAT_ATTACHMENT_NO_EXTENSION("chat", "attachment.no_extension", "1.1.0", "attachment"),
     CHAT_STICKER("chat", "sticker", "1.1.0", "sticker:%s"),

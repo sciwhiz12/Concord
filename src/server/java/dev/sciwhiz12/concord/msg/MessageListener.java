@@ -64,7 +64,7 @@ public class MessageListener extends ListenerAdapter {
             if (reference != null) {
                 reference.resolve().queue();
             }
-            bot.messaging().sendToMinecraft(member, message);
+            bot.messaging().sendDiscordMessage(member, message);
         }
     }
 
@@ -75,6 +75,6 @@ public class MessageListener extends ListenerAdapter {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     void onSubmittedServerChat(ServerChatEvent event) {
-        bot.getChatForwarder().forward(event.getPlayer(), event.getMessage());
+        bot.messaging().sendPlayerMessage(event.getPlayer(), event.getMessage());
     }
 }
