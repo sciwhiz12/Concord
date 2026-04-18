@@ -38,6 +38,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.internal.utils.config.ThreadingConfig;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -69,7 +70,15 @@ public class ConcordServer extends Concord {
 
         Runtime.getRuntime().addShutdownHook(Thread.ofPlatform()
                 .unstarted(() -> {
-                    if (BOT != null) BOT.messaging().allowProcessingMessages(false);
+                    if (BOT != null) {
+                        BOT.messaging().allowProcessingMessages(false);
+                        // Server probably crashed. Send the stop message if configured
+                        if (ConcordConfig.SERVER_STOP.get()) {
+                            BOT.messaging().sendSystemMessage(Messages.SERVER_STOP.component());
+                            BOT.messaging().processMessages(true);
+                        }
+                        BOT.getDiscord().shutdownNow();
+                    }
                 }));
     }
 
@@ -142,6 +151,8 @@ public class ConcordServer extends Concord {
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS)
                 .enableCache(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
                 .setAutoReconnect(true)
+                // JDA sets this to be a non-daemon thread; we need it to be a daemon thread
+                .setRateLimitScheduler(ThreadingConfig.newScheduler(2, () -> "JDA", "RateLimit-Scheduler", true))
                 .setActivity(Activity.playing("the readying game..."))
                 .setStatus(OnlineStatus.DO_NOT_DISTURB);
         try {
