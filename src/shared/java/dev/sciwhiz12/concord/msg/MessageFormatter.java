@@ -213,7 +213,7 @@ public class MessageFormatter {
                             .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(player.message())));
                 }
                 case SentMessageMemory.RememberedMessage.System system ->
-                        referencedUserComponent = Translations.CHAT_REPLY_SYSTEM.component().withStyle(ITALIC)
+                        referencedUserComponent = Translations.CHAT_REPLY_SYSTEM.component()
                                 .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(system.message())));
                 case null -> { // no-op
                 }
