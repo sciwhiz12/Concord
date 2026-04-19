@@ -42,18 +42,19 @@ public class MessageFormatter {
     public static final FontDescription.Resource ICONS_FONT = new FontDescription.Resource(Identifier.fromNamespaceAndPath(MODID, "icons"));
     public static final TextColor CROWN_COLOR = TextColor.fromRgb(0xfaa61a);
 
-    static MutableComponent createUserHover(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility, DiscordMember member) {
-        final boolean showCrown = switch (crownVisibility) {
+    public static boolean shouldShowCrown(ConcordConfig.CrownVisibility crownVisibility, DiscordMember member) {
+        return switch (crownVisibility) {
             case ALWAYS -> member.owner(); // Always show for the owner
             case NEVER -> false; // Never show
             case WITHOUT_ADMINISTRATORS -> member.owner() // Show if owner and there are no hoisted Admin roles
                     && member.roles().stream().noneMatch(role -> role.hoisted() && role.administrator());
-            // TODO: cache the result of the above stream
         };
+    }
 
+    static MutableComponent createUserHover(boolean useIcons, DiscordMember member) {
         final MutableComponent ownerIcon = Component.literal(String.valueOf(MemberStatus.CROWN_ICON))
                 .withStyle(style -> style.withColor(CROWN_COLOR));
-        final MutableComponent ownerText = showCrown ? Component.empty().append(ownerIcon).append(" ") : Component.empty();
+        final MutableComponent ownerText = member.owner() ? Component.empty().append(ownerIcon).append(" ") : Component.empty();
         final MutableComponent statusIcon = Component.literal(String.valueOf(member.status().getIcon()))
                 .withStyle(style -> style.withColor(member.status().getColor()));
 
@@ -72,23 +73,20 @@ public class MessageFormatter {
         ).withStyle(DARK_GRAY);
     }
 
-    static MutableComponent createUserComponent(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                                boolean showRoles, DiscordMember member, @Nullable MutableComponent replyMessage) {
-        final MutableComponent hover = createUserHover(useIcons, crownVisibility, member);
+    static MutableComponent createUserComponent(boolean useIcons, DiscordMember member, @Nullable MutableComponent replyMessage) {
+        final MutableComponent hover = createUserHover(useIcons, member);
 
-        if (showRoles) {
-            final List<DiscordRole> roles = member.roles().stream()
-                    .filter(((Predicate<DiscordRole>) DiscordRole::publicRole).negate())
-                    .toList();
-            if (!roles.isEmpty()) {
-                hover.append("\n").append(Translations.HOVER_ROLES.component());
-                for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
-                    if (i != 0) hover.append(", "); // add joiner for more than one role
-                    DiscordRole role = roles.get(i);
-                    hover.append(Component.literal(role.name())
-                            .withStyle(style -> style.withColor(TextColor.fromRgb(role.color())))
-                    );
-                }
+        final List<DiscordRole> roles = member.roles().stream()
+                .filter(((Predicate<DiscordRole>) DiscordRole::publicRole).negate())
+                .toList();
+        if (!roles.isEmpty()) {
+            hover.append("\n").append(Translations.HOVER_ROLES.component());
+            for (int i = 0, rolesSize = roles.size(); i < rolesSize; i++) {
+                if (i != 0) hover.append(", "); // add joiner for more than one role
+                DiscordRole role = roles.get(i);
+                hover.append(Component.literal(role.name())
+                        .withStyle(style -> style.withColor(TextColor.fromRgb(role.color())))
+                );
             }
         }
 
@@ -189,44 +187,50 @@ public class MessageFormatter {
         return text;
     }
 
-    @SuppressWarnings("SameParameterValue")
-    public static MutableComponent createMessage(boolean useIcons, ConcordConfig.CrownVisibility crownVisibility,
-                                          SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
-                                          DiscordFullMessage message, @Nullable DiscordFullMessage repliedMessage) {
-        final boolean showRoles = !ConcordConfig.HIDE_ROLES.get();
-        final MutableComponent userComponent = createUserComponent(useIcons, crownVisibility, showRoles, message.member(), null);
-        MutableComponent text = createFullContentComponent(message);
+    public static MutableComponent createReplyUserComponent(boolean useIcons, boolean includeMessageInHover,
+                                                            SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
+                                                            DiscordFullMessage message) {
+        MutableComponent referencedUserComponent = null;
 
-        if (repliedMessage != null) {
-            MutableComponent referencedUserComponent = null;
+        if (message.member() != null) {
+            referencedUserComponent = createUserComponent(useIcons, message.member(), includeMessageInHover ? createFullContentComponent(message) : null);
+        }
 
-            if (repliedMessage.member() != null) {
-                referencedUserComponent = createUserComponent(useIcons, crownVisibility, showRoles, repliedMessage.member(),
-                        createFullContentComponent(repliedMessage));
-            }
-
-            switch (messageMemory.findMessage(repliedMessage.id())) {
+        if (referencedUserComponent == null) {
+            switch (messageMemory.findMessage(message.id())) {
                 case SentMessageMemory.RememberedMessage.Player player -> {
                     final GameProfile playerProfile = player.player();
                     final MutableComponent resolvedName = displayNameResolver.resolve(playerProfile.id());
                     referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC)).withStyle(WHITE)
-                            .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(player.message())));
+                            .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(player.message()) : null));
                 }
                 case SentMessageMemory.RememberedMessage.System system ->
                         referencedUserComponent = Translations.CHAT_REPLY_SYSTEM.component()
-                                .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(system.message())));
+                                .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(system.message()) : null));
                 case null -> { // no-op
                 }
             }
+        }
 
-            if (referencedUserComponent == null) {
-                // Fallback to an unknown user
-                referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
-                        .withStyle(style -> style.withHoverEvent(
-                                new HoverEvent.ShowText(createFullContentComponent(repliedMessage))));
-            }
+        if (referencedUserComponent == null) {
+            // Fallback to an unknown user
+            referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
+                    .withStyle(style -> style.withHoverEvent(
+                            includeMessageInHover ? new HoverEvent.ShowText(createFullContentComponent(message)) : null));
+        }
 
-            text = Translations.CHAT_REPLY_USER.component(referencedUserComponent)
+        return referencedUserComponent;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    public static MutableComponent createMessage(boolean useIcons,
+                                                 SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
+                                                 DiscordFullMessage message, @Nullable DiscordFullMessage repliedMessage) {
+        final MutableComponent userComponent = createUserComponent(useIcons, message.member(), null);
+        MutableComponent text = createFullContentComponent(message);
+
+        if (repliedMessage != null) {
+            text = Translations.CHAT_REPLY_USER.component(createReplyUserComponent(useIcons, true, messageMemory, displayNameResolver, repliedMessage))
                     .withStyle(GRAY)
                     .append(text);
         }

@@ -24,8 +24,16 @@ package dev.sciwhiz12.concord.dto;
 
 import dev.sciwhiz12.concord.msg.MemberStatus;
 
+import java.util.List;
 import java.util.SequencedCollection;
 
 public record DiscordMember(long id, String name, int color, boolean owner, MemberStatus status,
                             SequencedCollection<DiscordRole> roles) {
+    public DiscordMember withoutRoles() {
+        return new DiscordMember(id, name, color, owner, status, List.of());
+    }
+
+    public DiscordMember withOwner(boolean owner) {
+        return new DiscordMember(id, name, color, owner, status, roles);
+    }
 }

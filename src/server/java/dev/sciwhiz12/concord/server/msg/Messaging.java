@@ -24,6 +24,7 @@ package dev.sciwhiz12.concord.server.msg;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.sciwhiz12.concord.ConcordConfig;
+import dev.sciwhiz12.concord.dto.DiscordMember;
 import dev.sciwhiz12.concord.features.ConcordFeatures;
 import dev.sciwhiz12.concord.features.FeatureVersion;
 import dev.sciwhiz12.concord.msg.MessageFormatter;
@@ -35,6 +36,7 @@ import dev.sciwhiz12.concord.util.TranslationUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReference;
+import net.minecraft.Optionull;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
@@ -151,20 +153,32 @@ public class Messaging {
         final ConcordConfig.CrownVisibility crownVisibility = ConcordConfig.HIDE_CROWN.get();
 
         final IntelligentTranslator<MessageContext> translator = versionCheckingTranslator(
-                ctx -> MessageFormatter.createMessage(
-                        ctx.useIcons,
-                        crownVisibility,
-                        bot.getSentMessageMemory(),
-                        uuid -> {
-                            ServerPlayer player = bot.getServer().getPlayerList().getPlayer(uuid);
-                            if (player != null) {
-                                return player.getDisplayName().copy();
-                            }
-                            return null;
-                        },
-                        JdaAdaptor.adapt(message),
-                        Optional.ofNullable(message.getMessageReference()).map(MessageReference::getMessage).map(JdaAdaptor::adapt).orElse(null)
-                ));
+                ctx -> {
+                    var componentMessage = JdaAdaptor.adapt(message);
+                    var replyMessage = Optional.ofNullable(message.getMessageReference()).map(MessageReference::getMessage).map(JdaAdaptor::adapt).orElse(null);
+
+                    if (!ConcordConfig.HIDE_ROLES.get()) {
+                        componentMessage = componentMessage.withMember(DiscordMember::withoutRoles);
+                        replyMessage = Optionull.map(replyMessage, m -> m.withMember(DiscordMember::withoutRoles));
+                    }
+
+                    componentMessage = componentMessage.withMember(m -> m.withOwner(m.owner() && MessageFormatter.shouldShowCrown(crownVisibility, m)));
+                    replyMessage = Optionull.map(replyMessage, msg -> msg.withMember(m -> m.withOwner(m.owner() && MessageFormatter.shouldShowCrown(crownVisibility, m))));
+
+                    return MessageFormatter.createMessage(
+                            ctx.useIcons,
+                            bot.getSentMessageMemory(),
+                            uuid -> {
+                                ServerPlayer player = bot.getServer().getPlayerList().getPlayer(uuid);
+                                if (player != null) {
+                                    return player.getDisplayName().copy();
+                                }
+                                return null;
+                            },
+                            componentMessage,
+                            replyMessage
+                    );
+                });
 
         final boolean lazyTranslateAll = ConcordConfig.LAZY_TRANSLATIONS.get();
         final boolean useIconsAll = ConcordConfig.USE_CUSTOM_FONT.get();

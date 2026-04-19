@@ -25,6 +25,7 @@ package dev.sciwhiz12.concord.dto;
 import org.jspecify.annotations.Nullable;
 
 import java.util.SequencedCollection;
+import java.util.function.UnaryOperator;
 
 public record DiscordFullMessage(
         long id,
@@ -34,4 +35,15 @@ public record DiscordFullMessage(
         SequencedCollection<DiscordMessage.Attachment> attachments,
         SequencedCollection<DiscordMessageSnapshot> snapshots
 ) implements DiscordMessage {
+    public DiscordFullMessage withMember(UnaryOperator<DiscordMember> function) {
+        if (this.member == null) return this;
+        return new DiscordFullMessage(
+                id,
+                function.apply(this.member),
+                content,
+                stickers,
+                attachments,
+                snapshots
+        );
+    }
 }
