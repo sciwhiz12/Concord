@@ -70,7 +70,7 @@ public class ConcordServer extends Concord {
 
         Runtime.getRuntime().addShutdownHook(Thread.ofPlatform()
                 .unstarted(() -> {
-                    if (BOT != null) {
+                    if (BOT != null && BOT.getDiscord().getStatus() != JDA.Status.SHUTTING_DOWN) {
                         BOT.messaging().allowProcessingMessages(false);
                         // Server probably crashed. Send the stop message if configured
                         if (ConcordConfig.SERVER_STOP.get()) {
