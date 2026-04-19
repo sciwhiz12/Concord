@@ -29,7 +29,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
-import org.jspecify.annotations.Nullable;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -109,7 +108,7 @@ public class IntelligentTranslator<C> {
 
     // Returns a new style
     private Style checkHover(Style style, UnaryOperator<String> resolver) {
-        @Nullable HoverEvent hover = style.getHoverEvent();
+        HoverEvent hover = style.getHoverEvent();
         if (hover instanceof HoverEvent.ShowText hoverText) {
             return style.withHoverEvent(new HoverEvent.ShowText(checkComponent(hoverText.value(), resolver)));
         }
@@ -121,7 +120,7 @@ public class IntelligentTranslator<C> {
         final Deque<Component> components = new ArrayDeque<>();
         components.add(component);
 
-        @Nullable Component current;
+        Component current;
         while ((current = components.poll()) != null) {
             if (current.getContents() instanceof TranslatableContents translatable) {
                 keys.add(translatable.getKey());
@@ -137,7 +136,7 @@ public class IntelligentTranslator<C> {
             // Add all component's siblings for checking
             components.addAll(current.getSiblings());
 
-            @Nullable HoverEvent hover = current.getStyle().getHoverEvent();
+            HoverEvent hover = current.getStyle().getHoverEvent();
             if (hover instanceof HoverEvent.ShowText hoverText) {
                 // Add component in hover for checking
                 components.add(hoverText.value());
