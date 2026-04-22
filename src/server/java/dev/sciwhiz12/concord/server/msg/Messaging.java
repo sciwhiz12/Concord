@@ -167,7 +167,6 @@ public class Messaging {
 
                     return MessageFormatter.createMessage(
                             ctx.useIcons,
-                            bot.getSentMessageMemory(),
                             uuid -> {
                                 ServerPlayer player = bot.getServer().getPlayerList().getPlayer(uuid);
                                 if (player != null) {
@@ -176,7 +175,7 @@ public class Messaging {
                                 return null;
                             },
                             componentMessage,
-                            replyMessage
+                            replyMessage == null ? null : MessageFormatter.ReplyContext.from(replyMessage, bot.getSentMessageMemory())
                     );
                 });
 

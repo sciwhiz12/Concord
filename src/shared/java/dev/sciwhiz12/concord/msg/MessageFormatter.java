@@ -73,7 +73,7 @@ public class MessageFormatter {
         ).withStyle(DARK_GRAY);
     }
 
-    static MutableComponent createUserComponent(boolean useIcons, DiscordMember member, @Nullable MutableComponent replyMessage) {
+    static MutableComponent createUserComponent(boolean useIcons, DiscordMember member, @Nullable Component replyMessage) {
         final MutableComponent hover = createUserHover(useIcons, member);
 
         final List<DiscordRole> roles = member.roles().stream()
@@ -93,7 +93,7 @@ public class MessageFormatter {
         if (replyMessage != null) {
             hover.append("\n")
                     .append(Translations.HOVER_REPLY.component(
-                                    replyMessage.withStyle(WHITE))
+                                    replyMessage.copy().withStyle(WHITE))
                             .withStyle(GRAY)
                     );
         }
@@ -187,50 +187,76 @@ public class MessageFormatter {
         return text;
     }
 
-    public static MutableComponent createReplyUserComponent(boolean useIcons, boolean includeMessageInHover,
-                                                            SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
-                                                            DiscordFullMessage message) {
-        MutableComponent referencedUserComponent = null;
+    public sealed interface ReplyContext {
+        Component message();
 
-        if (message.member() != null) {
-            referencedUserComponent = createUserComponent(useIcons, message.member(), includeMessageInHover ? createFullContentComponent(message) : null);
-        }
+        static ReplyContext from(DiscordFullMessage message, SentMessageMemory messageMemory) {
+            if (message.member() != null) {
+                return new DiscordUser(message.member(), message);
+            }
 
-        if (referencedUserComponent == null) {
             switch (messageMemory.findMessage(message.id())) {
                 case SentMessageMemory.RememberedMessage.Player player -> {
                     final GameProfile playerProfile = player.player();
-                    final MutableComponent resolvedName = displayNameResolver.resolve(playerProfile.id());
-                    referencedUserComponent = Objects.requireNonNullElseGet(resolvedName, () -> Component.literal(playerProfile.name()).withStyle(ITALIC)).withStyle(WHITE)
-                            .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(player.message()) : null));
+                    return new Player(playerProfile, player.message());
                 }
-                case SentMessageMemory.RememberedMessage.System system ->
-                        referencedUserComponent = Translations.CHAT_REPLY_SYSTEM.component()
-                                .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(system.message()) : null));
+                case SentMessageMemory.RememberedMessage.System system -> {
+                    return new System(system.message());
+                }
                 case null -> { // no-op
                 }
             }
+
+            return new Unknown(message);
         }
 
-        if (referencedUserComponent == null) {
-            // Fallback to an unknown user
-            referencedUserComponent = Translations.CHAT_REPLY_UNKNOWN.component()
+        public record DiscordUser(DiscordMember member, DiscordFullMessage discordMessage) implements ReplyContext {
+            @Override
+            public Component message() {
+                return createFullContentComponent(discordMessage);
+            }
+        }
+
+        public record System(Component message) implements ReplyContext {
+        }
+
+        public record Player(GameProfile profile, Component message) implements ReplyContext {
+        }
+
+        public record Unknown(DiscordFullMessage discordMessage) implements ReplyContext {
+            @Override
+            public Component message() {
+                return createFullContentComponent(discordMessage);
+            }
+        }
+    }
+
+    public static MutableComponent createReplyUserComponent(boolean useIcons, boolean includeMessageInHover, DisplayNameResolver displayNameResolver, ReplyContext reply) {
+        return switch (reply) {
+            case ReplyContext.DiscordUser discordUser ->
+                    createUserComponent(useIcons, discordUser.member(), includeMessageInHover ? discordUser.message() : null);
+            case ReplyContext.Player player -> Objects.requireNonNullElseGet(
+                            displayNameResolver.resolve(player.profile().id()),
+                            () -> Component.literal(player.profile().name()).withStyle(ITALIC)
+                    )
+                    .withStyle(WHITE)
+                    .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(player.message()) : null));
+            case ReplyContext.System system -> Translations.CHAT_REPLY_SYSTEM.component()
+                    .withStyle(style -> style.withHoverEvent(includeMessageInHover ? new HoverEvent.ShowText(system.message()) : null));
+            default -> Translations.CHAT_REPLY_UNKNOWN.component()
                     .withStyle(style -> style.withHoverEvent(
-                            includeMessageInHover ? new HoverEvent.ShowText(createFullContentComponent(message)) : null));
-        }
-
-        return referencedUserComponent;
+                            includeMessageInHover ? new HoverEvent.ShowText(reply.message()) : null));
+        };
     }
 
     @SuppressWarnings("SameParameterValue")
-    public static MutableComponent createMessage(boolean useIcons,
-                                                 SentMessageMemory messageMemory, DisplayNameResolver displayNameResolver,
-                                                 DiscordFullMessage message, @Nullable DiscordFullMessage repliedMessage) {
+    public static MutableComponent createMessage(boolean useIcons, DisplayNameResolver displayNameResolver,
+                                                 DiscordFullMessage message, @Nullable ReplyContext replyContext) {
         final MutableComponent userComponent = createUserComponent(useIcons, message.member(), null);
         MutableComponent text = createFullContentComponent(message);
 
-        if (repliedMessage != null) {
-            text = Translations.CHAT_REPLY_USER.component(createReplyUserComponent(useIcons, true, messageMemory, displayNameResolver, repliedMessage))
+        if (replyContext != null) {
+            text = Translations.CHAT_REPLY_USER.component(createReplyUserComponent(useIcons, true, displayNameResolver, replyContext))
                     .withStyle(GRAY)
                     .append(text);
         }
